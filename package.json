@@ -1,0 +1,25 @@
+{
+  "name": "propelada-web",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev --port 3001",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nuxtjs/color-mode": "^4.0.0",
+    "@nuxtjs/supabase": "^2.0.3",
+    "@tailwindcss/vite": "^4.2.1",
+    "@vite-pwa/nuxt": "^1.1.1",
+    "chart.js": "^4.5.1",
+    "lucide-vue-next": "^0.564.0",
+    "nuxt": "^4.3.0",
+    "tailwindcss": "^4.2.1",
+    "vue": "^3.5.27",
+    "vue-chartjs": "^5.3.3",
+    "vue-router": "^4.6.4"
+  }
+}
