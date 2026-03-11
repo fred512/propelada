@@ -21,7 +21,7 @@
           <button class="icon-btn red" title="Criar Nova Partida" @click="showCreateMatch = true">
             <Plus :size="20" />
           </button>
-          <button class="icon-btn teal" title="Lista de Espera" @click="showWaitingList = true">
+          <button class="icon-btn teal" title="Lista de Espera" @click="targetTeam = ''; showWaitingList = true">
             <Users :size="20" />
             <span class="badge">{{ waitingList?.length || 0 }}</span>
           </button>
@@ -488,9 +488,9 @@
     <div v-if="showWaitingList" class="modal-overlay" @click="showWaitingList = false">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>Lista de Espera</h2>
+          <h2>{{ targetTeam ? `Adicionar ao Time ${targetTeam}` : 'Lista de Espera' }}</h2>
           <div style="display:flex;gap:8px;align-items:center;">
-            <button class="icon-btn search-blue" style="width:36px;height:36px;" title="Buscar participante" @click="openParticipantSearch">
+            <button v-if="!targetTeam" class="icon-btn search-blue" style="width:36px;height:36px;" title="Buscar participante" @click="openParticipantSearch">
               <Search :size="16" />
             </button>
             <button class="close-btn" @click="showWaitingList = false"><X :size="24" /></button>
@@ -498,12 +498,43 @@
         </div>
         <div class="waiting-list-body">
           <div v-if="waitingList.length === 0" class="empty-list">Ninguém na espera.</div>
-          <div v-for="w in waitingList" :key="w.idJogadorLista" class="waiting-item">
-            <span>{{ w.Apelido || '?' }}</span>
-            <button class="btn-delete-waiting" @click="removeFromWaitingList(w)" title="Remover da lista">
-              <Trash2 :size="16" />
-            </button>
-          </div>
+
+          <!-- Modo seleção: aberto pelo "+" do time -->
+          <template v-if="targetTeam">
+            <div
+              v-for="w in waitingList"
+              :key="w.idJogadorLista"
+              class="waiting-item"
+              :class="{ 'ps-item-selected': selectedWaitingPlayers.has(w.idJogadorLista) }"
+              style="cursor:pointer; border: 1px solid transparent;"
+              @click="toggleWaitingSelection(w)"
+            >
+              <span>{{ w.Apelido || '?' }}</span>
+              <div class="ps-checkbox" :class="{ 'ps-checked': selectedWaitingPlayers.has(w.idJogadorLista) }">
+                <Check v-if="selectedWaitingPlayers.has(w.idJogadorLista)" :size="14" />
+              </div>
+            </div>
+          </template>
+
+          <!-- Modo normal: aberto pelo botão de lista de espera -->
+          <template v-else>
+            <div v-for="w in waitingList" :key="w.idJogadorLista" class="waiting-item">
+              <span>{{ w.Apelido || '?' }}</span>
+              <button class="btn-delete-waiting" @click="removeFromWaitingList(w)" title="Remover da lista">
+                <Trash2 :size="16" />
+              </button>
+            </div>
+          </template>
+        </div>
+
+        <div v-if="targetTeam" class="ps-footer">
+          <button
+            class="ps-btn-add"
+            :disabled="selectedWaitingPlayers.size === 0 || isAddingToTeam"
+            @click="addSelectedToTeam"
+          >
+            {{ isAddingToTeam ? 'Adicionando...' : `Adicionar (${selectedWaitingPlayers.size})` }}
+          </button>
         </div>
       </div>
     </div>
@@ -646,6 +677,8 @@ const participantSearchResults = ref([])
 const isSearchingParticipants = ref(false)
 const selectedParticipants = ref(new Map())
 const isAddingToList = ref(false)
+const selectedWaitingPlayers = ref(new Map())
+const isAddingToTeam = ref(false)
 
 
 // Cronômetro
@@ -890,7 +923,50 @@ const targetTeam = ref('1')
 // Ações
 const openAddPlayer = (team) => {
   targetTeam.value = team
+  selectedWaitingPlayers.value = new Map()
   showWaitingList.value = true
+}
+
+const toggleWaitingSelection = (w) => {
+  const map = new Map(selectedWaitingPlayers.value)
+  if (map.has(w.idJogadorLista)) {
+    map.delete(w.idJogadorLista)
+  } else {
+    map.set(w.idJogadorLista, w)
+  }
+  selectedWaitingPlayers.value = map
+}
+
+const addSelectedToTeam = async () => {
+  if (!partida.value || selectedWaitingPlayers.value.size === 0) return
+  isAddingToTeam.value = true
+
+  const rows = [...selectedWaitingPlayers.value.values()].map(w => ({
+    idPartida: partida.value.idPartida,
+    IdPelada: partida.value.IdPelada,
+    IdParticipante: w.idParticipante || w.IdParticipante,
+    Nome: w.Apelido || '?',
+    Time: targetTeam.value,
+    Gol: 0,
+    CartaoAmarelo: false,
+    CartaoAzul: false,
+    CartaoVermelho: false,
+    substituido: false
+  }))
+
+  console.log('addSelectedToTeam rows:', JSON.stringify(rows))
+
+  const { error } = await supabase.from('JogadorPartida').insert(rows)
+  isAddingToTeam.value = false
+
+  if (!error) {
+    showWaitingList.value = false
+    selectedWaitingPlayers.value = new Map()
+    await fetchMatchData()
+  } else {
+    console.error('Erro ao adicionar jogadores ao time:', error)
+    alert('Erro: ' + (error.message || error.code || JSON.stringify(error)))
+  }
 }
 
 const addToMatch = async (participante) => {
@@ -900,6 +976,7 @@ const addToMatch = async (participante) => {
     .from('JogadorPartida')
     .insert([{
       idPartida: partida.value.idPartida,
+      IdPelada: partida.value.IdPelada,
       idParticipante: participante.IdParticipante || participante.idParticipante,
       Nome: participante.Nome || participante.apelido || participante.nome || '?',
       Time: targetTeam.value,

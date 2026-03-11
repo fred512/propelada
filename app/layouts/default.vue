@@ -172,6 +172,9 @@ onMounted(async () => {
   font-size: 0.6rem;
   opacity: 0.5;
   white-space: nowrap;
+  position: fixed;
+  top: 2px;
+  right: 44px;
 }
 
 .header-center {
