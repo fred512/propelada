@@ -27,7 +27,7 @@
           </div>
           
           <div class="header-right">
-            <span class="version-info">Versão :10-02-2026:1.0</span>
+            <span class="version-info">Versão :{{ appVersion }}</span>
             <ThemeToggle />
           </div>
         </div>
@@ -62,6 +62,7 @@ const colorMode = (() => {
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const { peladaAtual, nomeFormatado, isVisitor, fetchPelada } = usePelada()
+const { public: { appVersion } } = useRuntimeConfig()
 
 const logoUrl = computed(() =>
   colorMode.value === 'dark' ? '/images/propelada-dark.png' : '/images/Propelada8.png'
@@ -162,7 +163,7 @@ onMounted(async () => {
 }
 
 .header-right {
-  justify-content: flex-end;
+  justify-content: flex-start;
   flex-direction: column;
   align-items: flex-end;
 }

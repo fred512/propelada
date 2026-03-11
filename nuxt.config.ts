@@ -1,4 +1,10 @@
 import tailwindcss from '@tailwindcss/vite'
+import { execSync } from 'child_process'
+
+let buildVersion = '?'
+try {
+  buildVersion = execSync('git log -1 --format=%cd --date=format:"%d-%m-%Y"').toString().trim()
+} catch {}
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -26,6 +32,12 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/png', href: '/images/favicon.png' },
         { rel: 'apple-touch-icon', href: '/images/apple-touch-icon.png' },
       ]
+    }
+  },
+
+  runtimeConfig: {
+    public: {
+      appVersion: buildVersion,
     }
   },
 
