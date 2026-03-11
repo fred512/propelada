@@ -1343,11 +1343,13 @@ const createNewMatch = async () => {
   position: absolute;
   top: -6px;
   right: -6px;
-  background: var(--primary-color);
+  background: #1A1C1E;
+  color: #ffffff;
   padding: 2px 6px;
   border-radius: 10px;
   font-size: 0.7rem;
-  border: 1px solid white;
+  font-weight: 700;
+  border: 2px solid #4CAF50;
 }
 
 .scoreboard-section {
@@ -1367,7 +1369,7 @@ const createNewMatch = async () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
-  padding: 6px 12px;
+  padding: 15px 12px 6px;
 }
 
 .timer-badge {
