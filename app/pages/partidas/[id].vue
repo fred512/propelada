@@ -65,9 +65,9 @@
           <div class="team-icon">
             <Users :size="24" />
           </div>
-          <span class="player-count-badge">17</span>
+          <span class="player-count-badge">{{ team1Players.length }}</span>
         </div>
-        
+
         <div class="central-score">
           <span class="score-num team1">{{ scoreTeam1 }}</span>
           <span class="score-divider">x</span>
@@ -78,7 +78,7 @@
           <div class="team-icon">
             <Users :size="24" />
           </div>
-          <span class="player-count-badge">17</span>
+          <span class="player-count-badge">{{ team2Players.length }}</span>
         </div>
       </div>
     </div>
@@ -960,9 +960,12 @@ const addSelectedToTeam = async () => {
   isAddingToTeam.value = false
 
   if (!error) {
+    const ids = [...selectedWaitingPlayers.value.keys()]
+    await supabase.from('ListaEspera').delete().in('idJogadorLista', ids)
     showWaitingList.value = false
     selectedWaitingPlayers.value = new Map()
     await fetchMatchData()
+    await fetchWaitingList()
   } else {
     console.error('Erro ao adicionar jogadores ao time:', error)
     alert('Erro: ' + (error.message || error.code || JSON.stringify(error)))
@@ -1124,6 +1127,13 @@ const removeFromMatch = async () => {
     .eq(idField, id)
 
   if (!error) {
+    await supabase.from('ListaEspera').insert([{
+      idParticipante: selectedPlayer.value.IdParticipante || selectedPlayer.value.idParticipante,
+      IdPartida: partida.value.idPartida,
+      Apelido: selectedPlayer.value.Nome || '?',
+      Classificacao: 0,
+    }])
+    await fetchWaitingList()
     showActionsModal.value = false
     selectedPlayer.value = null
     await fetchMatchData()
@@ -1473,7 +1483,7 @@ const createNewMatch = async () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0;
-  padding: 0 12px;
+  padding: 12px 12px 0;
 }
 
 .timer-badge {
