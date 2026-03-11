@@ -1367,6 +1367,7 @@ const createNewMatch = async () => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  padding: 6px 12px;
 }
 
 .timer-badge {
