@@ -3,7 +3,6 @@
     <header class="sumula-header">
       <div class="header-main-actions">
         <div class="pelada-info">
-          <h2>{{ nomeFormatado }}</h2>
           <div class="title-with-key">
             <button v-if="tipoUsuario === 'Visitante'" class="key-btn" @click="showAccessModal = true">
               <Key :size="20" />
@@ -513,7 +512,7 @@
     <div v-if="showParticipantSearch" class="modal-overlay" @click="showParticipantSearch = false">
       <div class="modal-content participant-search-modal" @click.stop>
         <div class="modal-header">
-          <h2 class="search-title">Buscar Participante</h2>
+          <h2 class="search-title">Adicionar à Lista</h2>
           <button class="close-btn" @click="showParticipantSearch = false"><X :size="24" /></button>
         </div>
 
@@ -536,14 +535,27 @@
             v-for="p in participantSearchResults"
             :key="p.IdParticipante"
             class="ps-item"
-            @click="addToWaitingList(p)"
+            :class="{ 'ps-item-selected': selectedParticipants.has(p.IdParticipante) }"
+            @click="toggleParticipantSelection(p)"
           >
             <div class="ps-info">
               <span class="ps-name">{{ p.Apelido || p.apelido || p.Nome || p.nome }}</span>
               <span class="ps-type">{{ p.TipoParticipante }}</span>
             </div>
-            <Plus :size="18" class="ps-add-icon" />
+            <div class="ps-checkbox" :class="{ 'ps-checked': selectedParticipants.has(p.IdParticipante) }">
+              <Check v-if="selectedParticipants.has(p.IdParticipante)" :size="14" />
+            </div>
           </div>
+        </div>
+
+        <div class="ps-footer">
+          <button
+            class="ps-btn-add"
+            :disabled="selectedParticipants.size === 0 || isAddingToList"
+            @click="addSelectedToWaitingList"
+          >
+            {{ isAddingToList ? 'Adicionando...' : `Adicionar (${selectedParticipants.size})` }}
+          </button>
         </div>
       </div>
     </div>
@@ -632,6 +644,8 @@ const showParticipantSearch = ref(false)
 const participantSearchQuery = ref('')
 const participantSearchResults = ref([])
 const isSearchingParticipants = ref(false)
+const selectedParticipants = ref(new Map())
+const isAddingToList = ref(false)
 
 
 // Cronômetro
@@ -1154,8 +1168,20 @@ const closeMatch = async () => {
 const openParticipantSearch = async () => {
   participantSearchQuery.value = ''
   participantSearchResults.value = []
+  selectedParticipants.value = new Map()
   showParticipantSearch.value = true
   await searchParticipants()
+}
+
+const toggleParticipantSelection = (p) => {
+  const id = p.IdParticipante
+  const map = new Map(selectedParticipants.value)
+  if (map.has(id)) {
+    map.delete(id)
+  } else {
+    map.set(id, p)
+  }
+  selectedParticipants.value = map
 }
 
 const searchParticipants = async () => {
@@ -1181,31 +1207,31 @@ const searchParticipants = async () => {
   isSearchingParticipants.value = false
 }
 
-const addToWaitingList = async (participante) => {
+const addSelectedToWaitingList = async () => {
+  if (selectedParticipants.value.size === 0) return
+  isAddingToList.value = true
   const matchId = route.params.id
-  const idParticipante = participante.IdParticipante ?? participante.idParticipante
-  // Usa Nome como Apelido se Apelido estiver vazio
-  const apelido = (participante.Apelido || participante.apelido || '').trim()
-    || (participante.Nome || participante.nome || '?')
 
-  const { error } = await supabase
-    .from('ListaEspera')
-    .insert([{
-      idParticipante: idParticipante,
-      IdPartida: Number(matchId),
-      Apelido: apelido,
-      Classificacao: 0,
-    }])
+  const rows = [...selectedParticipants.value.values()].map(p => ({
+    idParticipante: p.IdParticipante ?? p.idParticipante,
+    IdPartida: Number(matchId),
+    Apelido: (p.Apelido || p.apelido || '').trim() || (p.Nome || p.nome || '?'),
+    Classificacao: 0,
+  }))
 
+  const { error } = await supabase.from('ListaEspera').insert(rows)
+
+  isAddingToList.value = false
   if (!error) {
     showParticipantSearch.value = false
     participantSearchQuery.value = ''
     participantSearchResults.value = []
+    selectedParticipants.value = new Map()
     await fetchWaitingList()
     showWaitingList.value = true
   } else {
     console.error('Erro ao adicionar à lista de espera:', JSON.stringify(error))
-    alert(`Erro ao adicionar jogador: ${error.message || error.code || JSON.stringify(error)}`)
+    alert(`Erro ao adicionar jogadores: ${error.message || error.code || JSON.stringify(error)}`)
   }
 }
 
@@ -1281,7 +1307,7 @@ const createNewMatch = async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
 }
 
 .pelada-info {
@@ -1356,11 +1382,12 @@ const createNewMatch = async () => {
   height: 15%;
   min-height: 0;
   flex-shrink: 0;
-  padding: 6px 16px;
+  padding: 12px 16px;
   text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 4px;
   overflow: hidden;
 }
 
@@ -1368,8 +1395,8 @@ const createNewMatch = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding: 15px 12px 6px;
+  margin-bottom: 0;
+  padding: 0 12px;
 }
 
 .timer-badge {
@@ -1424,6 +1451,7 @@ const createNewMatch = async () => {
   display: flex;
   justify-content: space-around;
   align-items: center;
+  padding-bottom: 8px;
 }
 
 .team-players {
@@ -1480,7 +1508,7 @@ const createNewMatch = async () => {
   gap: 8px;
   height: 50%;
   min-height: 0;
-  padding: 0 8px;
+  padding: 8px 8px 0;
   flex-shrink: 0;
 }
 
@@ -2638,9 +2666,11 @@ const createNewMatch = async () => {
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.15s;
+  border: 1px solid transparent;
 }
 
 .ps-item:hover { background: rgba(0,230,118,0.08); }
+.ps-item-selected { background: rgba(0,230,118,0.12); border-color: var(--primary-color); }
 
 .ps-info {
   display: flex;
@@ -2660,7 +2690,42 @@ const createNewMatch = async () => {
   text-transform: capitalize;
 }
 
-.ps-add-icon { color: var(--primary-color); }
+.ps-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.ps-checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #1A1C1E;
+}
+
+.ps-footer {
+  padding: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.ps-btn-add {
+  width: 100%;
+  background: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.ps-btn-add:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ── Nova partida modal ─────────────────────────── */
 .new-match-modal { max-width: 340px; }
