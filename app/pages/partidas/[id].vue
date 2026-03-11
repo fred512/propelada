@@ -1231,8 +1231,8 @@ const createNewMatch = async () => {
     .insert([{
       IdPelada: peladaAtual.value.id,
       Data: newMatchDate.value,
-      Status: '1º Tempo',
-      Chuva: false,
+      Tempo: '1º Tempo',
+      chuva: false,
     }])
     .select('idPartida')
     .single()
