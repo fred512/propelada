@@ -86,7 +86,14 @@
     <!-- Times Grid -->
     <div class="teams-grid">
       <!-- Time 1 -->
-      <div class="team-column" :style="{ backgroundColor: configCores.time1 }">
+      <div
+        class="team-column"
+        :class="{ 'drag-over': dragOverTeam === '1' }"
+        :style="{ backgroundColor: configCores.time1 }"
+        @dragover.prevent="dragOverTeam = '1'"
+        @dragleave="dragOverTeam = null"
+        @drop.prevent="dropOnTeam('1')"
+      >
         <div class="team-header">
           <span>TIME 1 (Azul)</span>
           <button class="btn-add-mini" @click="openAddPlayer('1')">
@@ -94,14 +101,21 @@
           </button>
         </div>
         <div class="players-list">
-          <div v-for="p in team1Players" :key="p.IdJogadorPartida" class="player-item">
+          <div
+            v-for="p in team1Players"
+            :key="p.IdJogadorPartida"
+            class="player-item"
+            draggable="true"
+            @dragstart="dragStart(p)"
+            @dragend="dragOverTeam = null"
+          >
             <div class="player-top">
               <span class="player-name">{{ p.Nome }}</span>
               <button class="btn-perfil" @click="viewPlayerProfile(p)">
                 <User :size="16" />
               </button>
             </div>
-            <div v-if="p.Substituido" class="sub-indicator">Substituído</div>
+            <div v-if="p.substituido" class="sub-indicator">Substituído</div>
             <div class="player-bottom">
               <div class="player-stats">
                 <button class="stat-goal-btn" @click="openPlayerActions(p)">
@@ -125,7 +139,14 @@
       </div>
 
       <!-- Time 2 -->
-      <div class="team-column" :style="{ backgroundColor: configCores.time2 }">
+      <div
+        class="team-column"
+        :class="{ 'drag-over': dragOverTeam === '2' }"
+        :style="{ backgroundColor: configCores.time2 }"
+        @dragover.prevent="dragOverTeam = '2'"
+        @dragleave="dragOverTeam = null"
+        @drop.prevent="dropOnTeam('2')"
+      >
         <div class="team-header">
           <span>TIME 2 (Amarelo)</span>
           <button class="btn-add-mini" @click="openAddPlayer('2')">
@@ -133,7 +154,14 @@
           </button>
         </div>
         <div class="players-list">
-          <div v-for="p in team2Players" :key="p.IdJogadorPartida" class="player-item">
+          <div
+            v-for="p in team2Players"
+            :key="p.IdJogadorPartida"
+            class="player-item"
+            draggable="true"
+            @dragstart="dragStart(p)"
+            @dragend="dragOverTeam = null"
+          >
             <!-- Estrutura idêntica ao time 1 -->
             <div class="player-top">
               <span class="player-name">{{ p.Nome }}</span>
@@ -141,7 +169,7 @@
                 <User :size="16" />
               </button>
             </div>
-            <div v-if="p.Substituido" class="sub-indicator">Substituído</div>
+            <div v-if="p.substituido" class="sub-indicator">Substituído</div>
             <div class="player-bottom">
               <div class="player-stats">
                 <button class="stat-goal-btn" @click="openPlayerActions(p)">
@@ -406,7 +434,7 @@
               <p class="s-team-card-title">TIME 1</p>
               <p class="s-section-lbl">Jogadores</p>
               <div v-for="p in team1Players" :key="'t1p'+p.IdJogadorPartida" class="s-full-player">
-                <span class="s-fp-name" :class="{ 'fp-sub': p.Substituido }">{{ p.Nome }}</span>
+                <span class="s-fp-name" :class="{ 'fp-sub': p.substituido }">{{ p.Nome }}</span>
                 <div class="s-fp-events">
                   <span v-if="(p.Gol||0)>0" class="s-fp-stat">
                     <SoccerBall style="width:12px;height:12px;color:#1b5e20;" /> {{ p.Gol }}
@@ -417,7 +445,7 @@
                   <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
                   <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
                   <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
-                  <span v-if="p.Substituido" class="s-fp-sub-tag">SUB</span>
+                  <span v-if="p.substituido" class="s-fp-sub-tag">SUB</span>
                 </div>
               </div>
             </div>
@@ -427,7 +455,7 @@
               <p class="s-team-card-title">TIME 2</p>
               <p class="s-section-lbl">Jogadores</p>
               <div v-for="p in team2Players" :key="'t2p'+p.IdJogadorPartida" class="s-full-player">
-                <span class="s-fp-name" :class="{ 'fp-sub': p.Substituido }">{{ p.Nome }}</span>
+                <span class="s-fp-name" :class="{ 'fp-sub': p.substituido }">{{ p.Nome }}</span>
                 <div class="s-fp-events">
                   <span v-if="(p.Gol||0)>0" class="s-fp-stat">
                     <SoccerBall style="width:12px;height:12px;color:#1b5e20;" /> {{ p.Gol }}
@@ -438,7 +466,7 @@
                   <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
                   <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
                   <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
-                  <span v-if="p.Substituido" class="s-fp-sub-tag">SUB</span>
+                  <span v-if="p.substituido" class="s-fp-sub-tag">SUB</span>
                 </div>
               </div>
             </div>
@@ -642,7 +670,8 @@ const scoreTeam2 = ref(0)
 const timeRemaining = ref(0)
 const tipoUsuario = ref('Admin')
 const configCores = ref({ time1: '#2196F3', time2: '#FFEB3B' })
-const newMatchDate = ref(new Date().toISOString().split('T')[0])
+const today = new Date()
+const newMatchDate = ref(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`)
 
 // Modais
 const showHelp = ref(false)
@@ -679,13 +708,12 @@ const selectedParticipants = ref(new Map())
 const isAddingToList = ref(false)
 const selectedWaitingPlayers = ref(new Map())
 const isAddingToTeam = ref(false)
+const draggedPlayer = ref(null)
+const dragOverTeam = ref(null)
 
 
 // Cronômetro
-const timerRunning = ref(false)
-const timerSeconds = ref(0)
-const timerStartTime = ref('--:--')
-let timerInterval = null
+const { timerRunning, timerSeconds, timerStartTime, formatTimer, toggleTimer, resetTimer, resumeIfRunning, cleanup: cleanupTimer } = useMatchTimer()
 let timerClickCount = 0
 let timerClickTimeout = null
 
@@ -694,29 +722,6 @@ const getCurrentTime = () => {
   const h = String(now.getHours()).padStart(2, '0')
   const m = String(now.getMinutes()).padStart(2, '0')
   return `${h}:${m}`
-}
-
-const formatTimer = computed(() => {
-  const m = Math.floor(timerSeconds.value / 60)
-  const s = timerSeconds.value % 60
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-})
-
-const toggleTimer = () => {
-  if (timerRunning.value) {
-    clearInterval(timerInterval)
-    timerRunning.value = false
-  } else {
-    timerStartTime.value = getCurrentTime()
-    timerInterval = setInterval(() => { timerSeconds.value++ }, 1000)
-    timerRunning.value = true
-  }
-}
-
-const resetTimer = () => {
-  clearInterval(timerInterval)
-  timerRunning.value = false
-  timerSeconds.value = 0
 }
 
 const handleTimerClick = () => {
@@ -728,7 +733,7 @@ const handleTimerClick = () => {
   } else {
     timerClickTimeout = setTimeout(() => {
       timerClickCount = 0
-      toggleTimer()
+      toggleTimer(getCurrentTime())
     }, 280)
   }
 }
@@ -752,7 +757,7 @@ const toggleHalf = async () => {
 }
 
 onUnmounted(() => {
-  clearInterval(timerInterval)
+  cleanupTimer()
   clearTimeout(timerClickTimeout)
 })
 
@@ -844,6 +849,7 @@ const fetchMatchData = async () => {
 
 onMounted(async () => {
   await fetchMatchData()
+  resumeIfRunning()
 })
 
 // REVERIFY: Watch for route ID changes to reload data without full mount
@@ -987,7 +993,7 @@ const addToMatch = async (participante) => {
       CartaoAmarelo: false,
       CartaoAzul: false,
       CartaoVermelho: false,
-      Substituido: false
+      substituido: false
     }])
 
   if (!error) {
@@ -1009,7 +1015,7 @@ const substitutePlayer = async (p) => {
 
   const { error } = await supabase
     .from('JogadorPartida')
-    .update({ Substituido: !p.Substituido })
+    .update({ substituido: !p.substituido })
     .eq(idField, id)
 
   if (!error) await fetchMatchData()
@@ -1057,7 +1063,7 @@ const openPlayerActions = (p) => {
     ...p,
     _idField: idField,
     _id: resolvedId,
-    Substituido: p.Substituido === true || p.Substituido === 1
+    Substituido: p.substituido === true || p.substituido === 1
   }
   actionError.value = ''
   showActionsModal.value = true
@@ -1065,10 +1071,10 @@ const openPlayerActions = (p) => {
 
 const updatePlayerStat = async (field, value) => {
   if (!selectedPlayer.value) return
-  
+
   const id = selectedPlayer.value._id || selectedPlayer.value.IdJogadorPartida || selectedPlayer.value.idJogadorPartida
   const idField = selectedPlayer.value._idField || 'IdJogadorPartida'
-  
+
   if (!id) {
     actionError.value = `ID do jogador não encontrado. Feche e abra o modal novamente.`
     console.error('updatePlayerStat: IdJogadorPartida não encontrado em', selectedPlayer.value)
@@ -1090,14 +1096,46 @@ const updatePlayerStat = async (field, value) => {
   }
 }
 
+const updatePlayerStats = async (updates) => {
+  if (!selectedPlayer.value) return
+
+  const id = selectedPlayer.value._id || selectedPlayer.value.IdJogadorPartida || selectedPlayer.value.idJogadorPartida
+  const idField = selectedPlayer.value._idField || 'IdJogadorPartida'
+
+  if (!id) {
+    actionError.value = `ID do jogador não encontrado. Feche e abra o modal novamente.`
+    return
+  }
+
+  actionError.value = ''
+  const { error } = await supabase
+    .from('JogadorPartida')
+    .update(updates)
+    .eq(idField, id)
+
+  if (!error) {
+    Object.assign(selectedPlayer.value, updates)
+    await fetchMatchData()
+  } else {
+    actionError.value = `Erro ao salvar: ${error.message || error.code || 'verifique as permissões do Supabase'}`
+    console.error('Erro ao atualizar campos:', error)
+  }
+}
+
 const changeGoal = async (delta) => {
-  const newVal = Math.max(0, (selectedPlayer.value.Gol || 0) + delta)
-  await updatePlayerStat('Gol', newVal)
+  const newGol = Math.max(0, (selectedPlayer.value.Gol || 0) + delta)
+  const isFirstHalf = (partida.value.Status || '').trim() !== '2º Tempo'
+  const halfField = isFirstHalf ? 'GolPrimeiro' : 'GolSegundo'
+  const newHalfVal = Math.max(0, (selectedPlayer.value[halfField] || 0) + delta)
+  await updatePlayerStats({ Gol: newGol, [halfField]: newHalfVal })
 }
 
 const changeGoalContra = async (delta) => {
-  const newVal = Math.max(0, (selectedPlayer.value.GolContra || 0) + delta)
-  await updatePlayerStat('GolContra', newVal)
+  const newGolContra = Math.max(0, (selectedPlayer.value.GolContra || 0) + delta)
+  const isFirstHalf = (partida.value.Status || '').trim() !== '2º Tempo'
+  const halfField = isFirstHalf ? 'GolContraPrimeiro' : 'GolContraSegundo'
+  const newHalfVal = Math.max(0, (selectedPlayer.value[halfField] || 0) + delta)
+  await updatePlayerStats({ GolContra: newGolContra, [halfField]: newHalfVal })
 }
 
 const toggleCard = async (cardField) => {
@@ -1107,7 +1145,34 @@ const toggleCard = async (cardField) => {
 
 const toggleSubstitution = async () => {
   const newVal = !selectedPlayer.value.Substituido
-  await updatePlayerStat('Substituido', newVal)
+  await updatePlayerStat('substituido', newVal)
+  showActionsModal.value = false
+}
+
+const dragStart = (p) => {
+  draggedPlayer.value = p
+}
+
+const dropOnTeam = async (team) => {
+  dragOverTeam.value = null
+  const p = draggedPlayer.value
+  draggedPlayer.value = null
+  if (!p || p.Time === team) return
+
+  const idField = Object.keys(p).find(k => k.toLowerCase() === 'idjogadorpartida') || 'id'
+  const id = p[idField]
+  if (!id) return
+
+  const { error } = await supabase
+    .from('JogadorPartida')
+    .update({ Time: team })
+    .eq(idField, id)
+
+  if (!error) {
+    await fetchMatchData()
+  } else {
+    console.error('Erro ao mover jogador:', error)
+  }
 }
 
 const removeFromMatch = async () => {
@@ -1174,7 +1239,8 @@ const processPlayers = (players) => {
 
 const formatDate = (date) => {
   if (!date) return '--/--/----'
-  return new Date(date).toLocaleDateString('pt-BR')
+  const [year, month, day] = date.split('T')[0].split('-')
+  return `${day}/${month}/${year}`
 }
 
 const formatTime = (seconds) => {
@@ -1606,7 +1672,15 @@ const createNewMatch = async () => {
   flex-direction: column;
   overflow: hidden;
   height: 100%;
+  transition: box-shadow 0.15s;
 }
+
+.team-column.drag-over {
+  box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px rgba(0,0,0,0.4);
+}
+
+.player-item[draggable="true"] { cursor: grab; }
+.player-item[draggable="true"]:active { cursor: grabbing; }
 
 .team-header {
   padding: 10px;
