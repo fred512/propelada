@@ -1059,44 +1059,22 @@ const viewPlayerProfile = async (participante) => {
   selectedProfile.value = null
 
   try {
-    const { data: pelada } = await supabase
-      .from('Pelada')
-      .select('DataInicial, DataFinal')
-      .eq('idPelada', peladaAtual.value.id)
-      .maybeSingle()
-
     const today = new Date()
     const anoAtual = today.getFullYear()
     const dataHoje = `${anoAtual}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-
-    // Estatísticas: desde DataInicial da pelada até hoje
-    const dataIniStats = pelada?.DataInicial || `${anoAtual - 1}-01-01`
-
-    // Pontuação: só o ano corrente
-    const dataIniPontuacao = `${anoAtual}-01-01`
+    const dataIni = `${anoAtual}-01-01`
 
     const idJogador = participante.idParticipante || participante.IdParticipante
 
-    const [{ data: statsProfile }, { data: pontuacaoProfile }] = await Promise.all([
-      supabase.rpc('fn_perfil_jogador', {
+    const { data: profile } = await supabase
+      .rpc('fn_perfil_jogador', {
         p_idjogador: idJogador,
-        p_datainicial: dataIniStats,
+        p_datainicial: dataIni,
         p_datafinal: dataHoje
-      }).maybeSingle(),
-      supabase.rpc('fn_perfil_jogador', {
-        p_idjogador: idJogador,
-        p_datainicial: dataIniPontuacao,
-        p_datafinal: dataHoje
-      }).maybeSingle()
-    ])
+      })
+      .maybeSingle()
 
-    selectedProfile.value = statsProfile ? {
-      ...statsProfile,
-      pontuacao: pontuacaoProfile?.pontuacao ?? 0,
-      DataInicial: dataIniStats,
-      DataFinal: dataHoje,
-      DataInicialPontuacao: dataIniPontuacao,
-    } : null
+    selectedProfile.value = profile
   } catch (e) {
     console.error('Erro ao carregar perfil:', e)
   } finally {
