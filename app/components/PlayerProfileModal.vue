@@ -125,9 +125,16 @@
 
         <!-- Rodapé -->
         <footer class="modal-footer">
-          <span v-if="profile && profile.DataInicial" class="date-range">
-            Dados entre {{ formatDate(profile.DataInicial) }} e {{ formatDate(profile.DataFinal) }}
-          </span>
+          <div v-if="profile && profile.DataInicial" class="date-ranges">
+            <span class="date-range-item">
+              <span class="date-range-label">Estatísticas</span>
+              {{ formatDate(profile.DataInicial) }} até {{ formatDate(profile.DataFinal) }}
+            </span>
+            <span class="date-range-item">
+              <span class="date-range-label">Pontuação</span>
+              {{ formatDate(profile.DataInicialPontuacao) }} até {{ formatDate(profile.DataFinal) }}
+            </span>
+          </div>
         </footer>
       </div>
     </div>
@@ -151,8 +158,8 @@ const close = () => {
 
 const formatDate = (dateStr) => {
   if (!dateStr) return ''
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('pt-BR')
+  const [year, month, day] = dateStr.split('T')[0].split('-')
+  return `${day}/${month}/${year}`
 }
 </script>
 
@@ -348,11 +355,25 @@ const formatDate = (dateStr) => {
   background-color: rgba(0,0,0,0.05);
 }
 
-.date-range {
+.date-ranges {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.date-range-item {
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+
+.date-range-label {
   color: #42A5F5;
-  font-size: 0.75rem;
-  font-weight: 500;
-  opacity: 0.8;
+  font-weight: 700;
+  font-size: 0.7rem;
 }
 
 .loading-state {
