@@ -38,11 +38,18 @@
       </main>
     </div>
 
-    <div 
-      v-show="isSidebarOpen" 
-      class="sidebar-overlay" 
+    <div
+      v-show="isSidebarOpen"
+      class="sidebar-overlay"
       @click="closeSidebar"
     ></div>
+
+    <div class="rotate-overlay">
+      <div class="rotate-content">
+        <div class="rotate-icon">📱</div>
+        <p>Gire o dispositivo para retrato</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -245,6 +252,42 @@ onMounted(async () => {
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 999;
+}
+
+.rotate-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #1A1C1E;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+
+.rotate-content {
+  text-align: center;
+  color: white;
+}
+
+.rotate-icon {
+  font-size: 4rem;
+  animation: rotate-hint 1.5s ease-in-out infinite alternate;
+}
+
+.rotate-content p {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 16px;
+  opacity: 0.85;
+}
+
+@keyframes rotate-hint {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(90deg); }
+}
+
+@media (orientation: landscape) and (max-width: 1024px) {
+  .rotate-overlay { display: flex; }
 }
 
 @media (min-width: 1025px) {
