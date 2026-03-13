@@ -25,8 +25,21 @@
             <Users :size="20" />
             <span class="badge">{{ waitingList?.length || 0 }}</span>
           </button>
-          <button class="icon-btn green" title="Fechar Partida" @click="closeMatch">
+          <button
+            v-if="!partida?.Fechada"
+            class="icon-btn green"
+            title="Encerrar Partida"
+            @click="closeMatch"
+          >
             <CheckSquare :size="20" />
+          </button>
+          <button
+            v-else
+            class="icon-btn orange"
+            title="Reabrir Partida"
+            @click="reopenMatch"
+          >
+            <LockOpen :size="20" />
           </button>
         </div>
       </div>
@@ -57,7 +70,8 @@
         <div class="game-date">
           {{ formatDate(partida?.Data) }}
         </div>
-        <button class="help-btn" @click="showHelp = true">?</button>
+        <div v-if="partida?.Fechada" class="badge-encerrada">Encerrada</div>
+        <button v-else class="help-btn" @click="showHelp = true">?</button>
       </div>
 
       <div class="score-display">
@@ -100,10 +114,10 @@
             <Plus :size="16" />
           </button>
         </div>
-        <div class="players-list">
+        <div class="players-list" @dragover.prevent @drop.prevent="dropOnTeam('1')">
           <div
             v-for="p in team1Players"
-            :key="p.IdJogadorPartida"
+            :key="p.id"
             class="player-item"
             draggable="true"
             @dragstart="dragStart(p)"
@@ -111,6 +125,11 @@
           >
             <div class="player-top">
               <span class="player-name">{{ p.Nome }}</span>
+              <div class="player-cards">
+                <span v-if="p.CartaoAmarelo" class="card-chip card-yellow" />
+                <span v-if="p.CartaoAzul" class="card-chip card-blue" />
+                <span v-if="p.CartaoVermelho" class="card-chip card-red" />
+              </div>
               <button class="btn-perfil" @click="viewPlayerProfile(p)">
                 <User :size="16" />
               </button>
@@ -153,10 +172,10 @@
             <Plus :size="16" />
           </button>
         </div>
-        <div class="players-list">
+        <div class="players-list" @dragover.prevent @drop.prevent="dropOnTeam('2')">
           <div
             v-for="p in team2Players"
-            :key="p.IdJogadorPartida"
+            :key="p.id"
             class="player-item"
             draggable="true"
             @dragstart="dragStart(p)"
@@ -165,6 +184,11 @@
             <!-- Estrutura idêntica ao time 1 -->
             <div class="player-top">
               <span class="player-name">{{ p.Nome }}</span>
+              <div class="player-cards">
+                <span v-if="p.CartaoAmarelo" class="card-chip card-yellow" />
+                <span v-if="p.CartaoAzul" class="card-chip card-blue" />
+                <span v-if="p.CartaoVermelho" class="card-chip card-red" />
+              </div>
               <button class="btn-perfil" @click="viewPlayerProfile(p)">
                 <User :size="16" />
               </button>
@@ -374,6 +398,14 @@
           >{{ selectedPlayer.Substituido === true ? 'Sim' : 'Não' }}</button>
         </div>
 
+        <!-- Trocar Time -->
+        <div class="action-row">
+          <span class="action-label">Time</span>
+          <button class="btn-switch-team" @click="switchTeam">
+            Mover para {{ selectedPlayer.Time === '1' ? 'Time 2 (Amarelo)' : 'Time 1 (Azul)' }}
+          </button>
+        </div>
+
         <!-- Remover -->
         <div class="action-row-danger">
           <button class="btn-remove-player" @click="removeFromMatch">
@@ -437,10 +469,10 @@
                 <span class="s-fp-name" :class="{ 'fp-sub': p.substituido }">{{ p.Nome }}</span>
                 <div class="s-fp-events">
                   <span v-if="(p.Gol||0)>0" class="s-fp-stat">
-                    <SoccerBall style="width:12px;height:12px;color:#1b5e20;" /> {{ p.Gol }}
+                    <SoccerBall style="width:12px;height:12px;" /> {{ p.Gol }}
                   </span>
-                  <span v-if="(p.GolContra||0)>0" class="s-fp-stat">
-                    <SoccerBall style="width:12px;height:12px;color:#b71c1c;" /> {{ p.GolContra }}
+                  <span v-if="(p.GolContra||0)>0" class="s-fp-stat s-fp-stat-contra">
+                    ⚽ GC {{ p.GolContra }}
                   </span>
                   <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
                   <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
@@ -458,10 +490,10 @@
                 <span class="s-fp-name" :class="{ 'fp-sub': p.substituido }">{{ p.Nome }}</span>
                 <div class="s-fp-events">
                   <span v-if="(p.Gol||0)>0" class="s-fp-stat">
-                    <SoccerBall style="width:12px;height:12px;color:#1b5e20;" /> {{ p.Gol }}
+                    <SoccerBall style="width:12px;height:12px;" /> {{ p.Gol }}
                   </span>
-                  <span v-if="(p.GolContra||0)>0" class="s-fp-stat">
-                    <SoccerBall style="width:12px;height:12px;color:#b71c1c;" /> {{ p.GolContra }}
+                  <span v-if="(p.GolContra||0)>0" class="s-fp-stat s-fp-stat-contra">
+                    ⚽ GC {{ p.GolContra }}
                   </span>
                   <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
                   <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
@@ -650,7 +682,7 @@
 import {
   Key, Search, FileText, Plus, Users, CheckSquare,
   Clock, User, RefreshCw, Menu, CloudRain, X,
-  StickyNote, RotateCcw, Calendar, Check, Minus, Trash2
+  StickyNote, RotateCcw, Calendar, Check, Minus, Trash2, LockOpen
 } from 'lucide-vue-next'
 import PlayerProfileModal from '~/components/PlayerProfileModal.vue'
 import SoccerBall from '~/components/SoccerBall.vue'
@@ -1168,10 +1200,27 @@ const dropOnTeam = async (team) => {
     .update({ Time: team })
     .eq(idField, id)
 
+  if (!error) await fetchMatchData()
+  else console.error('Erro ao mover jogador:', error)
+}
+
+const switchTeam = async () => {
+  if (!selectedPlayer.value) return
+  const newTeam = selectedPlayer.value.Time === '1' ? '2' : '1'
+  const idField = Object.keys(selectedPlayer.value).find(k => k.toLowerCase() === 'idjogadorpartida') || 'id'
+  const id = selectedPlayer.value[idField] || selectedPlayer.value._id
+  if (!id) return
+
+  const { error } = await supabase
+    .from('JogadorPartida')
+    .update({ Time: newTeam })
+    .eq(idField, id)
+
   if (!error) {
+    showActionsModal.value = false
     await fetchMatchData()
   } else {
-    console.error('Erro ao mover jogador:', error)
+    actionError.value = `Erro ao trocar time: ${error.message}`
   }
 }
 
@@ -1315,6 +1364,23 @@ const closeMatch = async () => {
 
   await fetchMatchData()
   alert('Partida fechada! Resultado: Time 1 ' + resultado1 + ' / Time 2 ' + resultado2)
+}
+
+const reopenMatch = async () => {
+  if (!partida.value) return
+  if (!confirm('Deseja reabrir a partida? Os resultados registrados serão mantidos até um novo encerramento.')) return
+
+  const { error } = await supabase
+    .from('Partida')
+    .update({ Fechada: false })
+    .eq('idPartida', partida.value.idPartida)
+
+  if (error) {
+    alert('Erro ao reabrir a partida: ' + error.message)
+    return
+  }
+
+  await fetchMatchData()
 }
 
 // Busca de participantes para adicionar à lista de espera
@@ -1517,6 +1583,18 @@ const createNewMatch = async () => {
 .icon-btn.red { background: #D64343; }
 .icon-btn.teal { background: #96D2D9; color: #1a1a2e; }
 .icon-btn.green { background: #1C6A4E; }
+.icon-btn.orange { background: #E65100; }
+
+.badge-encerrada {
+  background: #C62828;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
 
 .icon-btn .badge {
   position: absolute;
@@ -1713,7 +1791,36 @@ const createNewMatch = async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 4px;
 }
+
+.player-cards {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  margin-left: auto;
+  margin-right: 4px;
+}
+
+.card-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+}
+.card-chip::after {
+  content: '';
+  display: block;
+  width: 9px;
+  height: 13px;
+  border-radius: 2px;
+}
+.card-yellow::after { background: #FDD835; }
+.card-blue::after   { background: #2196F3; }
+.card-red::after    { background: #F44336; }
 
 .player-name {
   font-weight: 700;
@@ -2212,6 +2319,19 @@ const createNewMatch = async () => {
   color: white;
 }
 
+.btn-switch-team {
+  background: #1565C0;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+.btn-switch-team:hover { filter: brightness(1.15); }
+
 .btn-remove-player {
   background: #C62828;
   color: white;
@@ -2688,6 +2808,14 @@ const createNewMatch = async () => {
   font-size: 0.75rem;
   font-weight: 700;
   color: var(--text-primary);
+}
+
+.s-fp-stat-contra {
+  background: rgba(198, 40, 40, 0.15);
+  color: #C62828;
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-weight: 800;
 }
 
 .s-fc-chip {
