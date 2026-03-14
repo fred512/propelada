@@ -128,27 +128,34 @@ const charts = ref({
   vermelhos: emptyChart(),
 })
 
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  indexAxis: 'y',
-  layout: {
-    padding: { right: 16, left: 4 },
-  },
-  plugins: {
-    legend: { display: false },
-  },
-  scales: {
-    x: {
-      ticks: { color: '#9CA3AF' },
-      grid: { color: 'rgba(255,255,255,0.05)' },
+const colorMode = useColorMode()
+
+const chartOptions = computed(() => {
+  const isDark = colorMode.value === 'dark'
+  const tickColor = isDark ? '#E5E7EB' : '#374151'
+  const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)'
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+    layout: {
+      padding: { right: 16, left: 4 },
     },
-    y: {
-      ticks: { color: '#E5E7EB', font: { size: 11 }, padding: 8 },
-      grid: { display: false },
+    plugins: {
+      legend: { display: false },
     },
-  },
-}
+    scales: {
+      x: {
+        ticks: { color: tickColor },
+        grid: { color: gridColor },
+      },
+      y: {
+        ticks: { color: tickColor, font: { size: 11 }, padding: 8 },
+        grid: { display: false },
+      },
+    },
+  }
+})
 
 const COLORS = {
   gols:      'rgba(76, 175, 80, 0.8)',
