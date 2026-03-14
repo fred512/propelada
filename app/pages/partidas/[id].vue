@@ -3,30 +3,34 @@
     <header class="sumula-header">
       <div class="header-main-actions">
         <div class="pelada-info">
-          <div class="title-with-key">
-            <button v-if="tipoUsuario === 'Visitante'" class="key-btn" @click="showAccessModal = true">
-              <Key :size="20" />
-            </button>
-            <h3>Súmula do Jogo</h3>
-          </div>
+          <h3 class="sumula-title">Súmula do Jogo</h3>
         </div>
-        
+
         <div class="action-icons">
+          <button
+            v-if="tipoUsuario === 'Visitante'"
+            class="icon-btn key-access"
+            :class="{ 'key-unlocked': acessoLiberado }"
+            :title="acessoLiberado ? 'Acesso liberado' : 'Inserir código de acesso'"
+            @click="!acessoLiberado && (showAccessModal = true)"
+          >
+            <Key :size="20" />
+          </button>
           <button class="icon-btn search-blue" title="Pesquisar Partidas" @click="showSearchModal = true">
             <Search :size="20" />
           </button>
           <button class="icon-btn yellow" title="Resumo da Partida" @click="showSummary = true">
             <FileText :size="20" />
           </button>
-          <button class="icon-btn red" title="Criar Nova Partida" @click="showCreateMatch = true">
+          <button v-if="podeEditar" class="icon-btn red" title="Criar Nova Partida" @click="showCreateMatch = true">
             <Plus :size="20" />
           </button>
-          <button class="icon-btn teal" title="Lista de Espera" @click="targetTeam = ''; showWaitingList = true">
+          <button v-if="podeEditar" class="icon-btn teal" title="Lista de Espera" @click="targetTeam = ''; showWaitingList = true">
             <Users :size="20" />
             <span class="badge">{{ waitingList?.length || 0 }}</span>
           </button>
           <button
-            v-if="!partida?.Fechada"
+            v-if="podeEditar && !partida?.Fechada"
             class="icon-btn green"
             title="Encerrar Partida"
             @click="closeMatch"
@@ -34,7 +38,7 @@
             <CheckSquare :size="20" />
           </button>
           <button
-            v-else
+            v-if="podeEditar && partida?.Fechada"
             class="icon-btn orange"
             title="Reabrir Partida"
             @click="reopenMatch"
@@ -144,7 +148,7 @@
                   <SoccerBall class="soccer-icon goal-icon" /><span>{{ p.GolContra }}</span>
                 </button>
               </div>
-              <div class="player-actions">
+              <div v-if="podeEditar" class="player-actions">
                 <button class="btn-menu-mini" @click="openPlayerActions(p)">
                   <Menu :size="18" />
                 </button>
@@ -203,7 +207,7 @@
                   <SoccerBall class="soccer-icon goal-icon" /><span>{{ p.GolContra }}</span>
                 </button>
               </div>
-              <div class="player-actions">
+              <div v-if="podeEditar" class="player-actions">
                 <button class="btn-menu-mini" @click="openPlayerActions(p)">
                   <Menu :size="18" />
                 </button>
@@ -651,6 +655,36 @@
       </div>
     </div>
 
+    <!-- Modal Código de Acesso -->
+    <div v-if="showAccessModal" class="modal-overlay" @click.self="showAccessModal = false">
+      <div class="modal-content access-modal" @click.stop>
+        <div class="modal-header">
+          <h2 class="access-title"><Key :size="20" /> Código de Acesso</h2>
+          <button class="close-btn" @click="showAccessModal = false"><X :size="24" /></button>
+        </div>
+        <div class="access-body">
+          <p class="access-desc">Digite o código de 6 dígitos fornecido pelo administrador para liberar as ações da partida.</p>
+          <input
+            v-model="acessoCodigoInput"
+            type="text"
+            maxlength="6"
+            placeholder="000000"
+            class="access-input"
+            inputmode="numeric"
+            @keyup.enter="validarCodigo"
+          />
+          <div v-if="acessoError" class="access-error">{{ acessoError }}</div>
+          <button
+            class="btn-access-confirm"
+            :disabled="acessoCodigoInput.length !== 6 || acessoLoading"
+            @click="validarCodigo"
+          >
+            {{ acessoLoading ? 'Verificando...' : 'Confirmar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal de Criação de Partida -->
     <div v-if="showCreateMatch" class="modal-overlay" @click="showCreateMatch = false">
       <div class="modal-content new-match-modal" @click.stop>
@@ -690,7 +724,7 @@ import SoccerBall from '~/components/SoccerBall.vue'
 const route = useRoute()
 const router = useRouter()
 const supabase = useSupabaseClient()
-const { peladaAtual, nomeFormatado, setPelada } = usePelada()
+const { peladaAtual, nomeFormatado, setPelada, isVisitor } = usePelada()
 
 // Estado
 const partida = ref(null)
@@ -700,8 +734,15 @@ const waitingList = ref([])
 const scoreTeam1 = ref(0)
 const scoreTeam2 = ref(0)
 const timeRemaining = ref(0)
-const tipoUsuario = ref('Admin')
+const tipoUsuario = computed(() => isVisitor.value ? 'Visitante' : 'Admin')
 const configCores = ref({ time1: '#2196F3', time2: '#FFEB3B' })
+
+// Controle de acesso visitante
+const acessoLiberado = ref(false)
+const acessoCodigoInput = ref('')
+const acessoError = ref('')
+const acessoLoading = ref(false)
+const podeEditar = computed(() => tipoUsuario.value !== 'Visitante' || acessoLiberado.value)
 const today = new Date()
 const newMatchDate = ref(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`)
 
@@ -879,7 +920,46 @@ const fetchMatchData = async () => {
   }
 }
 
+const validarCodigo = async () => {
+  if (acessoCodigoInput.value.length !== 6) return
+  acessoLoading.value = true
+  acessoError.value = ''
+  try {
+    const { data } = await supabase
+      .from('CodigoAcesso')
+      .select('expira')
+      .eq('idPelada', peladaAtual.value.id)
+      .eq('codigo', acessoCodigoInput.value)
+      .maybeSingle()
+
+    if (!data) { acessoError.value = 'Código inválido.'; return }
+
+    const expiraDate = new Date(data.expira)
+    if (isNaN(expiraDate) || expiraDate <= new Date()) {
+      acessoError.value = 'Código expirado.'; return
+    }
+
+    sessionStorage.setItem('acesso_liberado', JSON.stringify({ expira: data.expira }))
+    acessoLiberado.value = true
+    showAccessModal.value = false
+    acessoCodigoInput.value = ''
+  } finally {
+    acessoLoading.value = false
+  }
+}
+
 onMounted(async () => {
+  // Verifica acesso liberado salvo na sessão
+  if (process.client) {
+    const stored = sessionStorage.getItem('acesso_liberado')
+    if (stored) {
+      try {
+        const { expira } = JSON.parse(stored)
+        if (new Date(expira) > new Date()) acessoLiberado.value = true
+        else sessionStorage.removeItem('acesso_liberado')
+      } catch { sessionStorage.removeItem('acesso_liberado') }
+    }
+  }
   await fetchMatchData()
   resumeIfRunning()
 })
@@ -1065,16 +1145,54 @@ const viewPlayerProfile = async (participante) => {
     const dataIni = `${anoAtual}-01-01`
 
     const idJogador = participante.idParticipante || participante.IdParticipante
+    const idPelada = peladaAtual.value.id
 
-    const { data: profile } = await supabase
-      .rpc('fn_perfil_jogador', {
+    const [{ data: profile }, { data: criterios }, { data: jogadas }, { data: esperas }] = await Promise.all([
+      supabase.rpc('fn_perfil_jogador', {
         p_idjogador: idJogador,
         p_datainicial: dataIni,
         p_datafinal: dataHoje
-      })
-      .maybeSingle()
+      }).maybeSingle(),
 
-    selectedProfile.value = profile
+      supabase.from('Pontuacao').select('*').eq('IdPelada', idPelada).maybeSingle(),
+
+      supabase.from('JogadorPartida')
+        .select('Resultado, CartaoAmarelo, CartaoAzul, CartaoVermelho, partida:idPartida(Data, chuva)')
+        .eq('IdParticipante', idJogador)
+        .eq('IdPelada', idPelada),
+
+      supabase.from('ListaEspera')
+        .select('partida:IdPartida(Data, chuva, IdPelada)')
+        .eq('idParticipante', idJogador)
+    ])
+
+    if (profile && criterios) {
+      const jogadasAno = (jogadas || []).filter(j => {
+        const d = j.partida?.Data
+        return d && d >= dataIni && d <= dataHoje
+      })
+      const esperasAno = (esperas || []).filter(e => {
+        const d = e.partida?.Data
+        return d && d >= dataIni && d <= dataHoje && e.partida?.IdPelada == idPelada
+      })
+
+      const c = criterios
+      const pontuacaoCalculada =
+        jogadasAno.length * (c.PartidasJogadas || 0) +
+        esperasAno.length * (c.PartidasAssistida || 0) +
+        jogadasAno.filter(j => j.partida?.chuva).length * (c.JogadasChuva || 0) +
+        esperasAno.filter(e => e.partida?.chuva).length * (c.AssistidasChuva || 0) +
+        jogadasAno.filter(j => j.Resultado === 'Vitoria').length * (c.Vitorias || 0) +
+        jogadasAno.filter(j => j.Resultado === 'Empate').length * (c.Empates || 0) +
+        jogadasAno.filter(j => j.Resultado === 'Derrota').length * (c.Derrotas || 0) +
+        jogadasAno.filter(j => j.CartaoAmarelo).length * (c.Amarelo || 0) +
+        jogadasAno.filter(j => j.CartaoAzul).length * (c.Azul || 0) +
+        jogadasAno.filter(j => j.CartaoVermelho).length * (c.Vermelho || 0)
+
+      selectedProfile.value = { ...profile, pontuacao: pontuacaoCalculada }
+    } else {
+      selectedProfile.value = profile
+    }
   } catch (e) {
     console.error('Erro ao carregar perfil:', e)
   } finally {
@@ -1083,6 +1201,7 @@ const viewPlayerProfile = async (participante) => {
 }
 
 const openPlayerActions = (p) => {
+  if (!podeEditar.value) return
   // Descobre dinamicamente o nome da coluna PK (IdJogadorPartida, idJogadorPartida, id, etc.)
   const idField = Object.keys(p).find(k => k.toLowerCase() === 'idjogadorpartida') || 'id'
   const resolvedId = p[idField]
@@ -1526,7 +1645,10 @@ const createNewMatch = async () => {
 }
 
 .pelada-info {
-  text-align: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pelada-info h2 {
@@ -1536,25 +1658,95 @@ const createNewMatch = async () => {
   text-decoration: underline;
 }
 
-.title-with-key {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.key-btn {
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  cursor: pointer;
-}
-
-.title-with-key h3 {
+.sumula-title {
   font-size: 1.5rem;
   color: var(--primary-color);
   margin: 4px 0;
+  text-align: center;
 }
+
+.icon-btn.key-access {
+  background: rgba(76, 175, 80, 0.15);
+  color: #81c784;
+  border: 1px solid rgba(76, 175, 80, 0.4);
+}
+
+.icon-btn.key-access.key-unlocked {
+  background: rgba(76, 175, 80, 0.3);
+  color: #4CAF50;
+  cursor: default;
+}
+
+.access-modal {
+  max-width: 320px;
+}
+
+.access-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.access-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.access-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.access-input {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 2px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.access-input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+.access-error {
+  color: #F44336;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.btn-access-confirm {
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--primary-color);
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn-access-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 
 .action-icons {
   display: flex;

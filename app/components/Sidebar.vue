@@ -119,10 +119,14 @@ const menuItems = computed(() => {
 async function handleSignOut() {
   clearPelada()
   isVisitor.value = false
-  await supabase.auth.signOut();
-  console.log('Usuário deslogado, fechando menu');
-  navigateTo("/login");
-  emit("close");
+  if (process.client) {
+    sessionStorage.removeItem('acesso_liberado')
+    Object.keys(localStorage)
+      .filter(key => key.startsWith('sb-'))
+      .forEach(key => localStorage.removeItem(key))
+  }
+  await supabase.auth.signOut()
+  window.location.href = '/login'
 }
 </script>
 
@@ -130,6 +134,7 @@ async function handleSignOut() {
 .sidebar {
   width: 260px;
   height: 100vh;
+  height: 100dvh;
   background-color: var(--bg-secondary);
   display: flex;
   flex-direction: column;
@@ -140,6 +145,10 @@ async function handleSignOut() {
   z-index: 1000;
   transition: transform 0.3s ease;
   border-right: 1px solid var(--border-color);
+}
+
+.sidebar-footer {
+  flex-shrink: 0;
 }
 
 .sidebar-header {

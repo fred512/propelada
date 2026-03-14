@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <!-- Versão do App no topo -->
-    <div class="app-version">Versão :03-02-2026:1.0</div>
+    <div class="app-version">Versão :{{ useRuntimeConfig().public.appVersion }}:1.0</div>
 
     <div class="login-header">
       <div class="logo-area">
@@ -123,6 +123,9 @@ const signupEmail = ref('')
 const signupPassword = ref('')
 const signupSuccess = ref('')
 
+// Safety net: if navigation fails and user is sent back to login, reset loading
+onMounted(() => { loading.value = false })
+
 async function handleLogin() {
   if (!email.value || !password.value) return
 
@@ -137,7 +140,6 @@ async function handleLogin() {
     if (error) throw error
     isVisitor.value = false
     await navigateTo('/')
-    // We don't disable loading here so the spinner persists during page transition
   } catch (e) {
     errorMsg.value = "Erro ao entrar: Verifique suas credenciais."
     loading.value = false
@@ -156,9 +158,9 @@ async function handleGuestLogin() {
     if (error) throw error
 
     isVisitor.value = true
+    if (process.client) sessionStorage.removeItem('acesso_liberado')
     clearPelada()
     await navigateTo('/')
-    // Do not disable loading here so the ui doesn't blink back
   } catch (e) {
     errorMsg.value = "Erro ao entrar como visitante. Tente novamente."
     loading.value = false

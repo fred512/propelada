@@ -22,7 +22,7 @@
           <span class="code-value">{{ codigoAtual.codigo }}</span>
           <span class="code-expiry">
             <Clock :size="14" />
-            Expira em: {{ codigoAtual.expira }}
+            Expira em: {{ formatExpira(codigoAtual.expira) }}
           </span>
         </div>
 
@@ -32,7 +32,7 @@
           <span class="code-value">{{ codigoGerado }}</span>
           <span class="code-expiry">
             <Clock :size="14" />
-            Expira em: {{ expira }}
+            Expira em: {{ formatExpira(expira) }}
           </span>
         </div>
 
@@ -86,7 +86,14 @@ function gerarCodigo6Digitos() {
 function getTimePlus3Hours() {
   const now = new Date()
   now.setHours(now.getHours() + 3)
-  return now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  return now.toISOString()
+}
+
+function formatExpira(str) {
+  if (!str) return ''
+  const d = new Date(str)
+  if (isNaN(d)) return str // fallback para formato antigo (só hora)
+  return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
 }
 
 async function carregarCodigoAtual() {
