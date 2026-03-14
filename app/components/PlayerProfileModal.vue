@@ -26,7 +26,7 @@ const formatDate = (dateStr: string) => {
     :open="isOpen"
     @update:open="(val) => { if (!val) close() }"
     @close="close"
-    class="max-w-[400px] p-0 overflow-hidden rounded-3xl !bg-[var(--bg-secondary)] !top-[4%] !translate-y-0 max-h-[92vh] flex flex-col"
+    class="max-w-[400px] p-0 overflow-hidden rounded-3xl !bg-[var(--bg-secondary)]"
   >
     <!-- Header fixo -->
     <div class="modal-header-custom profile-header-sticky">
@@ -123,6 +123,16 @@ const formatDate = (dateStr: string) => {
 </template>
 
 <style scoped>
+/* Sobrescreve posicionamento e tamanho do DialogContent via Radix */
+:deep([role="dialog"]) {
+  top: 5% !important;
+  transform: translateX(-50%) !important;
+  max-height: 90vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
 .modal-header-custom {
   padding: 16px 16px 0;
   display: flex;
