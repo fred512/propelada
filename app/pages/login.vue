@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div class="login-container" :class="{ 'light-mode': !isDark }">
     <!-- Versão do App + toggle tema no topo -->
     <div class="top-bar">
       <div class="app-version">Versão :{{ useRuntimeConfig().public.appVersion }}:1.0</div>
@@ -437,4 +437,17 @@ async function handleSignup() {
   font-size: 12px;
   text-align: center;
 }
+
+/* ── Modo Claro ── */
+.light-mode { background-color: #e8f5e9; color: #1b5e20; }
+.light-mode .login-card { background-color: #ffffff; border-color: #c8e6c9; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.light-mode .login-subtitle { color: #1c6a4e; }
+.light-mode .input-field input { background-color: #f1f8f3; border-color: #a5d6a7; color: #1b5e20; }
+.light-mode .input-field input::placeholder { color: #4caf50; opacity: 0.7; }
+.light-mode .toggle-password { color: #1c6a4e; }
+.light-mode .forgot-password a { color: #1c6a4e; }
+.light-mode .btn-back { border-color: #a5d6a7; color: #1c6a4e; }
+.light-mode .btn-how-it-works { background-color: #ffffff; color: #1c6a4e; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.light-mode .register-link { color: #1c6a4e; }
+.light-mode .register-link a { color: #1b5e20; }
 </style>
