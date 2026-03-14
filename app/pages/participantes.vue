@@ -53,17 +53,21 @@
           class="participant-item"
           @click="editParticipant(p)"
         >
-          <div class="p-avatar">
-            <img v-if="p.FotoURL" :src="p.FotoURL" />
-            <UserIcon v-else :size="24" />
-          </div>
+          <UiAvatar
+            :src="p.FotoURL || ''"
+            :alt="p.Nome || ''"
+            :fallback="(p.Apelido || p.Nome || '?').charAt(0).toUpperCase()"
+            class="h-10 w-10 shrink-0"
+          />
           <div class="p-info">
             <div class="p-name">{{ p.Nome }}</div>
             <div class="p-sub">{{ p.TipoParticipante }} • {{ p.Posicao }}</div>
           </div>
-          <div class="p-level" :class="p.NivelAtuacao?.toLowerCase()">
+          <UiBadge
+            :variant="p.NivelAtuacao === 'Bom' ? 'success' : p.NivelAtuacao === 'Ruim' ? 'danger' : 'warning'"
+          >
             {{ p.NivelAtuacao }}
-          </div>
+          </UiBadge>
         </div>
         
         <div v-if="!isLoading && participants.length === 0" class="empty-list">
@@ -198,6 +202,8 @@ import {
   UserCircle 
 } from 'lucide-vue-next'
 import PlayerProfileModal from '~/components/PlayerProfileModal.vue'
+import UiAvatar from '@/components/ui/avatar/Avatar.vue'
+import UiBadge from '@/components/ui/badge/Badge.vue'
 
 const supabase = useSupabaseClient()
 const { peladaAtual } = usePelada()

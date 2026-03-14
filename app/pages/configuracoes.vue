@@ -26,9 +26,12 @@
             <transition name="fade">
               <span v-if="toggleMsgOk" class="success-msg" style="margin: 0;">Salvo!</span>
             </transition>
-            <button class="toggle-btn" :class="{ active: exibeEstatistica }" @click="toggleEstatistica" :disabled="isSaving">
-              <span class="toggle-knob"></span>
-            </button>
+            <!-- Switch shadcn-vue -->
+            <UiSwitch
+              :model-value="exibeEstatistica"
+              :disabled="isSaving"
+              @update:model-value="toggleEstatistica"
+            />
           </div>
         </div>
       </div>
@@ -64,93 +67,93 @@
 
     </div>
 
-    <!-- Modal de Cores e Pontuação -->
-    <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
-      <div class="modal-box">
-        <div class="modal-header">
-          <h2 class="modal-title">Cores e Pontuação</h2>
-          <button class="modal-close" @click="showModal = false"><X :size="20" /></button>
+    <!-- Modal shadcn-vue Dialog -->
+    <UiDialog
+      :open="showModal"
+      title="Cores e Pontuação"
+      class="max-w-[600px] max-h-[88vh] overflow-y-auto"
+      @update:open="showModal = $event"
+    >
+      <div class="modal-body">
+
+        <!-- Cores dos Times -->
+        <div class="modal-section">
+          <div class="modal-section-title">
+            <Palette :size="18" />
+            <h3>Cores dos Times</h3>
+          </div>
+          <div class="teams-colors-row">
+            <div class="team-color-block">
+              <label>Time 1</label>
+              <div class="color-swatches">
+                <button
+                  v-for="c in coresPredefinidas"
+                  :key="c.valor"
+                  class="swatch-btn"
+                  :class="{ selected: corTime1 === c.valor }"
+                  :style="{ background: c.valor }"
+                  :title="c.nome"
+                  @click="corTime1 = c.valor"
+                ></button>
+              </div>
+              <span class="team-preview" :style="{ background: corTime1 }">Time 1</span>
+            </div>
+            <div class="team-color-block">
+              <label>Time 2</label>
+              <div class="color-swatches">
+                <button
+                  v-for="c in coresPredefinidas"
+                  :key="c.valor"
+                  class="swatch-btn"
+                  :class="{ selected: corTime2 === c.valor }"
+                  :style="{ background: c.valor }"
+                  :title="c.nome"
+                  @click="corTime2 = c.valor"
+                ></button>
+              </div>
+              <span class="team-preview" :style="{ background: corTime2 }">Time 2</span>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" @click="salvarCores" :disabled="isSaving">
+            <Save :size="14" /> Salvar Cores
+          </button>
+          <div v-if="coresMsgOk" class="success-msg">Cores salvas!</div>
         </div>
 
-        <div class="modal-body">
+        <div class="modal-divider"></div>
 
-          <!-- Cores dos Times -->
-          <div class="modal-section">
-            <div class="modal-section-title">
-              <Palette :size="18" />
-              <h3>Cores dos Times</h3>
+        <!-- Critérios de Pontuação -->
+        <div class="modal-section">
+          <div class="modal-section-title">
+            <Star :size="18" />
+            <h3>Critérios de Pontuação</h3>
+          </div>
+          <p class="section-desc">Defina quantos pontos cada evento vale. Valores negativos deduzem pontos.</p>
+
+          <div class="pontos-grid">
+            <div class="ponto-item" v-for="campo in camposPontuacao" :key="campo.key">
+              <label>{{ campo.label }}</label>
+              <input v-model.number="pontuacao[campo.key]" type="number" min="-99" max="99" />
             </div>
-            <div class="teams-colors-row">
-              <div class="team-color-block">
-                <label>Time 1</label>
-                <div class="color-swatches">
-                  <button
-                    v-for="c in coresPredefinidas"
-                    :key="c.valor"
-                    class="swatch-btn"
-                    :class="{ selected: corTime1 === c.valor }"
-                    :style="{ background: c.valor }"
-                    :title="c.nome"
-                    @click="corTime1 = c.valor"
-                  ></button>
-                </div>
-                <span class="team-preview" :style="{ background: corTime1 }">Time 1</span>
-              </div>
-              <div class="team-color-block">
-                <label>Time 2</label>
-                <div class="color-swatches">
-                  <button
-                    v-for="c in coresPredefinidas"
-                    :key="c.valor"
-                    class="swatch-btn"
-                    :class="{ selected: corTime2 === c.valor }"
-                    :style="{ background: c.valor }"
-                    :title="c.nome"
-                    @click="corTime2 = c.valor"
-                  ></button>
-                </div>
-                <span class="team-preview" :style="{ background: corTime2 }">Time 2</span>
-              </div>
-            </div>
-            <button class="btn btn-primary btn-sm" @click="salvarCores" :disabled="isSaving">
-              <Save :size="14" /> Salvar Cores
-            </button>
-            <div v-if="coresMsgOk" class="success-msg">Cores salvas!</div>
           </div>
 
-          <div class="modal-divider"></div>
-
-          <!-- Critérios de Pontuação -->
-          <div class="modal-section">
-            <div class="modal-section-title">
-              <Star :size="18" />
-              <h3>Critérios de Pontuação</h3>
-            </div>
-            <p class="section-desc">Defina quantos pontos cada evento vale. Valores negativos deduzem pontos.</p>
-
-            <div class="pontos-grid">
-              <div class="ponto-item" v-for="campo in camposPontuacao" :key="campo.key">
-                <label>{{ campo.label }}</label>
-                <input v-model.number="pontuacao[campo.key]" type="number" min="-99" max="99" />
-              </div>
-            </div>
-
-            <button class="btn btn-primary btn-sm" @click="salvarPontuacao" :disabled="isSaving">
-              <Save :size="14" /> {{ isSaving ? 'Salvando...' : 'Salvar Pontuação' }}
-            </button>
-            <div v-if="pontosMsgOk" class="success-msg">Pontuação salva!</div>
-            <div v-if="pontosMsgErr" class="error-msg">{{ pontosMsgErr }}</div>
-          </div>
-
+          <button class="btn btn-primary btn-sm" @click="salvarPontuacao" :disabled="isSaving">
+            <Save :size="14" /> {{ isSaving ? 'Salvando...' : 'Salvar Pontuação' }}
+          </button>
+          <div v-if="pontosMsgOk" class="success-msg">Pontuação salva!</div>
+          <div v-if="pontosMsgErr" class="error-msg">{{ pontosMsgErr }}</div>
         </div>
+
       </div>
-    </div>
+    </UiDialog>
 
   </div>
 </template>
 
 <script setup>
-import { Settings, BarChart2, Calendar, Save, Palette, Star, Sliders, X } from 'lucide-vue-next'
+import { Settings, BarChart2, Calendar, Save, Palette, Star, Sliders } from 'lucide-vue-next'
+import UiSwitch from '@/components/ui/switch/Switch.vue'
+import UiDialog from '@/components/ui/dialog/Dialog.vue'
 
 definePageMeta({ middleware: 'auth' })
 

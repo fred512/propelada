@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite'
 import { execSync } from 'child_process'
+import { fileURLToPath, URL } from 'node:url'
 
 let buildVersion = '?'
 try {
@@ -12,6 +13,10 @@ export default defineNuxtConfig({
   ssr: false,
 
   modules: ['@nuxtjs/supabase', '@nuxtjs/color-mode', '@vite-pwa/nuxt'],
+
+  alias: {
+    '@': fileURLToPath(new URL('./app', import.meta.url)),
+  },
 
   vite: {
     plugins: [tailwindcss()],

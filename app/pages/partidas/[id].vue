@@ -19,7 +19,7 @@
           <button class="icon-btn search-blue" title="Pesquisar Partidas" @click="showSearchModal = true">
             <Search :size="20" />
           </button>
-          <button class="icon-btn yellow" title="Resumo da Partida" @click="showSummary = true">
+          <button class="icon-btn yellow" title="Resumo da Partida" @click="showSummary = true; summaryTab = 'geral'">
             <FileText :size="20" />
           </button>
           <button v-if="podeEditar" class="icon-btn red" title="Criar Nova Partida" @click="showCreateMatch = true">
@@ -395,11 +395,23 @@
         <!-- Substituído -->
         <div class="action-row">
           <span class="action-label"><RefreshCw :size="18" /> Substituído</span>
-          <button
-            class="toggle-sub"
-            :class="{ active: selectedPlayer.Substituido === true }"
-            @click="toggleSubstitution"
-          >{{ selectedPlayer.Substituido === true ? 'Sim' : 'Não' }}</button>
+          <div class="sub-period-group">
+            <button
+              class="sub-period-btn"
+              :class="{ active: !selectedPlayer.Substituido }"
+              @click="setSubstitution(null)"
+            >Não</button>
+            <button
+              class="sub-period-btn"
+              :class="{ active: selectedPlayer.Substituido && selectedPlayer.TempSub === 1 }"
+              @click="setSubstitution(1)"
+            >1º Tempo</button>
+            <button
+              class="sub-period-btn sub-period-btn--2"
+              :class="{ active: selectedPlayer.Substituido && selectedPlayer.TempSub === 2 }"
+              @click="setSubstitution(2)"
+            >Intervalo</button>
+          </div>
         </div>
 
         <!-- Trocar Time -->
@@ -423,90 +435,150 @@
     <div v-if="showSummary" class="modal-overlay" @click="showSummary = false">
       <div class="modal-content summary-modal" @click.stop>
 
-        <!-- Cabeçalho fixo: fechar + info + placar -->
-        <div class="s-fixed-header">
-          <div class="s-tabs-row">
-            <span class="s-modal-title">Resumo da Partida</span>
-            <button class="close-btn" @click="showSummary = false"><X :size="22" /></button>
-          </div>
-
-          <!-- Info da partida -->
-          <div class="s-match-info">
-            <span v-if="partida?.Chuva || partida?.chuva" class="s-rain"><CloudRain :size="28" /></span>
-            <span class="s-info-date">{{ formatDate(partida?.Data) }}</span>
-          </div>
-
-          <!-- Placar geral -->
-          <div class="s-placar-row">
-            <span class="s-placar-label">Placar :</span>
-            <span class="s-placar-num t1-color">{{ scoreTeam1 }}</span>
-            <span class="s-placar-x">x</span>
-            <span class="s-placar-num t2-color">{{ scoreTeam2 }}</span>
-          </div>
-
-          <!-- Placar por Tempo -->
-          <div class="s-half-scores">
-            <div class="s-half-item">
-              <span class="s-half-label">1º Tempo</span>
-              <span class="s-half-num t1-color">{{ score1T1 }}</span>
-              <span class="s-half-x">x</span>
-              <span class="s-half-num t2-color">{{ score1T2 }}</span>
-            </div>
-            <div class="s-half-divider" />
-            <div class="s-half-item">
-              <span class="s-half-label">2º Tempo</span>
-              <span class="s-half-num t1-color">{{ score2T1 }}</span>
-              <span class="s-half-x">x</span>
-              <span class="s-half-num t2-color">{{ score2T2 }}</span>
-            </div>
-          </div>
+        <!-- Barra de abas fixa -->
+        <div class="s-tab-bar">
+          <button class="s-tb-btn" :class="{ active: summaryTab === 'geral' }" @click="summaryTab = 'geral'">Geral</button>
+          <button class="s-tb-btn" :class="{ active: summaryTab === 'primeiro' }" @click="summaryTab = 'primeiro'">1ºTempo</button>
+          <button class="s-tb-btn" :class="{ active: summaryTab === 'segundo' }" @click="summaryTab = 'segundo'">2ºTempo</button>
         </div>
 
-        <!-- Área scrollável: apenas os times -->
+        <!-- Área scrollável -->
         <div class="s-scroll-area">
-          <div class="s-two-cols">
-            <!-- Time 1 (Azul) -->
-            <div class="s-team-card t1-bg">
-              <p class="s-team-card-title">TIME 1</p>
-              <p class="s-section-lbl">Jogadores</p>
-              <div v-for="p in team1Players" :key="'t1p'+p.IdJogadorPartida" class="s-full-player">
-                <span class="s-fp-name" :class="{ 'fp-sub': p.substituido }">{{ p.Nome }}</span>
-                <div class="s-fp-events">
-                  <span v-if="(p.Gol||0)>0" class="s-fp-stat">
-                    <SoccerBall style="width:12px;height:12px;" /> {{ p.Gol }}
-                  </span>
-                  <span v-if="(p.GolContra||0)>0" class="s-fp-stat s-fp-stat-contra">
-                    ⚽ GC {{ p.GolContra }}
-                  </span>
-                  <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
-                  <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
-                  <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
-                  <span v-if="p.substituido" class="s-fp-sub-tag">SUB</span>
-                </div>
-              </div>
-            </div>
 
-            <!-- Time 2 (Amarelo) -->
-            <div class="s-team-card t2-bg">
-              <p class="s-team-card-title">TIME 2</p>
-              <p class="s-section-lbl">Jogadores</p>
-              <div v-for="p in team2Players" :key="'t2p'+p.IdJogadorPartida" class="s-full-player">
-                <span class="s-fp-name" :class="{ 'fp-sub': p.substituido }">{{ p.Nome }}</span>
-                <div class="s-fp-events">
-                  <span v-if="(p.Gol||0)>0" class="s-fp-stat">
-                    <SoccerBall style="width:12px;height:12px;" /> {{ p.Gol }}
-                  </span>
-                  <span v-if="(p.GolContra||0)>0" class="s-fp-stat s-fp-stat-contra">
-                    ⚽ GC {{ p.GolContra }}
-                  </span>
-                  <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
-                  <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
-                  <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
-                  <span v-if="p.substituido" class="s-fp-sub-tag">SUB</span>
+          <!-- ABA GERAL -->
+          <template v-if="summaryTab === 'geral'">
+            <div class="s-content-header">
+              <span class="s-content-title">Resumo da Partida</span>
+              <button class="close-btn" @click="showSummary = false"><X :size="20" /></button>
+            </div>
+            <div class="s-content-date">
+              <CloudRain v-if="partida?.Chuva || partida?.chuva" :size="15" style="vertical-align:middle;margin-right:4px;" />
+              {{ formatDate(partida?.Data) }}
+            </div>
+            <div class="s-content-placar">
+              Placar :
+              <span class="s-cp-num t1-color">{{ scoreTeam1 }}</span>
+              <span class="s-cp-x">x</span>
+              <span class="s-cp-num t2-color">{{ scoreTeam2 }}</span>
+            </div>
+            <div class="s-two-cols">
+              <div class="s-team-card t1-bg">
+                <p class="s-section-lbl">TIME 1</p>
+                <div v-for="p in team1Players" :key="'g1_'+p.id" class="s-full-player">
+                  <span class="s-fp-name" :class="{'fp-sub': p.substituido}">{{ p.Nome }}</span>
+                  <div class="s-fp-events">
+                    <span v-if="p.entrou_no_intervalo" class="s-fp-entry-tag">ENT</span>
+                    <span v-if="(p.Gol||0)>0" class="s-fp-stat">⚽ {{ p.Gol }}</span>
+                    <span v-if="(p.GolContra||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContra }}</span>
+                    <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
+                    <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
+                    <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
+                  </div>
+                </div>
+              </div>
+              <div class="s-team-card t2-bg">
+                <p class="s-section-lbl">TIME 2</p>
+                <div v-for="p in team2Players" :key="'g2_'+p.id" class="s-full-player">
+                  <span class="s-fp-name" :class="{'fp-sub': p.substituido}">{{ p.Nome }}</span>
+                  <div class="s-fp-events">
+                    <span v-if="p.entrou_no_intervalo" class="s-fp-entry-tag">ENT</span>
+                    <span v-if="(p.Gol||0)>0" class="s-fp-stat">⚽ {{ p.Gol }}</span>
+                    <span v-if="(p.GolContra||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContra }}</span>
+                    <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
+                    <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
+                    <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </template>
+
+          <!-- ABA 1º TEMPO -->
+          <template v-else-if="summaryTab === 'primeiro'">
+            <div class="s-content-header">
+              <span class="s-content-title">Resumo 1º Tempo</span>
+              <button class="close-btn" @click="showSummary = false"><X :size="20" /></button>
+            </div>
+            <div class="s-content-date">{{ formatDate(partida?.Data) }}</div>
+            <div class="s-content-placar">
+              Placar :
+              <span class="s-cp-num t1-color">{{ score1T1 }}</span>
+              <span class="s-cp-x">x</span>
+              <span class="s-cp-num t2-color">{{ score1T2 }}</span>
+            </div>
+            <div class="s-two-cols">
+              <div class="s-team-card t1-bg">
+                <p class="s-section-lbl">TIME 1</p>
+                <div v-for="p in team1Primeiro" :key="'1p1_'+p.id" class="s-full-player">
+                  <span class="s-fp-name">{{ p.Nome }}</span>
+                  <div class="s-fp-events">
+                    <span v-if="(p.GolPrimeiro||0)>0" class="s-fp-stat">⚽ {{ p.GolPrimeiro }}</span>
+                    <span v-if="(p.GolContraPrimeiro||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContraPrimeiro }}</span>
+                    <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
+                    <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
+                    <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
+                  </div>
+                </div>
+              </div>
+              <div class="s-team-card t2-bg">
+                <p class="s-section-lbl">TIME 2</p>
+                <div v-for="p in team2Primeiro" :key="'1p2_'+p.id" class="s-full-player">
+                  <span class="s-fp-name">{{ p.Nome }}</span>
+                  <div class="s-fp-events">
+                    <span v-if="(p.GolPrimeiro||0)>0" class="s-fp-stat">⚽ {{ p.GolPrimeiro }}</span>
+                    <span v-if="(p.GolContraPrimeiro||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContraPrimeiro }}</span>
+                    <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
+                    <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
+                    <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- ABA 2º TEMPO -->
+          <template v-else>
+            <div class="s-content-header">
+              <span class="s-content-title">Resumo 2º Tempo</span>
+              <button class="close-btn" @click="showSummary = false"><X :size="20" /></button>
+            </div>
+            <div class="s-content-date">{{ formatDate(partida?.Data) }}</div>
+            <div class="s-content-placar">
+              Placar :
+              <span class="s-cp-num t1-color">{{ score2T1 }}</span>
+              <span class="s-cp-x">x</span>
+              <span class="s-cp-num t2-color">{{ score2T2 }}</span>
+            </div>
+            <div class="s-two-cols">
+              <div class="s-team-card t1-bg">
+                <p class="s-section-lbl">TIME 1</p>
+                <div v-for="p in team1Segundo" :key="'2p1_'+p.id" class="s-full-player">
+                  <span class="s-fp-name">{{ p.Nome }}</span>
+                  <div class="s-fp-events">
+                    <span v-if="(p.GolSegundo||0)>0" class="s-fp-stat">⚽ {{ p.GolSegundo }}</span>
+                    <span v-if="(p.GolContraSegundo||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContraSegundo }}</span>
+                    <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
+                    <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
+                    <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
+                  </div>
+                </div>
+              </div>
+              <div class="s-team-card t2-bg">
+                <p class="s-section-lbl">TIME 2</p>
+                <div v-for="p in team2Segundo" :key="'2p2_'+p.id" class="s-full-player">
+                  <span class="s-fp-name">{{ p.Nome }}</span>
+                  <div class="s-fp-events">
+                    <span v-if="(p.GolSegundo||0)>0" class="s-fp-stat">⚽ {{ p.GolSegundo }}</span>
+                    <span v-if="(p.GolContraSegundo||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContraSegundo }}</span>
+                    <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
+                    <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
+                    <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+
         </div>
 
       </div>
@@ -545,6 +617,64 @@
             {{ showAllMatches ? 'Mostrar últimas 5' : `Ver todas (${matches.length})` }}
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal de Intervalo -->
+    <div v-if="showHalftimeModal" class="modal-overlay">
+      <div class="modal-content ht-modal" @click.stop>
+        <div class="ht-header">
+          <span class="ht-title">Intervalo</span>
+          <button class="close-btn" @click="showHalftimeModal = false"><X :size="22" /></button>
+        </div>
+        <p class="ht-subtitle">Marque quem sai e adicione substitutos antes de iniciar o 2º Tempo.</p>
+
+        <!-- Contadores -->
+        <div class="ht-counts">
+          <span class="ht-count" :class="{ 'ht-count-ok': team1SecondHalfCount === 9, 'ht-count-warn': team1SecondHalfCount !== 9 }">
+            Time 1: {{ team1SecondHalfCount }}/9
+          </span>
+          <span class="ht-count" :class="{ 'ht-count-ok': team2SecondHalfCount === 9, 'ht-count-warn': team2SecondHalfCount !== 9 }">
+            Time 2: {{ team2SecondHalfCount }}/9
+          </span>
+        </div>
+
+        <!-- Times -->
+        <div class="ht-two-cols">
+          <!-- Time 1 -->
+          <div class="ht-team t1-bg">
+            <div class="ht-team-header">
+              <span class="ht-team-label">TIME 1</span>
+              <button class="ht-add-btn" @click="openAddPlayer('1')"><Plus :size="14" /> Espera</button>
+            </div>
+            <div v-for="p in team1Players" :key="'ht1_'+p.id" class="ht-player" :class="{ 'ht-player-out': p.substituido }">
+              <span class="ht-player-name">{{ p.Nome }}</span>
+              <span v-if="p.entrou_no_intervalo" class="ht-entry-tag">ENTROU</span>
+              <button class="ht-leave-btn" :class="{ 'ht-leave-active': p.substituido }" @click="toggleHalftimeLeave(p)">
+                {{ p.substituido ? 'Volta' : 'Sai' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Time 2 -->
+          <div class="ht-team t2-bg">
+            <div class="ht-team-header">
+              <span class="ht-team-label">TIME 2</span>
+              <button class="ht-add-btn" @click="openAddPlayer('2')"><Plus :size="14" /> Espera</button>
+            </div>
+            <div v-for="p in team2Players" :key="'ht2_'+p.id" class="ht-player" :class="{ 'ht-player-out': p.substituido }">
+              <span class="ht-player-name">{{ p.Nome }}</span>
+              <span v-if="p.entrou_no_intervalo" class="ht-entry-tag">ENTROU</span>
+              <button class="ht-leave-btn" :class="{ 'ht-leave-active': p.substituido }" @click="toggleHalftimeLeave(p)">
+                {{ p.substituido ? 'Volta' : 'Sai' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button class="ht-start-btn" @click="startSecondHalf">
+          Iniciar 2º Tempo
+        </button>
       </div>
     </div>
 
@@ -750,6 +880,7 @@ const newMatchDate = ref(`${today.getFullYear()}-${String(today.getMonth() + 1).
 const showHelp = ref(false)
 const showSummary = ref(false)
 const showWaitingList = ref(false)
+const showHalftimeModal = ref(false)
 const showAccessModal = ref(false)
 const showCreateMatch = ref(false)
 const showSearchModal = ref(false)
@@ -811,22 +942,40 @@ const handleTimerClick = () => {
   }
 }
 
-const toggleHalf = async () => {
-  if (!partida.value) return
+const toggleHalf = () => {
+  if (!partida.value || !podeEditar.value) return
   const current = (partida.value.Status || '').trim()
-  const newStatus = current === '2\u00ba Tempo' ? '1\u00ba Tempo' : '2\u00ba Tempo'
+  if (current === '2º Tempo') {
+    saveStatus('1º Tempo')
+  } else {
+    showHalftimeModal.value = true
+  }
+}
 
-  // Atualiza localmente de forma imediata
+const saveStatus = async (newStatus) => {
   partida.value.Status = newStatus
   timerStartTime.value = getCurrentTime()
   resetTimer()
-
-  // Salva no banco (mesmo padrão do toggleRain)
   const { error } = await supabase
     .from('Partida')
     .update({ Status: newStatus })
     .eq('idPartida', partida.value.idPartida)
   if (error) console.error('Erro ao salvar status:', JSON.stringify(error))
+}
+
+const startSecondHalf = async () => {
+  await saveStatus('2º Tempo')
+  showHalftimeModal.value = false
+}
+
+const toggleHalftimeLeave = async (player) => {
+  const newVal = !player.substituido
+  const id = player.id || player.IdJogadorPartida || player.idJogadorPartida
+  const { error } = await supabase
+    .from('JogadorPartida')
+    .update({ substituido: newVal })
+    .eq('id', id)
+  if (!error) player.substituido = newVal
 }
 
 onUnmounted(() => {
@@ -1031,6 +1180,26 @@ const score2T1 = computed(() => team1Players.value.reduce((acc, p) => acc + getG
 const score2T2 = computed(() => team2Players.value.reduce((acc, p) => acc + getGol2T(p), 0)
   + team1Players.value.reduce((acc, p) => acc + getGolContra2T(p), 0))
 
+// Escalação por período
+// 1º tempo: quem NÃO entrou no intervalo (todos que começaram)
+const team1Primeiro = computed(() =>
+  team1Players.value.filter(p => !p.entrou_no_intervalo)
+)
+const team2Primeiro = computed(() =>
+  team2Players.value.filter(p => !p.entrou_no_intervalo)
+)
+// 2º tempo: quem não foi substituído (incluindo quem entrou no intervalo)
+const team1Segundo = computed(() =>
+  team1Players.value.filter(p => !p.substituido)
+)
+const team2Segundo = computed(() =>
+  team2Players.value.filter(p => !p.substituido)
+)
+
+// Contagem para o 2º tempo (não substituídos = ficam + entram)
+const team1SecondHalfCount = computed(() => team1Players.value.filter(p => !p.substituido).length)
+const team2SecondHalfCount = computed(() => team2Players.value.filter(p => !p.substituido).length)
+
 const selectMatch = (id) => {
   showSearchModal.value = false
   router.push(`/partidas/${id}`)
@@ -1059,6 +1228,8 @@ const addSelectedToTeam = async () => {
   if (!partida.value || selectedWaitingPlayers.value.size === 0) return
   isAddingToTeam.value = true
 
+  const status = (partida.value?.Status || '').trim()
+  const entrouIntervalo = showHalftimeModal.value || status === '2\u00ba Tempo'
   const rows = [...selectedWaitingPlayers.value.values()].map(w => ({
     idPartida: partida.value.idPartida,
     IdPelada: partida.value.IdPelada,
@@ -1069,7 +1240,8 @@ const addSelectedToTeam = async () => {
     CartaoAmarelo: false,
     CartaoAzul: false,
     CartaoVermelho: false,
-    substituido: false
+    substituido: false,
+    entrou_no_intervalo: entrouIntervalo
   }))
 
   console.log('addSelectedToTeam rows:', JSON.stringify(rows))
@@ -1210,7 +1382,8 @@ const openPlayerActions = (p) => {
     ...p,
     _idField: idField,
     _id: resolvedId,
-    Substituido: p.substituido === true || p.substituido === 1
+    Substituido: p.substituido === true || p.substituido === 1,
+    TempSub: p.tempo_substituido ?? (p.substituido === true ? 2 : null)
   }
   actionError.value = ''
   showActionsModal.value = true
@@ -1288,6 +1461,18 @@ const changeGoalContra = async (delta) => {
 const toggleCard = async (cardField) => {
   const newVal = !selectedPlayer.value[cardField]
   await updatePlayerStat(cardField, newVal)
+}
+
+const setSubstitution = async (tempo) => {
+  // tempo: null = não substituído | 1 = saiu no 1ºT | 2 = saiu no intervalo
+  const isSub = tempo !== null
+  await updatePlayerStats({
+    substituido: isSub,
+    tempo_substituido: tempo
+  })
+  selectedPlayer.value.Substituido = isSub
+  selectedPlayer.value.TempSub = tempo
+  if (isSub) showActionsModal.value = false
 }
 
 const toggleSubstitution = async () => {
@@ -2507,6 +2692,34 @@ const createNewMatch = async () => {
   color: white;
 }
 
+.sub-period-group {
+  display: flex;
+  gap: 6px;
+}
+
+.sub-period-btn {
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sub-period-btn.active {
+  background: #455A64;
+  border-color: #607D8B;
+  color: white;
+}
+
+.sub-period-btn--2.active {
+  background: #37474F;
+  border-color: #546E7A;
+}
+
 .btn-switch-team {
   background: #1565C0;
   color: white;
@@ -2815,10 +3028,30 @@ const createNewMatch = async () => {
   flex-direction: column !important;
 }
 
-.s-fixed-header {
+/* Barra de abas fixa */
+.s-tab-bar {
   flex-shrink: 0;
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.s-tb-btn {
+  flex: 1;
+  padding: 12px 0;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+}
+
+.s-tb-btn.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
 }
 
 .s-scroll-area {
@@ -2828,17 +3061,94 @@ const createNewMatch = async () => {
   padding: 12px;
 }
 
-.s-tabs-row {
+/* Cabeçalho dentro de cada aba */
+.s-content-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px 10px;
+  margin-bottom: 2px;
 }
 
-.s-modal-title {
-  font-size: 1.1rem;
+.s-content-title {
+  font-size: 1.05rem;
   font-weight: 800;
   color: var(--primary-color);
+}
+
+.s-content-date {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 8px;
+}
+
+.s-content-placar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.s-cp-num {
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+  min-width: 32px;
+  text-align: center;
+}
+
+.s-cp-x {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  opacity: 0.4;
+  font-weight: 900;
+}
+
+/* Linhas de evento (gols/cartões) */
+.s-evt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  gap: 6px;
+}
+
+.s-evt-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.s-evt-num {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.s-evt-gc {
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: rgba(198,40,40,0.15);
+  color: #C62828;
+  border-radius: 4px;
+  padding: 1px 4px;
+  flex-shrink: 0;
+}
+
+.s-section-mt {
+  margin-top: 10px;
 }
 
 .s-tabs {
@@ -3027,6 +3337,88 @@ const createNewMatch = async () => {
   border-radius: 3px;
 }
 
+.s-fp-entry-tag {
+  font-size: 0.55rem;
+  font-weight: 800;
+  background: rgba(76,175,80,0.2);
+  color: #388E3C;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* Abas do resumo */
+.s-tab-btns {
+  display: flex;
+  gap: 6px;
+  padding: 0 16px 12px;
+}
+
+.s-tab-btn {
+  flex: 1;
+  padding: 7px 0;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.s-tab-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+/* Vista por tempo */
+.s-tempo-view {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 0 8px;
+}
+
+.s-half-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.s-half-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+}
+
+.s-half-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.s-half-badge-1 {
+  background: rgba(21,101,192,0.18);
+  color: #1565C0;
+}
+
+.s-half-badge-2 {
+  background: rgba(230,81,0,0.15);
+  color: #E65100;
+}
+
+.s-half-score-mini {
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
 .s-half-placeholder {
   display: flex;
   flex-direction: column;
@@ -3096,6 +3488,159 @@ const createNewMatch = async () => {
   background: var(--border-color);
   opacity: 0.5;
 }
+
+/* ── Halftime modal ─────────────────────────────── */
+.ht-modal {
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px !important;
+}
+
+.ht-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ht-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--primary-color);
+}
+
+.ht-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: -4px 0 0;
+}
+
+.ht-counts {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.ht-count {
+  font-size: 0.85rem;
+  font-weight: 800;
+  padding: 5px 14px;
+  border-radius: 20px;
+}
+
+.ht-count-ok  { background: rgba(76,175,80,0.18); color: #388E3C; }
+.ht-count-warn { background: rgba(255,152,0,0.18); color: #E65100; }
+
+.ht-two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ht-team {
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.ht-team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ht-team-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+}
+
+.ht-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.ht-player {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.ht-player-out .ht-player-name {
+  text-decoration: line-through;
+  opacity: 0.45;
+}
+
+.ht-player-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ht-entry-tag {
+  font-size: 0.55rem;
+  font-weight: 800;
+  background: rgba(76,175,80,0.2);
+  color: #388E3C;
+  padding: 1px 4px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.ht-leave-btn {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.ht-leave-active {
+  background: rgba(96,125,139,0.25);
+  border-color: #607D8B;
+  color: #607D8B;
+}
+
+.ht-start-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+.ht-start-btn:hover { filter: brightness(1.1); }
 
 /* ── Participant search modal ───────────────────── */
 .participant-search-modal {
