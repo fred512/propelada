@@ -31,6 +31,7 @@ const formatDate = (dateStr: string) => {
     <!-- Header fixo -->
     <div class="modal-header-custom profile-header-sticky">
       <h2 class="modal-title-custom">Perfil Jogador</h2>
+      <button class="profile-close-btn" @click="close"><X :size="22" /></button>
     </div>
 
     <!-- Conteúdo scrollável -->
@@ -134,11 +135,23 @@ const formatDate = (dateStr: string) => {
 }
 
 .modal-header-custom {
-  padding: 16px 16px 0;
+  padding: 12px 16px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
 }
+
+.profile-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 6px;
+}
+.profile-close-btn:hover { color: var(--text-primary); }
 
 .modal-title-custom {
   color: var(--secondary-color);
