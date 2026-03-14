@@ -26,96 +26,99 @@ const formatDate = (dateStr: string) => {
     :open="isOpen"
     @update:open="(val) => { if (!val) close() }"
     @close="close"
-    class="max-w-[400px] p-0 overflow-hidden rounded-3xl !bg-[var(--bg-secondary)]"
+    class="max-w-[400px] p-0 overflow-hidden rounded-3xl !bg-[var(--bg-secondary)] !top-[4%] !translate-y-0 max-h-[92vh] flex flex-col"
   >
-    <!-- Header -->
-    <div class="modal-header-custom">
+    <!-- Header fixo -->
+    <div class="modal-header-custom profile-header-sticky">
       <h2 class="modal-title-custom">Perfil Jogador</h2>
     </div>
 
-    <div v-if="isLoading" class="loading-state">
-      Carregando perfil...
-    </div>
+    <!-- Conteúdo scrollável -->
+    <div class="profile-scroll-body">
+      <div v-if="isLoading" class="loading-state">
+        Carregando perfil...
+      </div>
 
-    <div v-else-if="profile" class="modal-body">
-      <!-- Foto e Nomes -->
-      <div class="profile-intro">
-        <div class="photo-container">
-          <img
-            :src="profile.foto_url || '/images/default-avatar.png'"
-            :alt="profile.nome_jogador"
-            class="profile-photo"
-          />
-        </div>
-        <div class="name-section">
-          <div class="nickname">
-            <User :size="32" class="icon-inline" />
-            <span>{{ profile.apelido_jogador || profile.nome_jogador }}</span>
+      <div v-else-if="profile" class="modal-body">
+        <!-- Foto e Nomes -->
+        <div class="profile-intro">
+          <div class="photo-container">
+            <img
+              :src="profile.foto_url || '/images/default-avatar.png'"
+              :alt="profile.nome_jogador"
+              class="profile-photo"
+            />
           </div>
-          <div class="full-name">
-            <Contact :size="20" class="icon-inline" />
-            <span>{{ profile.nome_jogador }}</span>
+          <div class="name-section">
+            <div class="nickname">
+              <User :size="32" class="icon-inline" />
+              <span>{{ profile.apelido_jogador || profile.nome_jogador }}</span>
+            </div>
+            <div class="full-name">
+              <Contact :size="20" class="icon-inline" />
+              <span>{{ profile.nome_jogador }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estatísticas em Linhas -->
+        <div class="stats-list">
+          <!-- Gols -->
+          <div class="stat-row">
+            <div class="stat-values">
+              <div class="stat-item green"><Target :size="24" /><span>{{ profile.numero_de_gols }}</span></div>
+              <div class="stat-item red"><Target :size="24" /><span>{{ profile.numero_de_gols_contra }}</span></div>
+            </div>
+            <span class="stat-label">Gols</span>
+          </div>
+
+          <!-- Cartões -->
+          <div class="stat-row">
+            <div class="stat-values">
+              <div class="card-item yellow"><Square :size="24" fill="currentColor" /><span class="card-badge">{{ profile.total_cartao_amarelo }}</span></div>
+              <div class="card-item blue"><Square :size="24" fill="currentColor" /><span class="card-badge">{{ profile.total_cartao_azul }}</span></div>
+              <div class="card-item red"><Square :size="24" fill="currentColor" /><span class="card-badge">{{ profile.total_cartao_vermelho }}</span></div>
+            </div>
+            <span class="stat-label">Cartões</span>
+          </div>
+
+          <!-- Presenças -->
+          <div class="stat-row">
+            <div class="stat-values">
+              <div class="stat-item blue"><ThumbsUp :size="24" /><span>{{ profile.qtd_participacoes }}</span></div>
+              <div class="stat-item red"><ThumbsDown :size="24" /><span>{{ profile.qtd_ausencias }}</span></div>
+              <div class="stat-item light-blue"><CloudRain :size="24" /><span>{{ profile.qtd_partidas_chuva }}</span></div>
+            </div>
+            <span class="stat-label">Presenças</span>
+          </div>
+
+          <!-- Resultados -->
+          <div class="stat-row">
+            <div class="stat-values">
+              <div class="stat-item gold"><Trophy :size="24" /><span>{{ profile.vitorias }}</span></div>
+              <div class="stat-item red"><Frown :size="24" /><span>{{ profile.derrotas }}</span></div>
+              <div class="stat-item sky"><Square :size="24" /><span>{{ profile.empates }}</span></div>
+            </div>
+            <span class="stat-label">Resultados</span>
+          </div>
+
+          <!-- Pontuação -->
+          <div class="stat-row no-border">
+            <div class="stat-values">
+              <div class="stat-item primary"><Zap :size="24" fill="currentColor" /><span class="score-value">{{ profile.pontuacao }}</span></div>
+            </div>
+            <span class="stat-label">Pontuação</span>
           </div>
         </div>
       </div>
 
-      <!-- Estatísticas em Linhas -->
-      <div class="stats-list">
-        <!-- Gols -->
-        <div class="stat-row">
-          <div class="stat-values">
-            <div class="stat-item green"><Target :size="24" /><span>{{ profile.numero_de_gols }}</span></div>
-            <div class="stat-item red"><Target :size="24" /><span>{{ profile.numero_de_gols_contra }}</span></div>
-          </div>
-          <span class="stat-label">Gols</span>
-        </div>
-
-        <!-- Cartões -->
-        <div class="stat-row">
-          <div class="stat-values">
-            <div class="card-item yellow"><Square :size="24" fill="currentColor" /><span class="card-badge">{{ profile.total_cartao_amarelo }}</span></div>
-            <div class="card-item blue"><Square :size="24" fill="currentColor" /><span class="card-badge">{{ profile.total_cartao_azul }}</span></div>
-            <div class="card-item red"><Square :size="24" fill="currentColor" /><span class="card-badge">{{ profile.total_cartao_vermelho }}</span></div>
-          </div>
-          <span class="stat-label">Cartões</span>
-        </div>
-
-        <!-- Presenças -->
-        <div class="stat-row">
-          <div class="stat-values">
-            <div class="stat-item blue"><ThumbsUp :size="24" /><span>{{ profile.qtd_participacoes }}</span></div>
-            <div class="stat-item red"><ThumbsDown :size="24" /><span>{{ profile.qtd_ausencias }}</span></div>
-            <div class="stat-item light-blue"><CloudRain :size="24" /><span>{{ profile.qtd_partidas_chuva }}</span></div>
-          </div>
-          <span class="stat-label">Presenças</span>
-        </div>
-
-        <!-- Resultados -->
-        <div class="stat-row">
-          <div class="stat-values">
-            <div class="stat-item gold"><Trophy :size="24" /><span>{{ profile.vitorias }}</span></div>
-            <div class="stat-item red"><Frown :size="24" /><span>{{ profile.derrotas }}</span></div>
-            <div class="stat-item sky"><Square :size="24" /><span>{{ profile.empates }}</span></div>
-          </div>
-          <span class="stat-label">Resultados</span>
-        </div>
-
-        <!-- Pontuação -->
-        <div class="stat-row no-border">
-          <div class="stat-values">
-            <div class="stat-item primary"><Zap :size="24" fill="currentColor" /><span class="score-value">{{ profile.pontuacao }}</span></div>
-          </div>
-          <span class="stat-label">Pontuação</span>
-        </div>
-      </div>
+      <!-- Rodapé -->
+      <footer v-if="profile?.DataInicial" class="modal-footer">
+        <span class="date-range">
+          Dados de {{ formatDate(profile.DataInicial) }} até {{ formatDate(profile.DataFinal) }}
+        </span>
+      </footer>
     </div>
-
-    <!-- Rodapé -->
-    <footer v-if="profile?.DataInicial" class="modal-footer">
-      <span class="date-range">
-        Dados de {{ formatDate(profile.DataInicial) }} até {{ formatDate(profile.DataFinal) }}
-      </span>
-    </footer>
   </Dialog>
 </template>
 
@@ -134,6 +137,20 @@ const formatDate = (dateStr: string) => {
   text-decoration: underline;
   text-underline-offset: 8px;
   margin: 0;
+}
+
+.profile-header-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.profile-scroll-body {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .modal-body {
