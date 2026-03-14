@@ -26,7 +26,7 @@ const formatDate = (dateStr: string) => {
     :open="isOpen"
     @update:open="(val) => { if (!val) close() }"
     @close="close"
-    class="max-w-[400px] p-0 overflow-hidden rounded-3xl"
+    class="max-w-[400px] p-0 overflow-hidden rounded-3xl !bg-[var(--bg-secondary)]"
   >
     <!-- Header -->
     <div class="modal-header-custom">
