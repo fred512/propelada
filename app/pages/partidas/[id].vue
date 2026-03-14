@@ -141,7 +141,7 @@
             <div v-if="p.substituido" class="sub-indicator">Substituído</div>
             <div class="player-bottom">
               <div class="player-stats">
-                <button class="stat-goal-btn" @click="openPlayerActions(p)">
+                <button class="stat-goal-btn" @click="quickAddGoal(p)">
                   <SoccerBall class="soccer-icon goal-icon" /><span>{{ p.Gol || 0 }}</span>
                 </button>
                 <button v-if="(p.GolContra || 0) > 0" class="stat-goal-btn" style="color: #F44336;" @click="openPlayerActions(p)">
@@ -200,7 +200,7 @@
             <div v-if="p.substituido" class="sub-indicator">Substituído</div>
             <div class="player-bottom">
               <div class="player-stats">
-                <button class="stat-goal-btn" @click="openPlayerActions(p)">
+                <button class="stat-goal-btn" @click="quickAddGoal(p)">
                   <SoccerBall class="soccer-icon goal-icon" /><span>{{ p.Gol || 0 }}</span>
                 </button>
                 <button v-if="(p.GolContra || 0) > 0" class="stat-goal-btn" style="color: #F44336;" @click="openPlayerActions(p)">
@@ -1456,6 +1456,23 @@ const changeGoalContra = async (delta) => {
   const halfField = isFirstHalf ? 'GolContraPrimeiro' : 'GolContraSegundo'
   const newHalfVal = Math.max(0, (selectedPlayer.value[halfField] || 0) + delta)
   await updatePlayerStats({ GolContra: newGolContra, [halfField]: newHalfVal })
+}
+
+const quickAddGoal = async (p) => {
+  if (!podeEditar.value) return
+  const idField = Object.keys(p).find(k => k.toLowerCase() === 'idjogadorpartida') || 'id'
+  const id = p[idField]
+  if (!id) return
+  const newGol = (p.Gol || 0) + 1
+  const isFirstHalf = (partida.value.Status || '').trim() !== '2º Tempo'
+  const halfField = isFirstHalf ? 'GolPrimeiro' : 'GolSegundo'
+  const newHalfVal = (p[halfField] || 0) + 1
+  const { error } = await supabase.from('JogadorPartida').update({ Gol: newGol, [halfField]: newHalfVal }).eq(idField, id)
+  if (!error) {
+    p.Gol = newGol
+    p[halfField] = newHalfVal
+    await fetchMatchData()
+  }
 }
 
 const toggleCard = async (cardField) => {
