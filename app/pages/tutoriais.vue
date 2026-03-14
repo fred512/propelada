@@ -137,12 +137,21 @@ function closeVideo() {
   justify-content: center;
   background: rgba(0,0,0,0.35);
   color: white;
-  opacity: 1;
+  opacity: 0;
   transition: opacity 0.2s;
+  pointer-events: none;
 }
 
+/* Desktop: mostrar no hover */
 .tutorial-card:hover .play-overlay {
-  background: rgba(0,0,0,0.5);
+  opacity: 1;
+}
+
+/* Mobile/touch: sempre visível */
+@media (hover: none) {
+  .play-overlay {
+    opacity: 1;
+  }
 }
 
 .tutorial-info {
