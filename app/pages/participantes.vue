@@ -355,35 +355,58 @@ const saveParticipant = async () => {
 
 const openProfile = async (idJogador) => {
   if (!idJogador) return
-  
+
   isProfileLoading.value = true
   isProfileModalOpen.value = true
   selectedProfile.value = null
 
   try {
-    // 1. Buscar datas configuradas da pelada
-    const { data: pelada } = await supabase
-      .from('Pelada')
-      .select('DataInicial, DataFinal')
-      .eq('idPelada', peladaAtual.value.id)
-      .maybeSingle()
+    const today = new Date()
+    const anoAtual = today.getFullYear()
+    const dataIni = `${anoAtual}-01-01`
+    const dataHoje = today.toISOString().split('T')[0]
+    const idPelada = peladaAtual.value.id
 
-    const dataIni = pelada?.DataInicial || `${new Date().getFullYear()}-01-01`
-    const dataFim = pelada?.DataFinal || new Date().toISOString().split('T')[0]
-
-    // 2. Buscar perfil via RPC
-    const { data: profileData, error: profileError } = await supabase
-      .rpc('fn_perfil_jogador', {
+    const [{ data: profile }, { data: criterios }, { data: jogadas }, { data: esperas }] = await Promise.all([
+      supabase.rpc('fn_perfil_jogador', {
         p_idjogador: idJogador,
         p_datainicial: dataIni,
-        p_datafinal: dataFim
-      })
-      .maybeSingle()
+        p_datafinal: dataHoje
+      }).maybeSingle(),
+      supabase.from('Pontuacao').select('*').eq('IdPelada', idPelada).maybeSingle(),
+      supabase.from('JogadorPartida')
+        .select('Resultado, CartaoAmarelo, CartaoAzul, CartaoVermelho, partida:idPartida(Data, chuva)')
+        .eq('IdParticipante', idJogador)
+        .eq('IdPelada', idPelada),
+      supabase.from('ListaEspera')
+        .select('partida:IdPartida(Data, chuva, IdPelada)')
+        .eq('idParticipante', idJogador)
+    ])
 
-    if (profileError) {
-      console.error('Erro ao buscar perfil do jogador:', profileError)
-    } else if (profileData) {
-      selectedProfile.value = profileData
+    if (profile && criterios) {
+      const jogadasAno = (jogadas || []).filter(j => {
+        const d = j.partida?.Data
+        return d && d >= dataIni && d <= dataHoje
+      })
+      const esperasAno = (esperas || []).filter(e => {
+        const d = e.partida?.Data
+        return d && d >= dataIni && d <= dataHoje && e.partida?.IdPelada == idPelada
+      })
+      const c = criterios
+      const pontuacaoCalculada =
+        jogadasAno.length                                      * (c.PartidasJogadas  || 0) +
+        esperasAno.length                                      * (c.PartidasAssistida || 0) +
+        jogadasAno.filter(j => j.partida?.chuva).length       * (c.JogadasChuva     || 0) +
+        esperasAno.filter(e => e.partida?.chuva).length       * (c.AssistidasChuva  || 0) +
+        jogadasAno.filter(j => j.Resultado === 'Vitoria').length  * (c.Vitorias     || 0) +
+        jogadasAno.filter(j => j.Resultado === 'Empate').length   * (c.Empates      || 0) +
+        jogadasAno.filter(j => j.Resultado === 'Derrota').length  * (c.Derrotas     || 0) +
+        jogadasAno.filter(j => j.CartaoAmarelo).length         * (c.Amarelo         || 0) +
+        jogadasAno.filter(j => j.CartaoAzul).length            * (c.Azul            || 0) +
+        jogadasAno.filter(j => j.CartaoVermelho).length        * (c.Vermelho        || 0)
+      selectedProfile.value = { ...profile, pontuacao: pontuacaoCalculada }
+    } else {
+      selectedProfile.value = profile
     }
   } catch (err) {
     console.error('Falha ao carregar perfil:', err)
