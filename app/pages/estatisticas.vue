@@ -353,7 +353,7 @@ watch(() => peladaAtual.value.id, (newId) => {
   .charts-grid { grid-template-columns: 1fr 1fr; }
 }
 
-.chart-card { padding: 16px; }
+.chart-card { padding: 5px; width: 99%; }
 
 .chart-title {
   font-size: 1rem;
