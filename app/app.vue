@@ -6,6 +6,22 @@
   </div>
 </template>
 
+<script setup>
+// Detecta bfcache (botão voltar do navegador) e revalida a sessão
+if (process.client) {
+  window.addEventListener('pageshow', async (event) => {
+    if (event.persisted) {
+      const supabase = useSupabaseClient()
+      const isVisitor = useCookie('isVisitor')
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session && !isVisitor.value) {
+        window.location.href = '/login'
+      }
+    }
+  })
+}
+</script>
+
 <style>
 @import "tailwindcss";
 
