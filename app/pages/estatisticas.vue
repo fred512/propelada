@@ -132,6 +132,9 @@ const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   indexAxis: 'y',
+  layout: {
+    padding: { right: 16, left: 4 },
+  },
   plugins: {
     legend: { display: false },
   },
@@ -141,7 +144,7 @@ const chartOptions = {
       grid: { color: 'rgba(255,255,255,0.05)' },
     },
     y: {
-      ticks: { color: '#E5E7EB', font: { size: 11 } },
+      ticks: { color: '#E5E7EB', font: { size: 11 }, padding: 8 },
       grid: { display: false },
     },
   },
