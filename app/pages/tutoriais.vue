@@ -13,7 +13,7 @@
       >
         <div class="thumbnail">
           <img
-            :src="`https://img.youtube.com/vi/${tutorial.videoId}/hqdefault.jpg`"
+            :src="`https://img.youtube.com/vi/${tutorial.videoId}/mqdefault.jpg`"
             :alt="tutorial.titulo"
           />
           <div class="play-overlay">
@@ -86,8 +86,14 @@ function closeVideo() {
 
 .tutoriais-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: 1fr;
   gap: 20px;
+}
+
+@media (min-width: 600px) {
+  .tutoriais-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
 }
 
 .card {
@@ -131,12 +137,12 @@ function closeVideo() {
   justify-content: center;
   background: rgba(0,0,0,0.35);
   color: white;
-  opacity: 0;
+  opacity: 1;
   transition: opacity 0.2s;
 }
 
 .tutorial-card:hover .play-overlay {
-  opacity: 1;
+  background: rgba(0,0,0,0.5);
 }
 
 .tutorial-info {
