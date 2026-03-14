@@ -1,7 +1,13 @@
 <template>
   <div class="login-container">
-    <!-- Versão do App no topo -->
-    <div class="app-version">Versão :{{ useRuntimeConfig().public.appVersion }}:1.0</div>
+    <!-- Versão do App + toggle tema no topo -->
+    <div class="top-bar">
+      <div class="app-version">Versão :{{ useRuntimeConfig().public.appVersion }}:1.0</div>
+      <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Modo claro' : 'Modo escuro'">
+        <Sun v-if="isDark" :size="18" />
+        <Moon v-else :size="18" />
+      </button>
+    </div>
 
     <div class="login-header">
       <div class="logo-area">
@@ -102,7 +108,13 @@
 </template>
 
 <script setup>
-import { HelpCircle, Eye, EyeOff, PlayCircle } from 'lucide-vue-next'
+import { HelpCircle, Eye, EyeOff, PlayCircle, Sun, Moon } from 'lucide-vue-next'
+
+const colorMode = useColorMode()
+const isDark = computed(() => colorMode.value === 'dark')
+function toggleTheme() {
+  colorMode.preference = isDark.value ? 'light' : 'dark'
+}
 
 definePageMeta({
   layout: false
@@ -218,12 +230,26 @@ async function handleSignup() {
   font-family: 'Inter', sans-serif;
 }
 
-.app-version {
+.top-bar {
   width: 100%;
-  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.app-version {
   font-size: 10px;
   color: #00c853;
   opacity: 0.7;
+}
+
+.theme-toggle {
+  background: none;
+  border: none;
+  color: #00c853;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0.8;
 }
 
 .login-header {
