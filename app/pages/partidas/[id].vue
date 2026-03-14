@@ -839,6 +839,11 @@
         </div>
       </div>
     </div>
+  <!-- Toast: jogador substituído -->
+  <transition name="toast-fade">
+    <div v-if="quickGoalMsg" class="quick-goal-toast">{{ quickGoalMsg }}</div>
+  </transition>
+
   </div>
 </template>
 
@@ -1458,8 +1463,17 @@ const changeGoalContra = async (delta) => {
   await updatePlayerStats({ GolContra: newGolContra, [halfField]: newHalfVal })
 }
 
+const quickGoalMsg = ref('')
+let quickGoalMsgTimer = null
+
 const quickAddGoal = async (p) => {
   if (!podeEditar.value) return
+  if (p.substituido) {
+    quickGoalMsg.value = `${(p.Nome || '').trim()} foi substituído`
+    clearTimeout(quickGoalMsgTimer)
+    quickGoalMsgTimer = setTimeout(() => { quickGoalMsg.value = '' }, 2500)
+    return
+  }
   const idField = Object.keys(p).find(k => k.toLowerCase() === 'idjogadorpartida') || 'id'
   const id = p[idField]
   if (!id) return
@@ -3859,4 +3873,23 @@ const createNewMatch = async () => {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+.quick-goal-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(30,30,30,0.92);
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 24px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  z-index: 9999;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.toast-fade-enter-active, .toast-fade-leave-active { transition: opacity 0.3s; }
+.toast-fade-enter-from, .toast-fade-leave-to { opacity: 0; }
 </style>
