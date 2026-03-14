@@ -139,8 +139,9 @@ const chartOptions = computed(() => {
     maintainAspectRatio: false,
     indexAxis: 'y',
     layout: {
-      padding: { right: 16, left: 4 },
+      padding: { right: 32, left: 4, top: 4, bottom: 4 },
     },
+    clip: false,
     plugins: {
       legend: { display: false },
     },
