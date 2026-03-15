@@ -151,7 +151,7 @@ const chartOptions = computed(() => {
         grid: { color: gridColor },
       },
       y: {
-        ticks: { color: tickColor, font: { size: 11 }, padding: 8 },
+        ticks: { color: tickColor, font: { size: 11 }, padding: 8, autoSkip: false },
         grid: { display: false },
       },
     },
@@ -397,8 +397,8 @@ watch(() => peladaAtual.value.id, (newId) => {
 }
 
 .chart-card :deep(canvas) {
-  height: 200px !important;
-  max-height: 200px;
+  height: 300px !important;
+  max-height: 300px;
 }
 
 .empty-state {
