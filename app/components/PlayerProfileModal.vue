@@ -155,7 +155,7 @@ const formatDate = (dateStr: string) => {
 
 .profile-header-sticky {
   position: sticky;
-  top: 10px;
+  top: 20px;
   z-index: 10;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
