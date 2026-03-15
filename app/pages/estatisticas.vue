@@ -193,34 +193,68 @@ async function loadAll() {
   const id = peladaAtual.value.id
 
   try {
-    const views = [
-      { key: 'gols',      view: 'view_ranking_gols',           idCol: 'id_pelada', label: 'apelido_jogador', value: 'total_gols' },
-      { key: 'presencas', view: 'view_ranking_presencas',       idCol: 'id_pelada', label: 'apelido_jogador', value: 'total_participacoes' },
-      { key: 'vitorias',  view: 'view_ranking_vitorias',        idCol: 'idPelada',  label: 'apelido_jogador', value: 'total_vitorias' },
-      { key: 'derrotas',  view: 'view_ranking_derrotas',        idCol: 'idPelada',  label: 'apelido_jogador', value: 'total_derrotas' },
-      { key: 'empates',   view: 'view_ranking_empates',         idCol: 'idPelada',  label: 'apelido_jogador', value: 'total_empates' },
-      { key: 'amarelos',  view: 'view_ranking_cartaoamarelo',   idCol: 'idPelada',  label: 'apelido_jogador', value: 'total_cartao_amarelo' },
-      { key: 'azuis',     view: 'view_ranking_cartaoazul',      idCol: 'idPelada',  label: 'apelido_jogador', value: 'total_cartao_azul' },
-      { key: 'vermelhos', view: 'view_ranking_cartaovermelho',  idCol: 'idPelada',  label: 'apelido_jogador', value: 'total_cartao_vermelho' },
-    ]
+    // 1. Busca partidas no período
+    const { data: partidas, error: pError } = await supabase
+      .from('Partida')
+      .select('idPartida')
+      .eq('IdPelada', id)
+      .gte('Data', dataInicial.value)
+      .lte('Data', dataFinal.value)
 
-    const results = await Promise.all(
-      views.map(v =>
-        supabase
-          .from(v.view)
-          .select('*')
-          .eq(v.idCol, id)
-          .order(v.value, { ascending: false })
-          .limit(10)
-      )
-    )
+    if (pError || !partidas?.length) {
+      Object.keys(charts.value).forEach(k => { charts.value[k] = emptyChart() })
+      return
+    }
 
-    views.forEach((v, i) => {
-      const { data, error } = results[i]
-      if (!error && data) {
-        charts.value[v.key] = buildChart(data, v.label, v.value, COLORS[v.key])
+    const partidaIds = partidas.map(p => p.idPartida)
+
+    // 2. Busca jogadores dessas partidas
+    const { data: rows, error: jError } = await supabase
+      .from('JogadorPartida')
+      .select('IdParticipante, Nome, Gol, GolContra, CartaoAmarelo, CartaoAzul, CartaoVermelho, Resultado')
+      .in('idPartida', partidaIds)
+
+    if (jError || !rows) return
+
+    // 3. Agrega por jogador
+    const players = {}
+    rows.forEach(r => {
+      const key = r.IdParticipante
+      if (!players[key]) {
+        players[key] = {
+          apelido_jogador:      r.Nome,
+          total_gols:           0,
+          total_participacoes:  0,
+          total_vitorias:       0,
+          total_derrotas:       0,
+          total_empates:        0,
+          total_cartao_amarelo: 0,
+          total_cartao_azul:    0,
+          total_cartao_vermelho:0,
+        }
       }
+      const p = players[key]
+      p.total_gols += r.Gol || 0
+      p.total_participacoes += 1
+      if (r.Resultado === 'Vitoria')  p.total_vitorias += 1
+      else if (r.Resultado === 'Derrota') p.total_derrotas += 1
+      else if (r.Resultado === 'Empate')  p.total_empates += 1
+      if (r.CartaoAmarelo)  p.total_cartao_amarelo += 1
+      if (r.CartaoAzul)     p.total_cartao_azul += 1
+      if (r.CartaoVermelho) p.total_cartao_vermelho += 1
     })
+
+    const arr = Object.values(players)
+    const sortBy = (field) => [...arr].sort((a, b) => b[field] - a[field]).filter(p => p[field] > 0)
+
+    charts.value.gols      = buildChart(sortBy('total_gols'),            'apelido_jogador', 'total_gols',            COLORS.gols)
+    charts.value.presencas = buildChart(sortBy('total_participacoes'),   'apelido_jogador', 'total_participacoes',   COLORS.presencas)
+    charts.value.vitorias  = buildChart(sortBy('total_vitorias'),        'apelido_jogador', 'total_vitorias',        COLORS.vitorias)
+    charts.value.derrotas  = buildChart(sortBy('total_derrotas'),        'apelido_jogador', 'total_derrotas',        COLORS.derrotas)
+    charts.value.empates   = buildChart(sortBy('total_empates'),         'apelido_jogador', 'total_empates',         COLORS.empates)
+    charts.value.amarelos  = buildChart(sortBy('total_cartao_amarelo'),  'apelido_jogador', 'total_cartao_amarelo',  COLORS.amarelos)
+    charts.value.azuis     = buildChart(sortBy('total_cartao_azul'),     'apelido_jogador', 'total_cartao_azul',     COLORS.azuis)
+    charts.value.vermelhos = buildChart(sortBy('total_cartao_vermelho'), 'apelido_jogador', 'total_cartao_vermelho', COLORS.vermelhos)
 
   } catch (e) {
     console.error('Erro ao carregar estatísticas:', e)
