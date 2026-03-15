@@ -126,20 +126,13 @@ const formatDate = (dateStr: string) => {
 <style scoped>
 /* Sobrescreve posicionamento e tamanho do DialogContent via Radix */
 :deep([role="dialog"]) {
-  top: 10% !important;
-  transform: translateX(-50%) !important;
-  max-height: 85vh !important;
+  /* Centraliza verticalmente no espaço abaixo do header (80px) */
+  top: calc(40px + 50vh) !important;
+  transform: translate(-50%, -50%) !important;
+  max-height: calc(100vh - 120px) !important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
-}
-
-@media (max-width: 640px) {
-  :deep([role="dialog"]) {
-    top: 90px !important;
-    transform: translateX(-50%) !important;
-    max-height: calc(100vh - 110px) !important;
-  }
 }
 
 .modal-header-custom {
