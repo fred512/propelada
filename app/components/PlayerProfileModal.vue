@@ -26,7 +26,7 @@ const formatDate = (dateStr: string) => {
     :open="isOpen"
     @update:open="(val) => { if (!val) close() }"
     @close="close"
-    class="max-w-[400px] p-0 overflow-hidden rounded-3xl !bg-[var(--bg-secondary)]"
+    class="profile-modal-dialog max-w-[400px] p-0 overflow-hidden rounded-3xl !bg-[var(--bg-secondary)]"
   >
     <!-- Header fixo -->
     <div class="modal-header-custom profile-header-sticky">
@@ -123,10 +123,9 @@ const formatDate = (dateStr: string) => {
   </Dialog>
 </template>
 
-<style scoped>
-/* Sobrescreve posicionamento e tamanho do DialogContent via Radix */
-:deep([role="dialog"]) {
-  /* Centraliza verticalmente no espaço abaixo do header (80px) */
+/* CSS global para alcançar o portal do Radix Vue (fora do DOM do componente) */
+<style>
+.profile-modal-dialog {
   top: calc(40px + 50vh) !important;
   transform: translate(-50%, -50%) !important;
   max-height: calc(100vh - 120px) !important;
@@ -134,6 +133,9 @@ const formatDate = (dateStr: string) => {
   flex-direction: column !important;
   overflow: hidden !important;
 }
+</style>
+
+<style scoped>
 
 .modal-header-custom {
   padding: 12px 16px;
