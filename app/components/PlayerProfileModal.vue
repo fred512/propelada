@@ -136,8 +136,9 @@ const formatDate = (dateStr: string) => {
 
 @media (max-width: 640px) {
   :deep([role="dialog"]) {
-    top: 22% !important;
-    max-height: 75vh !important;
+    top: 90px !important;
+    transform: translateX(-50%) !important;
+    max-height: calc(100vh - 110px) !important;
   }
 }
 
