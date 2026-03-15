@@ -125,13 +125,21 @@ const formatDate = (dateStr: string) => {
 
 /* CSS global para alcançar o portal do Radix Vue (fora do DOM do componente) */
 <style>
+/* Layout flex para sticky header + scroll no corpo (todos os tamanhos) */
 .profile-modal-dialog {
-  top: calc(40px + 50vh) !important;
-  transform: translate(-50%, -50%) !important;
-  max-height: calc(100vh - 120px) !important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
+  max-height: 85vh !important;
+}
+
+/* Mobile: centraliza no espaço abaixo do header de 80px */
+@media (max-width: 640px) {
+  .profile-modal-dialog {
+    top: calc(40px + 50vh) !important;
+    transform: translate(-50%, -50%) !important;
+    max-height: calc(100vh - 120px) !important;
+  }
 }
 </style>
 
