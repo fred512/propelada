@@ -3063,26 +3063,30 @@ const createNewMatch = async () => {
 .s-tab-bar {
   flex-shrink: 0;
   display: flex;
-  border-bottom: 2px solid var(--border-color);
+  gap: 4px;
+  padding: 6px;
+  background: var(--bg-primary);
+  border-radius: 12px;
+  margin: 8px 12px;
 }
 
 .s-tb-btn {
   flex: 1;
-  padding: 12px 0;
+  padding: 8px 0;
   border: none;
   background: transparent;
   color: var(--text-secondary);
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
+  border-radius: 8px;
   transition: all 0.15s;
 }
 
 .s-tb-btn.active {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
+  background: var(--primary-color);
+  color: var(--bg-secondary);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
 }
 
 .s-scroll-area {
