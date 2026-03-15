@@ -27,7 +27,7 @@
           </div>
           
           <div class="header-right">
-            <span class="version-info">Versão :{{ appVersion }}</span>
+            <span class="version-info">v{{ appVersion }}</span>
             <ThemeToggle />
           </div>
         </div>

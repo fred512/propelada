@@ -4,7 +4,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 let buildVersion = '?'
 try {
-  buildVersion = execSync('git log -1 --format=%cd --date=format:"%d-%m-%Y"').toString().trim()
+  buildVersion = execSync('git rev-list --count HEAD').toString().trim()
 } catch {}
 
 export default defineNuxtConfig({

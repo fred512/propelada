@@ -2,7 +2,7 @@
   <div class="login-container" :class="{ 'light-mode': !isDark }">
     <!-- Versão do App + toggle tema no topo -->
     <div class="top-bar">
-      <div class="app-version">Versão :{{ useRuntimeConfig().public.appVersion }}:1.0</div>
+      <div class="app-version">v{{ useRuntimeConfig().public.appVersion }}</div>
       <button class="theme-toggle" @click="toggleTheme" :title="isDark ? 'Modo claro' : 'Modo escuro'">
         <Sun v-if="isDark" :size="18" />
         <Moon v-else :size="18" />
