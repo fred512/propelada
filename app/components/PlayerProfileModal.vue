@@ -126,19 +126,18 @@ const formatDate = (dateStr: string) => {
 <style scoped>
 /* Sobrescreve posicionamento e tamanho do DialogContent via Radix */
 :deep([role="dialog"]) {
-  top: 5% !important;
+  top: 10% !important;
   transform: translateX(-50%) !important;
-  max-height: 88vh !important;
+  max-height: 85vh !important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
-  margin-top: env(safe-area-inset-top, 16px) !important;
 }
 
 @media (max-width: 640px) {
   :deep([role="dialog"]) {
-    top: 8% !important;
-    max-height: 84vh !important;
+    top: 15% !important;
+    max-height: 80vh !important;
   }
 }
 
