@@ -26,7 +26,7 @@ const formatDate = (dateStr: string) => {
     :open="isOpen"
     @update:open="(val) => { if (!val) close() }"
     @close="close"
-    class="max-w-[400px] p-0 overflow-hidden rounded-3xl !bg-[var(--bg-secondary)]"
+    class="max-w-[400px] p-0 overflow-hidden rounded-3xl !bg-[var(--bg-secondary)] !top-[68px] !translate-y-0 !max-h-[calc(100svh-68px)] sm:!top-1/2 sm:!-translate-y-1/2 sm:!max-h-[90vh]"
   >
     <!-- Header fixo -->
     <div class="modal-header-custom profile-header-sticky">
