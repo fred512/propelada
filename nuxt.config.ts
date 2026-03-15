@@ -1,11 +1,9 @@
 import tailwindcss from '@tailwindcss/vite'
-import { execSync } from 'child_process'
 import { fileURLToPath, URL } from 'node:url'
+import { createRequire } from 'module'
 
-let buildVersion = '?'
-try {
-  buildVersion = execSync('git rev-list --count HEAD').toString().trim()
-} catch {}
+const require = createRequire(import.meta.url)
+const { version: buildVersion } = require('./package.json')
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
