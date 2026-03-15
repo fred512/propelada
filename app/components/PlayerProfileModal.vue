@@ -128,10 +128,18 @@ const formatDate = (dateStr: string) => {
 :deep([role="dialog"]) {
   top: 5% !important;
   transform: translateX(-50%) !important;
-  max-height: 90vh !important;
+  max-height: 88vh !important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
+  margin-top: env(safe-area-inset-top, 16px) !important;
+}
+
+@media (max-width: 640px) {
+  :deep([role="dialog"]) {
+    top: 8% !important;
+    max-height: 84vh !important;
+  }
 }
 
 .modal-header-custom {
