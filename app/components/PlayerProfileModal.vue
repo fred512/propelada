@@ -126,7 +126,7 @@ const formatDate = (dateStr: string) => {
 <style scoped>
 
 .modal-header-custom {
-  padding: 12px 16px;
+  padding: 24px 16px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -155,7 +155,7 @@ const formatDate = (dateStr: string) => {
 
 .profile-header-sticky {
   position: sticky;
-  top: 0;
+  top: 10px;
   z-index: 10;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
