@@ -18,7 +18,6 @@
           <label>Fim</label>
           <input v-model="dataFinal" type="date" />
         </div>
-        <button class="btn-apply" @click="loadAll">Aplicar</button>
       </div>
     </div>
 
