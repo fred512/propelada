@@ -16,7 +16,12 @@
     <nav class="sidebar-nav">
       <ul class="nav-list">
         <li v-for="item in menuItems" :key="item.label" class="nav-item">
-          <NuxtLink :to="item.to" class="nav-link" @click="$emit('close')">
+          <NuxtLink
+            :to="item.to"
+            class="nav-link"
+            :class="{ 'is-active': route.path === item.to || route.path.startsWith(item.to + '/') }"
+            @click="$emit('close')"
+          >
             <component :is="item.icon" class="nav-icon" :size="20" />
             <span class="nav-label">{{ item.label }}</span>
           </NuxtLink>
@@ -94,6 +99,7 @@ const logoUrl = computed(() => {
     : "/images/Propelada8.png";
 });
 
+const route = useRoute()
 const { isVisitor, peladaAtual, canViewEstatisticas, clearPelada } = usePelada()
 
 const allMenuItems = [
@@ -230,7 +236,8 @@ async function handleSignOut() {
   transform: translateX(3px);
 }
 
-.router-link-active {
+.router-link-active,
+.is-active {
   background-color: rgba(0, 200, 83, 0.12);
   color: var(--primary-color);
   border-left-color: var(--primary-color);
@@ -242,7 +249,8 @@ async function handleSignOut() {
   color: var(--text-secondary);
 }
 :root:not(.dark) .nav-link:hover,
-:root:not(.dark) .router-link-active {
+:root:not(.dark) .router-link-active,
+:root:not(.dark) .is-active {
   background-color: rgba(28, 106, 78, 0.1);
   color: var(--primary-color);
 }
@@ -254,7 +262,8 @@ async function handleSignOut() {
 }
 
 .nav-link:hover .nav-icon,
-.router-link-active .nav-icon {
+.router-link-active .nav-icon,
+.is-active .nav-icon {
   opacity: 1;
 }
 

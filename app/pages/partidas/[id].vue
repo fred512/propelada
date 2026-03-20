@@ -65,9 +65,9 @@
         <!-- Badge de tempo -->
         <div
           class="half-badge"
-          :class="{ 'half-badge-2': partida?.Tempo === '2' }"
-          @click="toggleHalf"
-          title="Clique para trocar o tempo"
+          :class="{ 'half-badge-2': partida?.Tempo === '2', 'half-badge-disabled': partida?.Fechada }"
+          @click="!partida?.Fechada && toggleHalf()"
+          :title="partida?.Fechada ? '' : 'Clique para trocar o tempo'"
         >
           {{ partida?.Tempo === '2' ? '2º Tempo' : '1º Tempo' }}
         </div>
@@ -1935,7 +1935,7 @@ const createNewMatch = async () => {
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--primary-color);
-  margin: 4px 0;
+  margin: 15px 0 4px;
   text-align: center;
 }
 
@@ -2164,6 +2164,7 @@ const createNewMatch = async () => {
 }
 
 .half-badge:active { transform: scale(0.95); }
+.half-badge-disabled { opacity: 0.5; cursor: default; pointer-events: none; }
 
 .half-badge-2 {
   background: rgba(230,81,0,0.2);
