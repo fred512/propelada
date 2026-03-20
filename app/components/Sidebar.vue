@@ -24,6 +24,7 @@
           >
             <component :is="item.icon" class="nav-icon" :size="20" />
             <span class="nav-label">{{ item.label }}</span>
+            <span v-if="item.badge && item.badge.value > 0" class="nav-badge">{{ item.badge.value }}</span>
           </NuxtLink>
         </li>
       </ul>
@@ -71,6 +72,7 @@ import {
   DollarSign,
   PlayCircle,
   Mail,
+  MessageSquare,
   Settings,
   LogOut,
   X,
@@ -89,10 +91,6 @@ const supabase = useSupabaseClient();
 const colorMode = useColorMode();
 const isDesktop = ref(false);
 
-onMounted(() => {
-  isDesktop.value = window.innerWidth > 1024;
-});
-
 const logoUrl = computed(() => {
   return colorMode.value === "dark"
     ? "/images/propelada-dark.png"
@@ -101,6 +99,22 @@ const logoUrl = computed(() => {
 
 const route = useRoute()
 const { isVisitor, peladaAtual, canViewEstatisticas, clearPelada } = usePelada()
+
+const mensagensNaoLidas = ref(0)
+
+async function fetchMensagensNaoLidas() {
+  if (isVisitor.value) return
+  const { count } = await supabase
+    .from('Contato')
+    .select('*', { count: 'exact', head: true })
+    .eq('lida', false)
+  mensagensNaoLidas.value = count || 0
+}
+
+onMounted(() => {
+  isDesktop.value = window.innerWidth > 1024
+  fetchMensagensNaoLidas()
+})
 
 const allMenuItems = [
   { label: "Início", to: "/", icon: Home },
@@ -112,6 +126,7 @@ const allMenuItems = [
   { label: "Ranking", to: "/ranking", icon: Award },
   { label: "Assinatura", to: "/assinatura", icon: DollarSign, adminOnly: true },
   { label: "Tutoriais", to: "/tutoriais", icon: PlayCircle },
+  { label: "Mensagens", to: "/mensagens", icon: MessageSquare, adminOnly: true, badge: mensagensNaoLidas },
 ];
 
 const menuItems = computed(() => {
@@ -275,6 +290,18 @@ async function handleSignOut() {
 .sidebar-footer {
   padding: 16px 0;
   border-top: 1px solid var(--border-color);
+}
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--primary-color);
+  color: #0d1a0d;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 999px;
+  min-width: 20px;
+  text-align: center;
 }
 
 .logout-btn {
