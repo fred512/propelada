@@ -1,22 +1,16 @@
 <template>
   <div class="config-container">
-    <div class="page-title-section">
-      <h1 class="page-title">Configurações do App</h1>
-    </div>
+    <PageHeader title="Configurações do App" />
 
-    <div v-if="!peladaAtual.id" class="empty-state card">
-      <Settings :size="48" />
-      <p>Selecione uma pelada para acessar as configurações.</p>
-    </div>
+    <PageCard v-if="!peladaAtual.id">
+      <EmptyState :icon="Settings" message="Selecione uma pelada para acessar as configurações." />
+    </PageCard>
 
     <div v-else class="config-content">
 
       <!-- Exibição de Estatísticas -->
-      <div class="config-card card">
-        <div class="config-section-title">
-          <BarChart2 :size="20" />
-          <h2>Exibição de Estatísticas</h2>
-        </div>
+      <PageCard class="config-card">
+        <SectionTitle :icon="BarChart2" title="Exibição de Estatísticas" />
         <div class="toggle-row">
           <div class="toggle-info">
             <span class="toggle-label">Exibir Estatísticas para Visitantes</span>
@@ -34,14 +28,11 @@
             />
           </div>
         </div>
-      </div>
+      </PageCard>
 
       <!-- Período dos Gráficos -->
-      <div class="config-card card">
-        <div class="config-section-title">
-          <Calendar :size="20" />
-          <h2>Período dos Gráficos</h2>
-        </div>
+      <PageCard class="config-card">
+        <SectionTitle :icon="Calendar" title="Período dos Gráficos" />
         <p class="section-desc">Define o intervalo de datas exibido nos gráficos de estatísticas.</p>
         <div class="date-row">
           <div class="form-group">
@@ -57,7 +48,7 @@
           <div v-if="dataMsgOk" class="success-msg">Datas salvas automaticamente!</div>
         </transition>
         <div v-if="dataMsgErr" class="error-msg">{{ dataMsgErr }}</div>
-      </div>
+      </PageCard>
 
       <!-- Botão para abrir modal de Cores e Pontuação -->
       <button class="btn btn-open-modal" @click="showModal = true">
@@ -71,7 +62,7 @@
     <UiDialog
       :open="showModal"
       title="Cores e Pontuação"
-      class="max-w-[600px] max-h-[88vh] overflow-y-auto"
+      class="max-w-[600px] max-h-[88vh] overflow-y-auto !border-0"
       @update:open="showModal = $event"
     >
       <div class="modal-body">
@@ -327,27 +318,8 @@ watch(() => peladaAtual.value.id, carregarConfigs)
   margin: 0 auto;
 }
 
-.page-title-section { display: flex; align-items: center; padding-top: 15px; }
-.page-title { font-size: 1.4rem; font-weight: 800; color: var(--primary-color); margin: 0; }
-
-.card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: var(--card-shadow);
-}
-
-.empty-state {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 12px; padding: 40px; color: var(--primary-color); opacity: 0.6; text-align: center;
-}
-
 .config-content { display: flex; flex-direction: column; gap: 16px; }
 .config-card { display: flex; flex-direction: column; gap: 14px; }
-
-.config-section-title { display: flex; align-items: center; gap: 10px; color: var(--primary-color); }
-.config-section-title h2 { margin: 0; font-size: 1rem; font-weight: 700; }
 .section-desc { margin: 0; font-size: 0.83rem; color: var(--text-secondary); }
 
 /* Toggle */
@@ -472,6 +444,7 @@ input[type="date"]:focus { border-color: var(--secondary-color); outline: none; 
 }
 .btn-sm { padding: 9px 16px; font-size: 0.88rem; }
 .btn-primary { background: var(--primary-color); color: white; }
+.dark .btn-primary { color: #0d1a0d; }
 .btn-primary:hover:not(:disabled) { opacity: 0.9; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 

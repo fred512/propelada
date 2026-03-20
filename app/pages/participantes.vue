@@ -1,9 +1,6 @@
 <template>
   <div class="participantes-container">
-    <!-- Título Local Estilizado -->
-    <div class="page-title-section">
-      <h1 class="page-title">Cadastro de Participantes</h1>
-    </div>
+    <PageHeader title="Cadastro de Participantes" />
 
     <!-- Modal de Perfil -->
     <PlayerProfileModal 
@@ -14,7 +11,7 @@
     />
 
     <!-- Barra de Ações (Botões Coloridos) -->
-    <div class="actions-bar card">
+    <PageCard class="actions-bar">
       <div class="search-input-wrapper">
         <input 
           v-model.trim="searchQuery" 
@@ -37,10 +34,10 @@
           <Search :size="20" />
         </button>
       </div>
-    </div>
+    </PageCard>
 
     <!-- Lista de Participantes (Estilo Mobile) -->
-    <div v-show="showResults" class="list-section card">
+    <PageCard v-show="showResults" class="list-section">
       <div class="section-header">
         <h3>Lista de Participantes ({{ participants.length }})</h3>
         <span v-if="isLoading" class="loading-indicator">Buscando...</span>
@@ -74,9 +71,9 @@
           Nenhum participante encontrado com "{{ searchQuery }}".
         </div>
       </div>
-    </div>
+    </PageCard>
 
-    <div class="form-card card">
+    <PageCard class="form-card">
       <div class="form-layout">
         <!-- Coluna de Campos -->
         <div class="fields-column">
@@ -186,7 +183,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </PageCard>
 
   </div>
 </template>
@@ -458,33 +455,6 @@ onMounted(() => {
   margin: 0 auto;
   color: var(--text-primary);
   box-sizing: border-box;
-}
-
-.page-title-section {
-  text-align: center;
-  margin-bottom: 24px;
-  padding-top: 15px;
-}
-
-.page-title {
-  color: var(--primary-color);
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 8px;
-}
-
-@media (max-width: 600px) {
-  .page-title {
-    font-size: 1.2rem;
-  }
-}
-
-.card {
-  background-color: var(--bg-secondary);
-  border-radius: 16px;
-  border: 1px solid var(--border-color);
-  margin-bottom: 16px;
 }
 
 .actions-bar {

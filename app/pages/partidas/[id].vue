@@ -53,7 +53,7 @@
       <div class="game-meta">
         <div
           class="timer-badge"
-          :class="{ 'second-half': partida?.Status === '2º Tempo', 'timer-running': timerRunning }"
+          :class="{ 'second-half': partida?.Tempo === '2', 'timer-running': timerRunning }"
           @click="handleTimerClick"
           title="1 clique: ligar/desligar | 2 cliques: zerar"
         >
@@ -65,11 +65,11 @@
         <!-- Badge de tempo -->
         <div
           class="half-badge"
-          :class="{ 'half-badge-2': partida?.Status === '2º Tempo' }"
+          :class="{ 'half-badge-2': partida?.Tempo === '2' }"
           @click="toggleHalf"
           title="Clique para trocar o tempo"
         >
-          {{ partida?.Status || '1º Tempo' }}
+          {{ partida?.Tempo === '2' ? '2º Tempo' : '1º Tempo' }}
         </div>
         <div class="game-date">
           {{ formatDate(partida?.Data) }}
@@ -228,7 +228,7 @@
       </button>
       
       <div class="match-status-timer">
-        <span class="timer-label">Início do {{ partida?.Status || '1º Tempo' }}</span>
+        <span class="timer-label">Início do {{ partida?.Tempo === '2' ? '2º Tempo' : '1º Tempo' }}</span>
         <span class="timer-clock">{{ timerStartTime }}</span>
       </div>
 
@@ -949,27 +949,29 @@ const handleTimerClick = () => {
 
 const toggleHalf = () => {
   if (!partida.value || !podeEditar.value) return
-  const current = (partida.value.Status || '').trim()
-  if (current === '2º Tempo') {
-    saveStatus('1º Tempo')
+  if (partida.value.Tempo === '2') {
+    saveStatus('1')
   } else {
     showHalftimeModal.value = true
   }
 }
 
-const saveStatus = async (newStatus) => {
-  partida.value.Status = newStatus
+const saveStatus = async (newTempo) => {
+  partida.value.Tempo = newTempo
   timerStartTime.value = getCurrentTime()
   resetTimer()
   const { error } = await supabase
     .from('Partida')
-    .update({ Status: newStatus })
-    .eq('idPartida', partida.value.idPartida)
-  if (error) console.error('Erro ao salvar status:', JSON.stringify(error))
+    .update({ Tempo: newTempo })
+    .eq('idPartida', route.params.id)
+  if (error) {
+    console.error('Erro ao salvar tempo:', JSON.stringify(error))
+    alert(`Erro ao salvar período: ${error.message || error.code}`)
+  }
 }
 
 const startSecondHalf = async () => {
-  await saveStatus('2º Tempo')
+  await saveStatus('2')
   showHalftimeModal.value = false
 }
 
@@ -1064,6 +1066,14 @@ const fetchMatchData = async () => {
     // Sincroniza a pelada atual
     if (matchData.Pelada && (!peladaAtual.value.id || peladaAtual.value.id !== matchData.Pelada.idPelada)) {
       setPelada(matchData.Pelada)
+    }
+
+    // Aplica cores dos times salvas na Pelada
+    if (matchData.Pelada) {
+      configCores.value = {
+        time1: matchData.Pelada.CorTime1 || '#2196F3',
+        time2: matchData.Pelada.CorTime2 || '#FFEB3B',
+      }
     }
     
     if (matches.value.length === 0) {
@@ -1233,8 +1243,7 @@ const addSelectedToTeam = async () => {
   if (!partida.value || selectedWaitingPlayers.value.size === 0) return
   isAddingToTeam.value = true
 
-  const status = (partida.value?.Status || '').trim()
-  const entrouIntervalo = showHalftimeModal.value || status === '2\u00ba Tempo'
+  const entrouIntervalo = showHalftimeModal.value || partida.value?.Tempo === '2'
   const rows = [...selectedWaitingPlayers.value.values()].map(w => ({
     idPartida: partida.value.idPartida,
     IdPelada: partida.value.IdPelada,
@@ -1447,20 +1456,50 @@ const updatePlayerStats = async (updates) => {
   }
 }
 
+const processando = ref(false)
+
 const changeGoal = async (delta) => {
-  const newGol = Math.max(0, (selectedPlayer.value.Gol || 0) + delta)
-  const isFirstHalf = (partida.value.Status || '').trim() !== '2º Tempo'
-  const halfField = isFirstHalf ? 'GolPrimeiro' : 'GolSegundo'
-  const newHalfVal = Math.max(0, (selectedPlayer.value[halfField] || 0) + delta)
-  await updatePlayerStats({ Gol: newGol, [halfField]: newHalfVal })
+  if (!selectedPlayer.value) return
+  if (processando.value) return
+  processando.value = true
+  try {
+    const id = selectedPlayer.value._id
+    const idField = selectedPlayer.value._idField || 'IdJogadorPartida'
+
+    const { data: freshPlayer } = await supabase.from('JogadorPartida').select('*').eq(idField, id).single()
+    if (!freshPlayer) return
+
+    const { data: freshPartida } = await supabase.from('Partida').select('Tempo').eq('idPartida', route.params.id).single()
+    const isFirstHalf = freshPartida?.Tempo !== '2'
+    const halfField = isFirstHalf ? 'GolPrimeiro' : 'GolSegundo'
+    const newGol = Math.max(0, (freshPlayer.Gol || 0) + delta)
+    const newHalfVal = Math.max(0, (freshPlayer[halfField] || 0) + delta)
+    await updatePlayerStats({ Gol: newGol, [halfField]: newHalfVal })
+  } finally {
+    processando.value = false
+  }
 }
 
 const changeGoalContra = async (delta) => {
-  const newGolContra = Math.max(0, (selectedPlayer.value.GolContra || 0) + delta)
-  const isFirstHalf = (partida.value.Status || '').trim() !== '2º Tempo'
-  const halfField = isFirstHalf ? 'GolContraPrimeiro' : 'GolContraSegundo'
-  const newHalfVal = Math.max(0, (selectedPlayer.value[halfField] || 0) + delta)
-  await updatePlayerStats({ GolContra: newGolContra, [halfField]: newHalfVal })
+  if (!selectedPlayer.value) return
+  if (processando.value) return
+  processando.value = true
+  try {
+    const id = selectedPlayer.value._id
+    const idField = selectedPlayer.value._idField || 'IdJogadorPartida'
+
+    const { data: freshPlayer } = await supabase.from('JogadorPartida').select('*').eq(idField, id).single()
+    if (!freshPlayer) return
+
+    const { data: freshPartida } = await supabase.from('Partida').select('Tempo').eq('idPartida', route.params.id).single()
+    const isFirstHalf = freshPartida?.Tempo !== '2'
+    const halfField = isFirstHalf ? 'GolContraPrimeiro' : 'GolContraSegundo'
+    const newGolContra = Math.max(0, (freshPlayer.GolContra || 0) + delta)
+    const newHalfVal = Math.max(0, (freshPlayer[halfField] || 0) + delta)
+    await updatePlayerStats({ GolContra: newGolContra, [halfField]: newHalfVal })
+  } finally {
+    processando.value = false
+  }
 }
 
 const quickGoalMsg = ref('')
@@ -1474,18 +1513,27 @@ const quickAddGoal = async (p) => {
     quickGoalMsgTimer = setTimeout(() => { quickGoalMsg.value = '' }, 2500)
     return
   }
-  const idField = Object.keys(p).find(k => k.toLowerCase() === 'idjogadorpartida') || 'id'
-  const id = p[idField]
-  if (!id) return
-  const newGol = (p.Gol || 0) + 1
-  const isFirstHalf = (partida.value.Status || '').trim() !== '2º Tempo'
-  const halfField = isFirstHalf ? 'GolPrimeiro' : 'GolSegundo'
-  const newHalfVal = (p[halfField] || 0) + 1
-  const { error } = await supabase.from('JogadorPartida').update({ Gol: newGol, [halfField]: newHalfVal }).eq(idField, id)
-  if (!error) {
-    p.Gol = newGol
-    p[halfField] = newHalfVal
-    await fetchMatchData()
+  if (processando.value) return
+  processando.value = true
+  try {
+    const idField = Object.keys(p).find(k => k.toLowerCase() === 'idjogadorpartida') || 'id'
+    const id = p[idField]
+    if (!id) return
+
+    // Leitura fresca do banco — evita dados obsoletos do estado local
+    const { data: freshPlayer } = await supabase.from('JogadorPartida').select('*').eq(idField, id).single()
+    if (!freshPlayer) return
+
+    const { data: freshPartida } = await supabase.from('Partida').select('Tempo').eq('idPartida', route.params.id).single()
+    const isFirstHalf = freshPartida?.Tempo !== '2'
+    const halfField = isFirstHalf ? 'GolPrimeiro' : 'GolSegundo'
+    const newGol = (freshPlayer.Gol || 0) + 1
+    const newHalfVal = (freshPlayer[halfField] || 0) + 1
+
+    const { error } = await supabase.from('JogadorPartida').update({ Gol: newGol, [halfField]: newHalfVal }).eq(idField, id)
+    if (!error) await fetchMatchData()
+  } finally {
+    processando.value = false
   }
 }
 
@@ -1807,7 +1855,7 @@ const createNewMatch = async () => {
     .insert([{
       IdPelada: peladaAtual.value.id,
       Data: newMatchDate.value,
-      Tempo: '1º Tempo',
+      Tempo: '1',
       chuva: false,
     }])
     .select('idPartida')
@@ -1837,6 +1885,12 @@ const createNewMatch = async () => {
   border-radius: 12px;
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.dark .card {
+  background: var(--bg-secondary);
+  border-color: rgba(255,255,255,0.07);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 .sumula-header {
@@ -1875,10 +1929,18 @@ const createNewMatch = async () => {
 }
 
 .sumula-title {
-  font-size: 1.5rem;
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
   color: var(--primary-color);
   margin: 4px 0;
   text-align: center;
+}
+
+.dark .sumula-title {
+  text-shadow: 0 0 20px rgba(0,255,135,0.35);
 }
 
 .icon-btn.key-access {
@@ -2035,37 +2097,84 @@ const createNewMatch = async () => {
 }
 
 .timer-badge {
-  background-color: #4CAF50;
-  padding: 4px 12px;
-  border-radius: 16px;
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   gap: 6px;
-  color: white;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: all 0.2s;
+  background: rgba(76,175,80,0.15);
+  border: 1px solid rgba(76,175,80,0.4);
+  color: #4CAF50;
+}
+
+.dark .timer-badge {
+  background: rgba(0,255,135,0.08);
+  border-color: rgba(0,255,135,0.25);
+  color: #00FF87;
 }
 
 .timer-badge:active { transform: scale(0.95); }
-.timer-badge.second-half { background-color: #FFB300; }
-.timer-badge.timer-running { background-color: #43A047; box-shadow: 0 0 0 3px rgba(76,175,80,0.35); }
+
+.timer-badge.second-half {
+  background: rgba(255,179,0,0.15);
+  border-color: rgba(255,179,0,0.4);
+  color: #FFB300;
+}
+
+.dark .timer-badge.second-half {
+  background: rgba(251,146,60,0.1);
+  border-color: rgba(251,146,60,0.35);
+  color: #FB923C;
+}
+
+.timer-badge.timer-running {
+  animation: timerGlow 1.6s ease-in-out infinite alternate;
+}
+
+@keyframes timerGlow {
+  from { box-shadow: 0 0 6px rgba(0,255,135,0.15); }
+  to   { box-shadow: 0 0 18px rgba(0,255,135,0.5), 0 0 4px rgba(0,255,135,0.3); }
+}
 
 .half-badge {
-  background-color: #1565C0;
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
   padding: 4px 14px;
-  border-radius: 16px;
-  font-weight: 700;
-  font-size: 0.82rem;
-  color: white;
+  border-radius: 10px;
   cursor: pointer;
   user-select: none;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: all 0.2s;
+  background: rgba(21,101,192,0.2);
+  border: 1px solid rgba(56,189,248,0.4);
+  color: #38BDF8;
 }
+
+.dark .half-badge {
+  background: rgba(56,189,248,0.08);
+  border-color: rgba(56,189,248,0.3);
+}
+
 .half-badge:active { transform: scale(0.95); }
-.half-badge-2 { background-color: #E65100; }
+
+.half-badge-2 {
+  background: rgba(230,81,0,0.2);
+  border-color: rgba(251,146,60,0.4);
+  color: #FB923C;
+}
+
+.dark .half-badge-2 {
+  background: rgba(251,146,60,0.08);
+  border-color: rgba(251,146,60,0.3);
+}
 
 .game-date {
   color: var(--primary-color);
@@ -2122,14 +2231,47 @@ const createNewMatch = async () => {
 .central-score {
   display: flex;
   align-items: center;
-  gap: 20px;
-  font-size: 3rem;
-  font-weight: 900;
+  gap: 12px;
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
 }
 
-.score-num.team1 { color: #2196F3; }
-.score-num.team2 { color: #FF8F00; }
-.score-divider { opacity: 0.3; }
+.score-num {
+  font-size: 4.5rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -2px;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.score-num.team1 {
+  color: #38BDF8;
+  text-shadow: 0 0 30px rgba(56,189,248,0.4);
+}
+
+.score-num.team2 {
+  color: #FB923C;
+  text-shadow: 0 0 30px rgba(251,146,60,0.4);
+}
+
+.score-divider {
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+  font-size: 2.5rem;
+  font-weight: 600;
+  opacity: 0.25;
+  letter-spacing: 0;
+}
+
+/* Animação de gol */
+@keyframes goalPulse {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.4); }
+  65%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+.score-num.goal-scored {
+  animation: goalPulse 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
 /* Ícones com cor do time */
 .team-players-1 .team-icon { background: rgba(33,150,243,0.15); color: #2196F3; }
@@ -2165,13 +2307,18 @@ const createNewMatch = async () => {
 .player-item[draggable="true"]:active { cursor: grabbing; }
 
 .team-header {
-  padding: 10px;
+  padding: 10px 12px;
   background: rgba(0,0,0,0.05);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
   font-weight: 800;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  color: var(--text-primary);
 }
 
 .players-list {
@@ -2189,6 +2336,28 @@ const createNewMatch = async () => {
   border-radius: 8px;
   padding: 8px;
   border-bottom: 2px solid rgba(0,0,0,0.1);
+  transition: background 0.15s;
+}
+
+.dark .player-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-bottom: none;
+  border-left: 3px solid transparent;
+  backdrop-filter: blur(4px);
+}
+
+/* Borda esquerda colorida por time */
+.dark .team-column:first-child .player-item {
+  border-left-color: rgba(56,189,248,0.3);
+}
+
+.dark .team-column:last-child .player-item {
+  border-left-color: rgba(251,146,60,0.3);
+}
+
+.dark .player-item:hover {
+  background: rgba(255,255,255,0.055);
 }
 
 .player-top {
@@ -2228,7 +2397,8 @@ const createNewMatch = async () => {
 
 .player-name {
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  letter-spacing: 0.2px;
 }
 
 .btn-perfil {
@@ -2348,8 +2518,18 @@ const createNewMatch = async () => {
   gap: 2px;
 }
 
-.timer-label { font-size: 0.7rem; font-weight: 700; opacity: 0.8; color: var(--text-secondary); }
-.timer-clock { font-size: 1.4rem; font-weight: 900; color: var(--primary-color); letter-spacing: 1px; }
+.timer-label { font-size: 0.65rem; font-weight: 600; opacity: 0.7; color: var(--text-secondary); letter-spacing: 0.5px; }
+.timer-clock {
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  letter-spacing: 3px;
+}
+
+.dark .timer-clock {
+  text-shadow: 0 0 12px rgba(0,255,135,0.3);
+}
 
 .referee-info {
   color: #1C6A4E;
@@ -2361,20 +2541,38 @@ const createNewMatch = async () => {
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.8);
+  background: rgba(0,0,0,0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
 .modal-content {
   background: var(--bg-secondary);
-  border-radius: 16px;
+  border-radius: 20px;
   width: 90%;
   max-width: 500px;
   padding: 24px;
   border: 1px solid var(--border-color);
+  animation: modalSpring 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dark .modal-content {
+  background: rgba(9,15,28,0.94);
+  border-color: rgba(255,255,255,0.1);
+  box-shadow:
+    0 24px 64px rgba(0,0,0,0.65),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+@keyframes modalSpring {
+  from { opacity: 0; transform: scale(0.92) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .modal-header {
@@ -3279,8 +3477,11 @@ const createNewMatch = async () => {
   color: #1a1a2e;
 }
 
-.t1-bg { background: rgba(33,150,243,0.25); border: 1px solid rgba(33,150,243,0.4); }
-.t2-bg { background: rgba(255,193,7,0.25); border: 1px solid rgba(255,193,7,0.4); }
+.t1-bg { background: rgba(33,150,243,0.18); border: 1px solid rgba(56,189,248,0.35); }
+.t2-bg { background: rgba(255,143,0,0.18); border: 1px solid rgba(251,146,60,0.35); }
+
+.dark .t1-bg { background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.2); }
+.dark .t2-bg { background: rgba(251,146,60,0.08); border-color: rgba(251,146,60,0.2); }
 
 .s-team-card-title {
   font-size: 0.7rem;
@@ -3570,14 +3771,20 @@ const createNewMatch = async () => {
 .ht-count-warn { background: rgba(255,152,0,0.18); color: #E65100; }
 
 .ht-two-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ht-team {
   border-radius: 12px;
   padding: 10px;
+  flex: 0 0 calc(50% - 5px);
+  min-width: 155px;
+  scroll-snap-align: start;
 }
 
 .ht-team-header {
@@ -3634,19 +3841,20 @@ const createNewMatch = async () => {
 }
 
 .ht-entry-tag {
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   font-weight: 800;
   background: rgba(76,175,80,0.2);
   color: #388E3C;
-  padding: 1px 4px;
+  padding: 1px 3px;
   border-radius: 3px;
   flex-shrink: 0;
+  letter-spacing: -0.2px;
 }
 
 .ht-leave-btn {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  padding: 2px 8px;
+  padding: 2px 6px;
   border-radius: 6px;
   border: 1px solid var(--border-color);
   background: transparent;
@@ -3676,6 +3884,10 @@ const createNewMatch = async () => {
 }
 
 .ht-start-btn:hover { filter: brightness(1.1); }
+
+.ht-two-cols::-webkit-scrollbar { height: 4px; }
+.ht-two-cols::-webkit-scrollbar-track { background: transparent; }
+.ht-two-cols::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.3); border-radius: 4px; }
 
 /* ── Participant search modal ───────────────────── */
 .participant-search-modal {

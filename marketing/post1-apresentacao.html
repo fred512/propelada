@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { width: 1080px; height: 1080px; overflow: hidden; font-family: 'Segoe UI', Arial, sans-serif; background: #0d0d0d; }
+  .canvas {
+    width: 1080px; height: 1080px;
+    background: radial-gradient(ellipse at 50% 0%, #0a2e0a 0%, #0d0d0d 55%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 80px 60px; gap: 0;
+  }
+  .logo { font-size: 88px; font-weight: 900; color: #4ade80; letter-spacing: -2px; margin-bottom: 8px; }
+  .logo span { color: #fff; }
+  .ball { font-size: 72px; margin-bottom: 0; }
+  .sub { color: #4ade80; font-size: 28px; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 52px; }
+  .bullets { list-style: none; display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 700px; margin-bottom: 64px; }
+  .bullets li { display: flex; align-items: flex-start; gap: 16px; }
+  .bullets li .icon { font-size: 36px; flex-shrink: 0; }
+  .bullets li .text strong { display: block; color: #f9fafb; font-size: 30px; font-weight: 700; }
+  .bullets li .text span { color: #9ca3af; font-size: 22px; }
+  .cta { background: #16a34a; color: #fff; font-size: 34px; font-weight: 800; padding: 22px 80px; border-radius: 60px; margin-bottom: 20px; }
+  .url { color: #4b5563; font-size: 22px; }
+</style>
+</head>
+<body>
+<div class="canvas">
+  <div class="logo">PR<span>⚽</span>PELADA</div>
+  <div class="sub">Gestão de peladas de futebol</div>
+  <ul class="bullets">
+    <li><span class="icon">⚽</span><div class="text"><strong>Registre partidas</strong><span>Escalação, gols, cartões e substituições</span></div></li>
+    <li><span class="icon">🏆</span><div class="text"><strong>Ranking automático</strong><span>Artilheiros, vitórias e aproveitamento</span></div></li>
+    <li><span class="icon">📊</span><div class="text"><strong>Estatísticas completas</strong><span>Gráficos por período da temporada</span></div></li>
+  </ul>
+  <div class="cta">Comece Grátis</div>
+  <div class="url">propelada.com</div>
+</div>
+</body>
+</html>

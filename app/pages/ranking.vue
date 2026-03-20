@@ -1,32 +1,45 @@
 <template>
   <div class="ranking-container">
-    <header class="ranking-header">
-      <div class="header-main">
-        <Printer class="print-icon" @click="handlePrint" />
-        <h2 class="ranking-title">Ranking ProPelada</h2>
-      </div>
-    </header>
+    <div class="ranking-header">
+      <PageHeader title="Ranking ProPelada" />
+      <Printer class="print-icon" @click="handlePrint" />
+    </div>
 
     <!-- Modal de Perfil -->
-    <PlayerProfileModal 
+    <PlayerProfileModal
       :is-open="isProfileModalOpen"
       :profile="selectedProfile"
       :is-loading="isProfileLoading"
       @close="isProfileModalOpen = false"
     />
 
-    <div class="table-card card">
+    <PageCard no-padding>
       <div class="table-wrapper">
         <table class="ranking-table">
           <thead>
             <tr>
-              <th class="col-jogador">Jogador</th>
-              <th class="col-stat text-center">%A</th>
-              <th class="col-stat text-center">J</th>
-              <th class="col-stat text-center">P</th>
-              <th class="col-stat text-center">V</th>
-              <th class="col-stat text-center">D</th>
-              <th class="col-stat text-center">E</th>
+              <th class="col-pos">#</th>
+              <th class="col-jogador sortable" @click="setSort('jogador')">
+                Jogador <span class="sort-arrow">{{ sortIndicator('jogador') }}</span>
+              </th>
+              <th class="col-stat text-center sortable" @click="setSort('%A')">
+                %A <span class="sort-arrow">{{ sortIndicator('%A') }}</span>
+              </th>
+              <th class="col-stat text-center sortable" @click="setSort('j')">
+                J <span class="sort-arrow">{{ sortIndicator('j') }}</span>
+              </th>
+              <th class="col-stat text-center sortable" @click="setSort('p')">
+                P <span class="sort-arrow">{{ sortIndicator('p') }}</span>
+              </th>
+              <th class="col-stat text-center sortable" @click="setSort('v')">
+                V <span class="sort-arrow">{{ sortIndicator('v') }}</span>
+              </th>
+              <th class="col-stat text-center sortable" @click="setSort('d')">
+                D <span class="sort-arrow">{{ sortIndicator('d') }}</span>
+              </th>
+              <th class="col-stat text-center sortable" @click="setSort('e')">
+                E <span class="sort-arrow">{{ sortIndicator('e') }}</span>
+              </th>
               <th class="col-stat text-center">GP</th>
               <th class="col-stat text-center">GC</th>
               <th class="col-stat text-center">SG</th>
@@ -34,25 +47,28 @@
           </thead>
           <tbody>
             <tr v-if="isLoading">
-              <td colspan="10" class="loading-cell">Carregando dados do ranking...</td>
+              <td colspan="11" class="loading-cell">Carregando dados do ranking...</td>
             </tr>
-            <tr v-else-if="rankingData.length === 0" class="empty-row">
-              <td colspan="10">Nenhum dado encontrado para esta pelada.</td>
+            <tr v-else-if="sortedData.length === 0" class="empty-row">
+              <td colspan="11">Nenhum dado encontrado para esta pelada.</td>
             </tr>
             <tr v-else v-for="(row, index) in paginatedData" :key="index" :class="{ 'stripe-row': index % 2 !== 0 }">
+              <td class="col-pos text-center">
+                <span class="pos-badge" :class="posBadgeClass(row.classificacao - 1)">
+                  {{ row.classificacao }}º
+                </span>
+              </td>
               <td class="col-jogador">
                 <div class="jogador-cell">
                   <span class="jogador-name">{{ row.jogador }}</span>
-                  <UserCircle 
-                    :size="20" 
-                    class="perfil-icon-btn" 
-                    @click.stop="openProfile(row.IdParticipante)" 
+                  <UserCircle
+                    :size="20"
+                    class="perfil-icon-btn"
+                    @click.stop="openProfile(row.IdParticipante)"
                   />
                 </div>
               </td>
-              <td class="col-stat text-center font-bold">
-                {{ formatPercent(row['%A']) }}
-              </td>
+              <td class="col-stat text-center font-bold">{{ formatPercent(row['%A']) }}</td>
               <td class="col-stat text-center highlighted">{{ row.j }}</td>
               <td class="col-stat text-center">{{ row.p }}</td>
               <td class="col-stat text-center">{{ row.v }}</td>
@@ -67,27 +83,18 @@
       </div>
 
       <!-- Paginação -->
-      <div class="pagination-bar">
-        <div class="items-per-page">
-          <span>linhas por página:</span>
-          <select v-model="itemsPerPage">
-            <option :value="10">10</option>
-            <option :value="25">25</option>
-            <option :value="50">50</option>
-          </select>
-        </div>
-        <div class="pagination-info">
-          {{ rangeStart }}-{{ rangeEnd }} de {{ rankingData.length }}
-        </div>
-        <div class="pagination-controls">
-          <ChevronLeft :size="20" @click="prevPage" :class="{ disabled: currentPage === 1 }" />
-          <ChevronRight :size="20" @click="nextPage" :class="{ disabled: currentPage === totalPages }" />
-        </div>
-      </div>
-    </div>
+      <TablePagination
+        :total="sortedData.length"
+        :current-page="currentPage"
+        :items-per-page="itemsPerPage"
+        @update:items-per-page="val => { itemsPerPage = val; currentPage = 1 }"
+        @prev="prevPage"
+        @next="nextPage"
+      />
+    </PageCard>
 
     <!-- Filtro Inferior -->
-    <div class="filter-section card">
+    <PageCard>
       <div class="filter-select-wrapper">
         <select class="filter-select">
           <option>{{ nomeFormatado || 'Selecione uma única Pelada' }}</option>
@@ -96,7 +103,7 @@
           <Filter :size="20" />
         </div>
       </div>
-    </div>
+    </PageCard>
 
     <!-- Seção apenas para impressão: tabela completa sem paginação -->
     <div class="print-only">
@@ -109,13 +116,15 @@
       <table class="ranking-table print-table">
         <thead>
           <tr>
+            <th>#</th>
             <th class="col-jogador">Jogador</th>
             <th>%A</th><th>J</th><th>P</th><th>V</th>
             <th>D</th><th>E</th><th>GP</th><th>GC</th><th>SG</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(row, i) in rankingData" :key="i" :class="{ 'stripe-row': i % 2 !== 0 }">
+          <tr v-for="(row, i) in sortedData" :key="i" :class="{ 'stripe-row': i % 2 !== 0 }">
+            <td class="text-center">{{ i + 1 }}º</td>
             <td class="col-jogador">{{ row.jogador }}</td>
             <td class="text-center font-bold">{{ formatPercent(row['%A']) }}</td>
             <td class="text-center highlighted">{{ row.j }}</td>
@@ -135,7 +144,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { Printer, UserCircle, ChevronLeft, ChevronRight, Filter } from 'lucide-vue-next'
+import { Printer, UserCircle, Filter } from 'lucide-vue-next'
 import PlayerProfileModal from '~/components/PlayerProfileModal.vue'
 
 const supabase = useSupabaseClient()
@@ -147,35 +156,70 @@ const isLoading = ref(false)
 const itemsPerPage = ref(10)
 const currentPage = ref(1)
 
+// Ordenação
+const sortKey = ref('classificacao')
+const sortDir = ref('asc')
+
+const setSort = (key) => {
+  if (sortKey.value === key) {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortKey.value = key
+    sortDir.value = key === 'd' ? 'asc' : 'desc'
+  }
+  currentPage.value = 1
+}
+
+const sortIndicator = (key) => {
+  if (sortKey.value !== key) return '↕'
+  return sortDir.value === 'asc' ? '▲' : '▼'
+}
+
+const sortedData = computed(() => {
+  const data = [...rankingData.value]
+  const key = sortKey.value
+  const dir = sortDir.value === 'asc' ? 1 : -1
+
+  return data.sort((a, b) => {
+    const av = key === 'jogador' ? (a[key] || '').toLowerCase() : (parseFloat(a[key]) || 0)
+    const bv = key === 'jogador' ? (b[key] || '').toLowerCase() : (parseFloat(b[key]) || 0)
+    if (av < bv) return -1 * dir
+    if (av > bv) return 1 * dir
+    return 0
+  })
+})
+
+// Computed
+const totalPages = computed(() => Math.max(1, Math.ceil(sortedData.value.length / itemsPerPage.value)))
+
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  return sortedData.value.slice(start, start + itemsPerPage.value)
+})
+
+const posBadgeClass = (index) => {
+  if (index === 0) return 'pos-gold'
+  if (index === 1) return 'pos-silver'
+  if (index === 2) return 'pos-bronze'
+  return ''
+}
+
 // Estado do Modal de Perfil
 const isProfileModalOpen = ref(false)
 const isProfileLoading = ref(false)
 const selectedProfile = ref(null)
 
-// Computed
-const totalPages = computed(() => Math.ceil(rankingData.value.length / itemsPerPage.value))
-const rangeStart = computed(() => ((currentPage.value - 1) * itemsPerPage.value) + 1)
-const rangeEnd = computed(() => Math.min(currentPage.value * itemsPerPage.value, rankingData.value.length))
-
-const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return rankingData.value.slice(start, end)
-})
-
 // Funções
 const fetchRanking = async () => {
   if (!peladaAtual.value.id) return
-  
+
   isLoading.value = true
   try {
     const { data, error } = await supabase
       .from('view_ranking_geral_jogadores')
       .select('*')
       .eq('IdPelada', peladaAtual.value.id)
-      .order('p', { ascending: false })
-      .order('sg', { ascending: false })
-      .order('gp', { ascending: false })
+      .order('classificacao', { ascending: true })
 
     if (error) {
       console.error('Erro ao buscar ranking:', error)
@@ -331,7 +375,7 @@ onMounted(() => {
 .table-wrapper {
   overflow-x: auto;
   overflow-y: auto;
-  max-height: 400px; /* Limita a altura para caber o filtro na tela */
+  max-height: 400px;
   min-height: 200px;
 }
 
@@ -343,13 +387,35 @@ onMounted(() => {
 
 thead th {
   background-color: #00897B;
-  color: #FFFFFF; /* Texto branco para contraste total no fundo verde escuro */
+  color: #FFFFFF;
   padding: 12px 8px;
   text-align: center;
   font-weight: 700;
   border-bottom: 2px solid var(--border-color);
   text-transform: uppercase;
   font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s;
+}
+
+thead th.sortable:hover {
+  background-color: #00796B;
+}
+
+.sort-arrow {
+  font-size: 0.65rem;
+  opacity: 0.8;
+  margin-left: 2px;
+}
+
+.col-pos {
+  min-width: 36px;
+  width: 36px;
 }
 
 .col-jogador {
@@ -394,6 +460,31 @@ td {
   color: #4CAF50;
   font-weight: 800;
   font-size: 1rem;
+}
+
+/* Badges de posição */
+.pos-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 4px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+
+.pos-gold {
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  color: #451a00;
+}
+
+.pos-silver {
+  background: linear-gradient(135deg, #9ca3af, #d1d5db);
+  color: #1f2937;
+}
+
+.pos-bronze {
+  background: linear-gradient(135deg, #b45309, #d97706);
+  color: #fff;
 }
 
 .jogador-cell {
@@ -508,12 +599,12 @@ td {
   .ranking-table {
     font-size: 0.75rem;
   }
-  
+
   .col-stat {
     min-width: 30px;
     padding: 8px 4px;
   }
-  
+
   .pagination-bar {
     justify-content: center;
     flex-wrap: wrap;
@@ -527,7 +618,6 @@ td {
 }
 
 @media print {
-  /* Esconde tudo exceto a tabela de impressão */
   .ranking-header,
   .pagination-bar,
   .filter-section,

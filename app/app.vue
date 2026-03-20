@@ -51,6 +51,8 @@ if (process.client) {
   --text-on-primary: #FFFFFF;
   --border-color: #C4C7C5;
   --card-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body: 'Outfit', sans-serif;
 
   /* ── shadcn-vue tokens (light) ── */
   --background: 240 10% 97%;
@@ -76,40 +78,42 @@ if (process.client) {
 }
 
 .dark {
-  /* ── Tema ProPelada Dark ── */
-  --primary-color: #00E676;
+  /* ── Tema ProPelada Dark — Estádio Noturno ── */
+  --primary-color: #00FF87;
   --secondary-color: #FFD54F;
-  --tertiary-color: #64B5F6;
-  --bg-primary: #1A1C1E;
-  --bg-secondary: #2D2F31;
-  --bg-header: #14181b;
-  --text-primary: #E2E2E6;
-  --text-secondary: #C4C7C5;
-  --text-highlight: #00E676;
+  --tertiary-color: #38BDF8;
+  --bg-primary: #080D14;
+  --bg-secondary: #0F1923;
+  --bg-header: #060B10;
+  --text-primary: #E8EDF2;
+  --text-secondary: #8B9BB4;
+  --text-highlight: #00FF87;
   --text-on-primary: #000000;
-  --border-color: #444746;
-  --card-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  --border-color: rgba(255,255,255,0.08);
+  --card-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body: 'Outfit', sans-serif;
 
   /* ── shadcn-vue tokens (dark) ── */
-  --background: 220 15% 11%;
-  --foreground: 210 12% 89%;
-  --card: 220 12% 18%;
-  --card-foreground: 210 12% 89%;
-  --popover: 220 12% 18%;
-  --popover-foreground: 210 12% 89%;
-  --primary: 145 100% 45%;
+  --background: 216 46% 6%;
+  --foreground: 210 20% 91%;
+  --card: 216 36% 10%;
+  --card-foreground: 210 20% 91%;
+  --popover: 216 36% 10%;
+  --popover-foreground: 210 20% 91%;
+  --primary: 152 100% 50%;
   --primary-foreground: 0 0% 0%;
   --secondary: 45 100% 65%;
   --secondary-foreground: 0 0% 0%;
-  --muted: 220 10% 22%;
-  --muted-foreground: 220 9% 70%;
-  --accent: 145 30% 15%;
-  --accent-foreground: 145 100% 45%;
+  --muted: 216 30% 14%;
+  --muted-foreground: 216 18% 55%;
+  --accent: 152 40% 12%;
+  --accent-foreground: 152 100% 50%;
   --destructive: 0 70% 55%;
   --destructive-foreground: 0 0% 100%;
-  --border: 220 10% 28%;
-  --input: 220 10% 28%;
-  --ring: 145 100% 45%;
+  --border: 216 24% 18%;
+  --input: 216 24% 18%;
+  --ring: 152 100% 50%;
   --radius: 0.5rem;
 }
 
@@ -124,7 +128,7 @@ body {
   min-height: 100vh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: "Inter", sans-serif;
+  font-family: var(--font-body, 'Outfit', sans-serif);
   transition: background-color 0.3s, color 0.3s;
 }
 
