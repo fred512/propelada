@@ -143,9 +143,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { Printer, UserCircle, Filter } from 'lucide-vue-next'
 import PlayerProfileModal from '~/components/PlayerProfileModal.vue'
+import { usePlayerProfile } from '~/composables/usePlayerProfile'
+import { usePagination } from '~/composables/usePagination'
+import { useTableSort } from '~/composables/useTableSort'
+import { watchPelada } from '~/composables/usePelada'
 
 const supabase = useSupabaseClient()
 const { peladaAtual, nomeFormatado } = usePelada()
@@ -153,49 +157,13 @@ const { peladaAtual, nomeFormatado } = usePelada()
 // Estado
 const rankingData = ref([])
 const isLoading = ref(false)
-const itemsPerPage = ref(10)
-const currentPage = ref(1)
 
-// Ordenação
-const sortKey = ref('classificacao')
-const sortDir = ref('asc')
+// Ordenacao e paginacao via composables
+const { sortedData, setSort, sortIndicator } = useTableSort(rankingData, 'classificacao', 'asc')
+const { currentPage, itemsPerPage, paginatedData, nextPage, prevPage } = usePagination(sortedData)
 
-const setSort = (key) => {
-  if (sortKey.value === key) {
-    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortKey.value = key
-    sortDir.value = key === 'd' ? 'asc' : 'desc'
-  }
-  currentPage.value = 1
-}
-
-const sortIndicator = (key) => {
-  if (sortKey.value !== key) return '↕'
-  return sortDir.value === 'asc' ? '▲' : '▼'
-}
-
-const sortedData = computed(() => {
-  const data = [...rankingData.value]
-  const key = sortKey.value
-  const dir = sortDir.value === 'asc' ? 1 : -1
-
-  return data.sort((a, b) => {
-    const av = key === 'jogador' ? (a[key] || '').toLowerCase() : (parseFloat(a[key]) || 0)
-    const bv = key === 'jogador' ? (b[key] || '').toLowerCase() : (parseFloat(b[key]) || 0)
-    if (av < bv) return -1 * dir
-    if (av > bv) return 1 * dir
-    return 0
-  })
-})
-
-// Computed
-const totalPages = computed(() => Math.max(1, Math.ceil(sortedData.value.length / itemsPerPage.value)))
-
-const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  return sortedData.value.slice(start, start + itemsPerPage.value)
-})
+// Perfil
+const { isProfileModalOpen, isProfileLoading, selectedProfile, openProfile } = usePlayerProfile()
 
 const posBadgeClass = (index) => {
   if (index === 0) return 'pos-gold'
@@ -204,12 +172,6 @@ const posBadgeClass = (index) => {
   return ''
 }
 
-// Estado do Modal de Perfil
-const isProfileModalOpen = ref(false)
-const isProfileLoading = ref(false)
-const selectedProfile = ref(null)
-
-// Funções
 const fetchRanking = async () => {
   if (!peladaAtual.value.id) return
 
@@ -234,84 +196,9 @@ const fetchRanking = async () => {
   }
 }
 
-const openProfile = async (idJogador) => {
-  if (!idJogador) return
-
-  isProfileLoading.value = true
-  isProfileModalOpen.value = true
-  selectedProfile.value = null
-
-  try {
-    const today = new Date()
-    const anoAtual = today.getFullYear()
-    const dataIni = `${anoAtual}-01-01`
-    const dataHoje = today.toISOString().split('T')[0]
-    const idPelada = peladaAtual.value.id
-
-    const [{ data: profile }, { data: criterios }, { data: jogadas }, { data: esperas }] = await Promise.all([
-      supabase.rpc('fn_perfil_jogador', {
-        p_idjogador: idJogador,
-        p_datainicial: dataIni,
-        p_datafinal: dataHoje
-      }).maybeSingle(),
-
-      supabase.from('Pontuacao').select('*').eq('IdPelada', idPelada).maybeSingle(),
-
-      supabase.from('JogadorPartida')
-        .select('Resultado, CartaoAmarelo, CartaoAzul, CartaoVermelho, partida:idPartida(Data, chuva)')
-        .eq('IdParticipante', idJogador)
-        .eq('IdPelada', idPelada),
-
-      supabase.from('ListaEspera')
-        .select('partida:IdPartida(Data, chuva, IdPelada)')
-        .eq('idParticipante', idJogador)
-    ])
-
-    if (profile && criterios) {
-      const jogadasAno = (jogadas || []).filter(j => {
-        const d = j.partida?.Data
-        return d && d >= dataIni && d <= dataHoje
-      })
-      const esperasAno = (esperas || []).filter(e => {
-        const d = e.partida?.Data
-        return d && d >= dataIni && d <= dataHoje && e.partida?.IdPelada == idPelada
-      })
-
-      const c = criterios
-      const pontuacaoCalculada =
-        jogadasAno.length * (c.PartidasJogadas || 0) +
-        esperasAno.length * (c.PartidasAssistida || 0) +
-        jogadasAno.filter(j => j.partida?.chuva).length * (c.JogadasChuva || 0) +
-        esperasAno.filter(e => e.partida?.chuva).length * (c.AssistidasChuva || 0) +
-        jogadasAno.filter(j => j.Resultado === 'Vitoria').length * (c.Vitorias || 0) +
-        jogadasAno.filter(j => j.Resultado === 'Empate').length * (c.Empates || 0) +
-        jogadasAno.filter(j => j.Resultado === 'Derrota').length * (c.Derrotas || 0) +
-        jogadasAno.filter(j => j.CartaoAmarelo).length * (c.Amarelo || 0) +
-        jogadasAno.filter(j => j.CartaoAzul).length * (c.Azul || 0) +
-        jogadasAno.filter(j => j.CartaoVermelho).length * (c.Vermelho || 0)
-
-      selectedProfile.value = { ...profile, pontuacao: pontuacaoCalculada }
-    } else {
-      selectedProfile.value = profile
-    }
-  } catch (err) {
-    console.error('Falha ao carregar perfil:', err)
-  } finally {
-    isProfileLoading.value = false
-  }
-}
-
 const formatPercent = (val) => {
   if (val === undefined || val === null) return '0.0'
   return parseFloat(val).toFixed(1)
-}
-
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) currentPage.value++
-}
-
-const prevPage = () => {
-  if (currentPage.value > 1) currentPage.value--
 }
 
 const dataAtual = computed(() => new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }))
@@ -320,14 +207,7 @@ const handlePrint = () => {
   window.print()
 }
 
-// Watchers
-watch(() => peladaAtual.value.id, (newId) => {
-  if (newId) fetchRanking()
-}, { immediate: true })
-
-onMounted(() => {
-  if (peladaAtual.value.id) fetchRanking()
-})
+watchPelada(() => fetchRanking())
 </script>
 
 <style scoped>

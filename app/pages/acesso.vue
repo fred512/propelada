@@ -1,19 +1,14 @@
 <template>
   <div class="acesso-container">
-    <div class="page-title-section">
-      <h1 class="page-title">Gera Código de Acesso</h1>
-    </div>
+    <PageHeader title="Gera Código de Acesso" />
 
-    <div class="content-card card">
+    <PageCard class="content-card">
       <p class="description">
         Gere um código de 6 dígitos para que visitantes possam consultar dados da sua pelada.
         O código expira em <strong>3 horas</strong>.
       </p>
 
-      <div v-if="!peladaAtual.id" class="empty-state">
-        <Key :size="48" />
-        <p>Selecione uma pelada primeiro para gerar o código de acesso.</p>
-      </div>
+      <EmptyState v-if="!peladaAtual.id" :icon="Key" message="Selecione uma pelada primeiro para gerar o código de acesso." />
 
       <div v-else class="main-content">
         <!-- Código atual -->
@@ -60,12 +55,13 @@
 
         <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
       </div>
-    </div>
+    </PageCard>
   </div>
 </template>
 
 <script setup>
 import { Key, Clock, RefreshCw } from 'lucide-vue-next'
+import { watchPelada } from '~/composables/usePelada'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -135,8 +131,7 @@ async function confirmarGeracao() {
   }
 }
 
-onMounted(() => carregarCodigoAtual())
-watch(() => peladaAtual.value.id, carregarCodigoAtual)
+watchPelada(() => carregarCodigoAtual())
 </script>
 
 <style scoped>
@@ -149,20 +144,13 @@ watch(() => peladaAtual.value.id, carregarCodigoAtual)
   margin: 0 auto;
 }
 
-.page-title-section {
+.content-card {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-top: 15px;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.page-title {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: var(--primary-color);
-  margin: 0;
-}
-
+/* inner sub-card (code display, confirm box) */
 .card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -171,27 +159,10 @@ watch(() => peladaAtual.value.id, carregarCodigoAtual)
   box-shadow: var(--card-shadow);
 }
 
-.content-card {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
 .description {
   color: var(--text-secondary);
   line-height: 1.6;
   margin: 0;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 24px 0;
-  color: var(--primary-color);
-  opacity: 0.6;
-  text-align: center;
 }
 
 .main-content {

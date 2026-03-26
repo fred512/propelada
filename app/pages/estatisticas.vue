@@ -1,14 +1,14 @@
 <template>
   <div class="stats-container">
     <div class="page-title-section">
-      <h1 class="page-title">Dashboard da Pelada</h1>
+      <PageHeader title="Dashboard da Pelada" />
       <button class="btn-sync" @click="loadAll" :disabled="isLoading" title="Sincronizar">
         <RefreshCw :size="18" :class="{ 'spinning': isLoading }" />
       </button>
     </div>
 
     <!-- Filtro de Período -->
-    <div class="filter-card card">
+    <PageCard class="filter-card">
       <div class="filter-row">
         <div class="filter-field">
           <label>Início</label>
@@ -19,17 +19,11 @@
           <input v-model="dataFinal" type="date" />
         </div>
       </div>
-    </div>
+    </PageCard>
 
-    <div v-if="!peladaAtual.id" class="empty-state">
-      <Trophy :size="48" />
-      <p>Selecione uma pelada para ver as estatísticas.</p>
-    </div>
+    <EmptyState v-if="!peladaAtual.id" :icon="Trophy" message="Selecione uma pelada para ver as estatísticas." />
 
-    <div v-else-if="isLoading" class="loading-state">
-      <div class="spinner"></div>
-      <p>Carregando estatísticas...</p>
-    </div>
+    <LoadingState v-else-if="isLoading" message="Carregando estatísticas..." />
 
     <div v-else class="charts-grid">
 
@@ -81,10 +75,7 @@
         <Bar :data="charts.vermelhos" :options="chartOptions" />
       </div>
 
-      <div v-if="!hasAnyData && !isLoading" class="empty-state">
-        <Trophy :size="48" />
-        <p>Nenhuma estatística encontrada para o período selecionado.</p>
-      </div>
+      <EmptyState v-if="!hasAnyData && !isLoading" :icon="Trophy" message="Nenhuma estatística encontrada para o período selecionado." class="empty-charts" />
 
     </div>
   </div>
@@ -102,6 +93,7 @@ import {
   Legend
 } from 'chart.js'
 import { RefreshCw, Trophy } from 'lucide-vue-next'
+import { watchPelada } from '~/composables/usePelada'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
@@ -262,9 +254,7 @@ async function loadAll() {
   }
 }
 
-onMounted(async () => {
-  if (!peladaAtual.value.id) return
-
+watchPelada(async () => {
   const { data: pelada } = await supabase
     .from('Pelada')
     .select('DataInicial, DataFinal')
@@ -275,10 +265,6 @@ onMounted(async () => {
   if (pelada?.DataFinal) dataFinal.value = pelada.DataFinal.split('T')[0]
 
   await loadAll()
-})
-
-watch(() => peladaAtual.value.id, (newId) => {
-  if (newId) loadAll()
 })
 </script>
 
@@ -295,15 +281,6 @@ watch(() => peladaAtual.value.id, (newId) => {
   gap: 12px;
   margin-bottom: 20px;
   padding-top: 15px;
-}
-
-.page-title {
-  color: var(--primary-color);
-  font-size: 1.5rem;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 8px;
-  margin: 0;
 }
 
 .btn-sync {
@@ -400,34 +377,7 @@ watch(() => peladaAtual.value.id, (newId) => {
   max-height: 300px;
 }
 
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 48px 16px;
-  color: var(--text-secondary);
-  text-align: center;
+.empty-charts {
   grid-column: 1 / -1;
-}
-
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 48px;
-  color: var(--text-secondary);
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid var(--border-color);
-  border-top-color: var(--primary-color);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
 }
 </style>

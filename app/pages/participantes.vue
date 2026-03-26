@@ -189,18 +189,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { 
-  RotateCcw, 
-  Save, 
-  Search, 
-  Calendar, 
+import { ref } from 'vue'
+import {
+  RotateCcw,
+  Save,
+  Search,
+  Calendar,
   User as UserIcon,
-  UserCircle 
+  UserCircle
 } from 'lucide-vue-next'
 import PlayerProfileModal from '~/components/PlayerProfileModal.vue'
 import UiAvatar from '@/components/ui/avatar/Avatar.vue'
 import UiBadge from '@/components/ui/badge/Badge.vue'
+import { usePlayerProfile } from '~/composables/usePlayerProfile'
+import { watchPelada } from '~/composables/usePelada'
 
 const supabase = useSupabaseClient()
 const { peladaAtual } = usePelada()
@@ -213,10 +215,8 @@ const searchQuery = ref('')
 const participants = ref([])
 const showResults = ref(false)
 
-// Estado do Modal de Perfil
-const isProfileModalOpen = ref(false)
-const isProfileLoading = ref(false)
-const selectedProfile = ref(null)
+// Perfil via composable
+const { isProfileModalOpen, isProfileLoading, selectedProfile, openProfile } = usePlayerProfile()
 
 const form = ref({
   nome: '',
@@ -356,68 +356,6 @@ const saveParticipant = async () => {
   }
 }
 
-const openProfile = async (idJogador) => {
-  if (!idJogador) return
-
-  isProfileLoading.value = true
-  isProfileModalOpen.value = true
-  selectedProfile.value = null
-
-  try {
-    const today = new Date()
-    const anoAtual = today.getFullYear()
-    const dataIni = `${anoAtual}-01-01`
-    const dataHoje = today.toISOString().split('T')[0]
-    const idPelada = peladaAtual.value.id
-
-    const [{ data: profile }, { data: criterios }, { data: jogadas }, { data: esperas }] = await Promise.all([
-      supabase.rpc('fn_perfil_jogador', {
-        p_idjogador: idJogador,
-        p_datainicial: dataIni,
-        p_datafinal: dataHoje
-      }).maybeSingle(),
-      supabase.from('Pontuacao').select('*').eq('IdPelada', idPelada).maybeSingle(),
-      supabase.from('JogadorPartida')
-        .select('Resultado, CartaoAmarelo, CartaoAzul, CartaoVermelho, partida:idPartida(Data, chuva)')
-        .eq('IdParticipante', idJogador)
-        .eq('IdPelada', idPelada),
-      supabase.from('ListaEspera')
-        .select('partida:IdPartida(Data, chuva, IdPelada)')
-        .eq('idParticipante', idJogador)
-    ])
-
-    if (profile && criterios) {
-      const jogadasAno = (jogadas || []).filter(j => {
-        const d = j.partida?.Data
-        return d && d >= dataIni && d <= dataHoje
-      })
-      const esperasAno = (esperas || []).filter(e => {
-        const d = e.partida?.Data
-        return d && d >= dataIni && d <= dataHoje && e.partida?.IdPelada == idPelada
-      })
-      const c = criterios
-      const pontuacaoCalculada =
-        jogadasAno.length                                      * (c.PartidasJogadas  || 0) +
-        esperasAno.length                                      * (c.PartidasAssistida || 0) +
-        jogadasAno.filter(j => j.partida?.chuva).length       * (c.JogadasChuva     || 0) +
-        esperasAno.filter(e => e.partida?.chuva).length       * (c.AssistidasChuva  || 0) +
-        jogadasAno.filter(j => j.Resultado === 'Vitoria').length  * (c.Vitorias     || 0) +
-        jogadasAno.filter(j => j.Resultado === 'Empate').length   * (c.Empates      || 0) +
-        jogadasAno.filter(j => j.Resultado === 'Derrota').length  * (c.Derrotas     || 0) +
-        jogadasAno.filter(j => j.CartaoAmarelo).length         * (c.Amarelo         || 0) +
-        jogadasAno.filter(j => j.CartaoAzul).length            * (c.Azul            || 0) +
-        jogadasAno.filter(j => j.CartaoVermelho).length        * (c.Vermelho        || 0)
-      selectedProfile.value = { ...profile, pontuacao: pontuacaoCalculada }
-    } else {
-      selectedProfile.value = profile
-    }
-  } catch (err) {
-    console.error('Falha ao carregar perfil:', err)
-  } finally {
-    isProfileLoading.value = false
-  }
-}
-
 const triggerPhotoUpload = () => photoInput.value.click()
 
 const handlePhotoUpload = async (e) => {
@@ -433,19 +371,7 @@ const handlePhotoUpload = async (e) => {
   reader.readAsDataURL(file)
 }
 
-// Observar mudanças na pelada para carregar participantes
-watch(() => peladaAtual.value.id, (newId) => {
-  if (newId) {
-    console.log('Pelada ID detectado em participantes, buscando lista...')
-    fetchParticipants()
-  }
-}, { immediate: true })
-
-onMounted(() => {
-  if (peladaAtual.value.id) {
-    fetchParticipants()
-  }
-})
+watchPelada(() => fetchParticipants())
 </script>
 
 <style scoped>

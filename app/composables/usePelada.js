@@ -105,3 +105,7 @@ export const usePelada = () => {
   }
 }
 
+export function watchPelada(callback) {
+  const { peladaAtual } = usePelada()
+  watch(() => peladaAtual.value?.id, (id) => { if (id) callback(id) }, { immediate: true })
+}

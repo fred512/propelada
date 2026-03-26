@@ -246,599 +246,99 @@
     />
 
     <!-- Modal Tutorial Partida -->
-    <div v-if="showHelp" class="modal-overlay" @click="showHelp = false">
-      <div class="modal-content help-modal" @click.stop>
-        <div class="modal-header">
-          <h2 class="tutorial-title">Tutorial - Súmula do Jogo</h2>
-          <button class="close-btn" @click="showHelp = false"><X :size="24" /></button>
-        </div>
-        <div class="help-grid">
-          <p class="help-section-title">Botões do Cabeçalho</p>
-          <div class="help-item">
-            <span class="icon-circle blue"><Search :size="16" /></span>
-            <span>Pesquisar e selecionar outra partida por data</span>
-          </div>
-          <div class="help-item">
-            <span class="icon-circle yellow"><FileText :size="16" /></span>
-            <span>Ver resumo dos resultados da partida atual</span>
-          </div>
-          <div class="help-item">
-            <span class="icon-circle red"><Plus :size="16" /></span>
-            <span>Criar nova partida — distribui os jogadores automaticamente</span>
-          </div>
-          <div class="help-item">
-            <span class="icon-circle teal"><Users :size="16" /></span>
-            <span>Lista de espera — jogadores aguardando para jogar</span>
-          </div>
-          <div class="help-item">
-            <span class="icon-circle green"><CheckSquare :size="16" /></span>
-            <span>Fechar partida — habilita estatísticas e bloqueia edições</span>
-          </div>
-          <p class="help-section-title" style="margin-top: 12px">Cartão do Jogador</p>
-          <div class="help-item">
-            <span class="icon-emoji">👤</span>
-            <span>Ver perfil completo com estatísticas históricas do jogador</span>
-          </div>
-          <div class="help-item">
-            <span class="icon-emoji">⚽</span>
-            <span>Toque na bola para abrir as ações do jogador (gols, cartões, etc.)</span>
-          </div>
-          <div class="help-item">
-            <span class="icon-circle dark"><Menu :size="18" /></span>
-            <span>Menu de ações: registrar gols, gols contra, cartões, substituição e remoção</span>
-          </div>
-          <div class="help-item">
-            <span class="icon-circle gray"><RefreshCw :size="18" /></span>
-            <span>Marcar jogador como substituído</span>
-          </div>
-          <p class="help-section-title" style="margin-top: 12px">Scoreboard</p>
-          <div class="help-item">
-            <span class="icon-emoji">⏱️</span>
-            <span>Cronômetro — 1 toque: ligar/desligar | 2 toques rápidos: zerar</span>
-          </div>
-          <div class="help-item">
-            <span class="icon-emoji">🕐</span>
-            <span>Badge 1º/2º Tempo — toque para trocar o período da partida</span>
-          </div>
-          <p class="help-section-title" style="margin-top: 12px">Rodapé</p>
-          <div class="help-item">
-            <span class="icon-emoji">🌧️</span>
-            <span>Indicar que a partida ocorreu com chuva</span>
-          </div>
-          <div class="help-item">
-            <span class="icon-emoji">📋</span>
-            <span>Status e horário de início do período atual da partida</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <HelpModal v-model="showHelp" @close="showHelp = false" />
 
     <!-- Modal Ações do Jogador -->
-    <div v-if="showActionsModal && selectedPlayer" class="modal-overlay" @click="showActionsModal = false">
-      <div class="modal-content actions-modal" @click.stop>
-        <div class="modal-header">
-          <div>
-            <h2 class="actions-player-name">{{ selectedPlayer.Nome }}</h2>
-            <p class="actions-player-sub">Ocorrências da Partida</p>
-          </div>
-          <button class="close-btn" @click="showActionsModal = false"><X :size="24" /></button>
-        </div>
-
-        <!-- Erro de atualização -->
-        <div v-if="actionError" class="action-error-msg">
-          ⚠️ {{ actionError }}
-        </div>
-
-        <!-- Aviso de substituído -->
-        <div v-if="selectedPlayer.Substituido === true" class="sub-warning">
-          <RefreshCw :size="16" />
-          Jogador substituído — ações bloqueadas
-        </div>
-
-        <!-- Gols Pro -->
-        <div class="action-row" :class="{ 'row-disabled': selectedPlayer.Substituido === true }">
-          <span class="action-label">
-            <SoccerBall class="action-icon goal-green" />
-            Gols
-          </span>
-          <div class="counter-group">
-            <button class="counter-btn minus" :disabled="selectedPlayer.Substituido === true" @click="changeGoal(-1)"><Minus :size="16" /></button>
-            <span class="counter-val">{{ selectedPlayer.Gol || 0 }}</span>
-            <button class="counter-btn plus" :disabled="selectedPlayer.Substituido === true" @click="changeGoal(1)"><Plus :size="16" /></button>
-          </div>
-        </div>
-
-        <!-- Gols Contra -->
-        <div class="action-row" :class="{ 'row-disabled': selectedPlayer.Substituido === true }">
-          <span class="action-label">
-            <SoccerBall class="action-icon goal-red" />
-            Gol Contra
-          </span>
-          <div class="counter-group">
-            <button class="counter-btn minus" :disabled="selectedPlayer.Substituido === true" @click="changeGoalContra(-1)"><Minus :size="16" /></button>
-            <span class="counter-val">{{ selectedPlayer.GolContra || 0 }}</span>
-            <button class="counter-btn plus" :disabled="selectedPlayer.Substituido === true" @click="changeGoalContra(1)"><Plus :size="16" /></button>
-          </div>
-        </div>
-
-        <!-- Cartões -->
-        <div class="action-row" :class="{ 'row-disabled': selectedPlayer.Substituido === true }">
-          <span class="action-label">Cartões</span>
-          <div class="cards-group">
-            <button
-              class="card-toggle"
-              :class="{ 'card-active-yellow': selectedPlayer.CartaoAmarelo }"
-              :disabled="selectedPlayer.Substituido === true"
-              @click="toggleCard('CartaoAmarelo')"
-            >
-              <span class="card-rect yellow-rect" />
-            </button>
-            <button
-              class="card-toggle"
-              :class="{ 'card-active-blue': selectedPlayer.CartaoAzul }"
-              :disabled="selectedPlayer.Substituido === true"
-              @click="toggleCard('CartaoAzul')"
-            >
-              <span class="card-rect blue-rect" />
-            </button>
-            <button
-              class="card-toggle"
-              :class="{ 'card-active-red': selectedPlayer.CartaoVermelho }"
-              :disabled="selectedPlayer.Substituido === true"
-              @click="toggleCard('CartaoVermelho')"
-            >
-              <span class="card-rect red-rect" />
-            </button>
-          </div>
-        </div>
-
-        <!-- Substituído -->
-        <div class="action-row">
-          <span class="action-label"><RefreshCw :size="18" /> Substituído</span>
-          <div class="sub-period-group">
-            <button
-              class="sub-period-btn"
-              :class="{ active: !selectedPlayer.Substituido }"
-              @click="setSubstitution(null)"
-            >Não</button>
-            <button
-              class="sub-period-btn"
-              :class="{ active: selectedPlayer.Substituido && selectedPlayer.TempSub === 1 }"
-              @click="setSubstitution(1)"
-            >1º Tempo</button>
-            <button
-              class="sub-period-btn sub-period-btn--2"
-              :class="{ active: selectedPlayer.Substituido && selectedPlayer.TempSub === 2 }"
-              @click="setSubstitution(2)"
-            >Intervalo</button>
-          </div>
-        </div>
-
-        <!-- Trocar Time -->
-        <div class="action-row">
-          <span class="action-label">Time</span>
-          <button class="btn-switch-team" @click="switchTeam">
-            Mover para {{ selectedPlayer.Time === '1' ? 'Time 2 (Amarelo)' : 'Time 1 (Azul)' }}
-          </button>
-        </div>
-
-        <!-- Remover -->
-        <div class="action-row-danger">
-          <button class="btn-remove-player" @click="removeFromMatch">
-            🗑️ Remover da Partida
-          </button>
-        </div>
-      </div>
-    </div>
+    <PlayerActionsModal
+      v-model="showActionsModal"
+      :selected-player="selectedPlayer"
+      :action-error="actionError"
+      @close="showActionsModal = false"
+      @update-stat="handleUpdateStat"
+      @set-substitution="setSubstitution"
+      @switch-team="switchTeam"
+      @remove="removeFromMatch"
+    />
 
     <!-- Modal Resumo da Partida -->
-    <div v-if="showSummary" class="modal-overlay" @click="showSummary = false">
-      <div class="modal-content summary-modal" @click.stop>
-
-        <!-- Barra de abas fixa -->
-        <div class="s-tab-bar">
-          <button class="s-tb-btn" :class="{ active: summaryTab === 'geral' }" @click="summaryTab = 'geral'">Geral</button>
-          <button class="s-tb-btn" :class="{ active: summaryTab === 'primeiro' }" @click="summaryTab = 'primeiro'">1ºTempo</button>
-          <button class="s-tb-btn" :class="{ active: summaryTab === 'segundo' }" @click="summaryTab = 'segundo'">2ºTempo</button>
-        </div>
-
-        <!-- Área scrollável -->
-        <div class="s-scroll-area">
-
-          <!-- ABA GERAL -->
-          <template v-if="summaryTab === 'geral'">
-            <div class="s-content-header">
-              <span class="s-content-title">Resumo da Partida</span>
-              <button class="close-btn" @click="showSummary = false"><X :size="20" /></button>
-            </div>
-            <div class="s-content-date">
-              <CloudRain v-if="partida?.Chuva || partida?.chuva" :size="15" style="vertical-align:middle;margin-right:4px;" />
-              {{ formatDate(partida?.Data) }}
-            </div>
-            <div class="s-content-placar">
-              Placar :
-              <span class="s-cp-num t1-color">{{ scoreTeam1 }}</span>
-              <span class="s-cp-x">x</span>
-              <span class="s-cp-num t2-color">{{ scoreTeam2 }}</span>
-            </div>
-            <div class="s-two-cols">
-              <div class="s-team-card t1-bg">
-                <p class="s-section-lbl">TIME 1</p>
-                <div v-for="p in team1Players" :key="'g1_'+p.id" class="s-full-player">
-                  <span class="s-fp-name" :class="{'fp-sub': p.substituido}">{{ p.Nome }}</span>
-                  <div class="s-fp-events">
-                    <span v-if="p.entrou_no_intervalo" class="s-fp-entry-tag">ENT</span>
-                    <span v-if="(p.Gol||0)>0" class="s-fp-stat">⚽ {{ p.Gol }}</span>
-                    <span v-if="(p.GolContra||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContra }}</span>
-                    <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
-                    <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
-                    <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
-                  </div>
-                </div>
-              </div>
-              <div class="s-team-card t2-bg">
-                <p class="s-section-lbl">TIME 2</p>
-                <div v-for="p in team2Players" :key="'g2_'+p.id" class="s-full-player">
-                  <span class="s-fp-name" :class="{'fp-sub': p.substituido}">{{ p.Nome }}</span>
-                  <div class="s-fp-events">
-                    <span v-if="p.entrou_no_intervalo" class="s-fp-entry-tag">ENT</span>
-                    <span v-if="(p.Gol||0)>0" class="s-fp-stat">⚽ {{ p.Gol }}</span>
-                    <span v-if="(p.GolContra||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContra }}</span>
-                    <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
-                    <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
-                    <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </template>
-
-          <!-- ABA 1º TEMPO -->
-          <template v-else-if="summaryTab === 'primeiro'">
-            <div class="s-content-header">
-              <span class="s-content-title">Resumo 1º Tempo</span>
-              <button class="close-btn" @click="showSummary = false"><X :size="20" /></button>
-            </div>
-            <div class="s-content-date">{{ formatDate(partida?.Data) }}</div>
-            <div class="s-content-placar">
-              Placar :
-              <span class="s-cp-num t1-color">{{ score1T1 }}</span>
-              <span class="s-cp-x">x</span>
-              <span class="s-cp-num t2-color">{{ score1T2 }}</span>
-            </div>
-            <div class="s-two-cols">
-              <div class="s-team-card t1-bg">
-                <p class="s-section-lbl">TIME 1</p>
-                <div v-for="p in team1Primeiro" :key="'1p1_'+p.id" class="s-full-player">
-                  <span class="s-fp-name">{{ p.Nome }}</span>
-                  <div class="s-fp-events">
-                    <span v-if="(p.GolPrimeiro||0)>0" class="s-fp-stat">⚽ {{ p.GolPrimeiro }}</span>
-                    <span v-if="(p.GolContraPrimeiro||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContraPrimeiro }}</span>
-                    <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
-                    <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
-                    <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
-                  </div>
-                </div>
-              </div>
-              <div class="s-team-card t2-bg">
-                <p class="s-section-lbl">TIME 2</p>
-                <div v-for="p in team2Primeiro" :key="'1p2_'+p.id" class="s-full-player">
-                  <span class="s-fp-name">{{ p.Nome }}</span>
-                  <div class="s-fp-events">
-                    <span v-if="(p.GolPrimeiro||0)>0" class="s-fp-stat">⚽ {{ p.GolPrimeiro }}</span>
-                    <span v-if="(p.GolContraPrimeiro||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContraPrimeiro }}</span>
-                    <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
-                    <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
-                    <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </template>
-
-          <!-- ABA 2º TEMPO -->
-          <template v-else>
-            <div class="s-content-header">
-              <span class="s-content-title">Resumo 2º Tempo</span>
-              <button class="close-btn" @click="showSummary = false"><X :size="20" /></button>
-            </div>
-            <div class="s-content-date">{{ formatDate(partida?.Data) }}</div>
-            <div class="s-content-placar">
-              Placar :
-              <span class="s-cp-num t1-color">{{ score2T1 }}</span>
-              <span class="s-cp-x">x</span>
-              <span class="s-cp-num t2-color">{{ score2T2 }}</span>
-            </div>
-            <div class="s-two-cols">
-              <div class="s-team-card t1-bg">
-                <p class="s-section-lbl">TIME 1</p>
-                <div v-for="p in team1Segundo" :key="'2p1_'+p.id" class="s-full-player">
-                  <span class="s-fp-name">{{ p.Nome }}</span>
-                  <div class="s-fp-events">
-                    <span v-if="(p.GolSegundo||0)>0" class="s-fp-stat">⚽ {{ p.GolSegundo }}</span>
-                    <span v-if="(p.GolContraSegundo||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContraSegundo }}</span>
-                    <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
-                    <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
-                    <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
-                  </div>
-                </div>
-              </div>
-              <div class="s-team-card t2-bg">
-                <p class="s-section-lbl">TIME 2</p>
-                <div v-for="p in team2Segundo" :key="'2p2_'+p.id" class="s-full-player">
-                  <span class="s-fp-name">{{ p.Nome }}</span>
-                  <div class="s-fp-events">
-                    <span v-if="(p.GolSegundo||0)>0" class="s-fp-stat">⚽ {{ p.GolSegundo }}</span>
-                    <span v-if="(p.GolContraSegundo||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContraSegundo }}</span>
-                    <span v-if="p.CartaoAmarelo" class="s-fc-chip fc-yellow" />
-                    <span v-if="p.CartaoAzul" class="s-fc-chip fc-blue" />
-                    <span v-if="p.CartaoVermelho" class="s-fc-chip fc-red" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </template>
-
-        </div>
-
-      </div>
-    </div>
+    <SummaryModal
+      v-model="showSummary"
+      :partida="partida"
+      :team1-players="team1Players"
+      :team2-players="team2Players"
+      :team1-primeiro="team1Primeiro"
+      :team2-primeiro="team2Primeiro"
+      :team1-segundo="team1Segundo"
+      :team2-segundo="team2Segundo"
+      :score-team1="scoreTeam1"
+      :score-team2="scoreTeam2"
+      :score1-t1="score1T1"
+      :score1-t2="score1T2"
+      :score2-t1="score2T1"
+      :score2-t2="score2T2"
+      @close="showSummary = false"
+    />
 
     <!-- Modal Pesquisa de Partidas -->
-    <div v-if="showSearchModal" class="modal-overlay" @click="showSearchModal = false">
-      <div class="modal-content search-modal" @click.stop>
-        <div class="modal-header">
-          <h2 class="search-title">Selecione uma Partida</h2>
-          <button class="close-btn" @click="showSearchModal = false"><X :size="24" /></button>
-        </div>
-        
-        <div class="search-filters">
-          <div class="date-filter-row">
-            <input type="date" v-model="startDate" class="date-input-native" />
-            <span class="filter-sep">até</span>
-            <input type="date" v-model="endDate" class="date-input-native" />
-            <button v-if="dateFilterActive" class="btn-clear-filter" @click="startDate = ''; endDate = ''">✕</button>
-          </div>
-        </div>
-
-        <div class="matches-search-list">
-          <div class="matches-search-scroll">
-            <div v-for="m in filteredMatches" :key="m.idPartida" class="match-search-item" @click="selectMatch(m.idPartida)">
-              <span class="match-date">{{ formatDate(m.Data) }}</span>
-              <Check v-if="m.idPartida == route.params.id" :size="20" class="selected-check" />
-              <div v-else class="check-box"></div>
-            </div>
-          </div>
-          <button
-            v-if="!dateFilterActive && matches.length > 5"
-            class="btn-load-more"
-            @click="showAllMatches = !showAllMatches"
-          >
-            {{ showAllMatches ? 'Mostrar últimas 5' : `Ver todas (${matches.length})` }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <MatchSearchModal
+      v-model="showSearchModal"
+      :matches="matches"
+      :current-id="route.params.id"
+      @close="showSearchModal = false"
+      @select="selectMatch"
+    />
 
     <!-- Modal de Intervalo -->
-    <div v-if="showHalftimeModal" class="modal-overlay">
-      <div class="modal-content ht-modal" @click.stop>
-        <div class="ht-header">
-          <span class="ht-title">Intervalo</span>
-          <button class="close-btn" @click="showHalftimeModal = false"><X :size="22" /></button>
-        </div>
-        <p class="ht-subtitle">Marque quem sai e adicione substitutos antes de iniciar o 2º Tempo.</p>
-
-        <!-- Contadores -->
-        <div class="ht-counts">
-          <span class="ht-count" :class="{ 'ht-count-ok': team1SecondHalfCount === 9, 'ht-count-warn': team1SecondHalfCount !== 9 }">
-            Time 1: {{ team1SecondHalfCount }}/9
-          </span>
-          <span class="ht-count" :class="{ 'ht-count-ok': team2SecondHalfCount === 9, 'ht-count-warn': team2SecondHalfCount !== 9 }">
-            Time 2: {{ team2SecondHalfCount }}/9
-          </span>
-        </div>
-
-        <!-- Times -->
-        <div class="ht-two-cols">
-          <!-- Time 1 -->
-          <div class="ht-team t1-bg">
-            <div class="ht-team-header">
-              <span class="ht-team-label">TIME 1</span>
-              <button class="ht-add-btn" @click="openAddPlayer('1')"><Plus :size="14" /> Espera</button>
-            </div>
-            <div v-for="p in team1Players" :key="'ht1_'+p.id" class="ht-player" :class="{ 'ht-player-out': p.substituido }">
-              <span class="ht-player-name">{{ p.Nome }}</span>
-              <span v-if="p.entrou_no_intervalo" class="ht-entry-tag">ENTROU</span>
-              <button class="ht-leave-btn" :class="{ 'ht-leave-active': p.substituido }" @click="toggleHalftimeLeave(p)">
-                {{ p.substituido ? 'Volta' : 'Sai' }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Time 2 -->
-          <div class="ht-team t2-bg">
-            <div class="ht-team-header">
-              <span class="ht-team-label">TIME 2</span>
-              <button class="ht-add-btn" @click="openAddPlayer('2')"><Plus :size="14" /> Espera</button>
-            </div>
-            <div v-for="p in team2Players" :key="'ht2_'+p.id" class="ht-player" :class="{ 'ht-player-out': p.substituido }">
-              <span class="ht-player-name">{{ p.Nome }}</span>
-              <span v-if="p.entrou_no_intervalo" class="ht-entry-tag">ENTROU</span>
-              <button class="ht-leave-btn" :class="{ 'ht-leave-active': p.substituido }" @click="toggleHalftimeLeave(p)">
-                {{ p.substituido ? 'Volta' : 'Sai' }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <button class="ht-start-btn" @click="startSecondHalf">
-          Iniciar 2º Tempo
-        </button>
-      </div>
-    </div>
+    <HalftimeModal
+      v-model="showHalftimeModal"
+      :team1-players="team1Players"
+      :team2-players="team2Players"
+      @close="showHalftimeModal = false"
+      @start-second-half="startSecondHalf"
+      @toggle-sub="toggleHalftimeLeave"
+      @add-player="openAddPlayer"
+    />
 
     <!-- Modal de Lista de Espera -->
-    <div v-if="showWaitingList" class="modal-overlay" @click="showWaitingList = false">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h2>{{ targetTeam ? `Adicionar ao Time ${targetTeam}` : 'Lista de Espera' }}</h2>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <button v-if="!targetTeam" class="icon-btn search-blue" style="width:36px;height:36px;" title="Buscar participante" @click="openParticipantSearch">
-              <Search :size="16" />
-            </button>
-            <button class="close-btn" @click="showWaitingList = false"><X :size="24" /></button>
-          </div>
-        </div>
-        <div class="waiting-list-body">
-          <div v-if="waitingList.length === 0" class="empty-list">Ninguém na espera.</div>
-
-          <!-- Modo seleção: aberto pelo "+" do time -->
-          <template v-if="targetTeam">
-            <div
-              v-for="w in waitingList"
-              :key="w.idJogadorLista"
-              class="waiting-item"
-              :class="{ 'ps-item-selected': selectedWaitingPlayers.has(w.idJogadorLista) }"
-              style="cursor:pointer; border: 1px solid transparent;"
-              @click="toggleWaitingSelection(w)"
-            >
-              <span>{{ w.Apelido || '?' }}</span>
-              <div class="ps-checkbox" :class="{ 'ps-checked': selectedWaitingPlayers.has(w.idJogadorLista) }">
-                <Check v-if="selectedWaitingPlayers.has(w.idJogadorLista)" :size="14" />
-              </div>
-            </div>
-          </template>
-
-          <!-- Modo normal: aberto pelo botão de lista de espera -->
-          <template v-else>
-            <div v-for="w in waitingList" :key="w.idJogadorLista" class="waiting-item">
-              <span>{{ w.Apelido || '?' }}</span>
-              <button class="btn-delete-waiting" @click="removeFromWaitingList(w)" title="Remover da lista">
-                <Trash2 :size="16" />
-              </button>
-            </div>
-          </template>
-        </div>
-
-        <div v-if="targetTeam" class="ps-footer">
-          <button
-            class="ps-btn-add"
-            :disabled="selectedWaitingPlayers.size === 0 || isAddingToTeam"
-            @click="addSelectedToTeam"
-          >
-            {{ isAddingToTeam ? 'Adicionando...' : `Adicionar (${selectedWaitingPlayers.size})` }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <WaitingListModal
+      v-model="showWaitingList"
+      :waiting-list="waitingList"
+      :target-team="targetTeam"
+      :selected-waiting-players="selectedWaitingPlayers"
+      :is-adding="isAddingToTeam"
+      @close="showWaitingList = false"
+      @open-search="openParticipantSearch"
+      @toggle-selection="toggleWaitingSelection"
+      @remove="removeFromWaitingList"
+      @add-selected="addSelectedToTeam"
+    />
 
     <!-- Modal Busca de Participantes -->
-    <div v-if="showParticipantSearch" class="modal-overlay" @click="showParticipantSearch = false">
-      <div class="modal-content participant-search-modal" @click.stop>
-        <div class="modal-header">
-          <h2 class="search-title">Adicionar à Lista</h2>
-          <button class="close-btn" @click="showParticipantSearch = false"><X :size="24" /></button>
-        </div>
-
-        <div class="ps-search-row">
-          <input
-            v-model="participantSearchQuery"
-            type="text"
-            placeholder="Nome ou apelido..."
-            class="ps-input"
-            @input="searchParticipants"
-          />
-        </div>
-
-        <div class="ps-list">
-          <div v-if="isSearchingParticipants" class="ps-loading">Buscando...</div>
-          <div v-else-if="participantSearchResults.length === 0" class="ps-empty">
-            Nenhum participante encontrado
-          </div>
-          <div
-            v-for="p in participantSearchResults"
-            :key="p.IdParticipante"
-            class="ps-item"
-            :class="{ 'ps-item-selected': selectedParticipants.has(p.IdParticipante) }"
-            @click="toggleParticipantSelection(p)"
-          >
-            <div class="ps-info">
-              <span class="ps-name">{{ p.Apelido || p.apelido || p.Nome || p.nome }}</span>
-              <span class="ps-type">{{ p.TipoParticipante }}</span>
-            </div>
-            <div class="ps-checkbox" :class="{ 'ps-checked': selectedParticipants.has(p.IdParticipante) }">
-              <Check v-if="selectedParticipants.has(p.IdParticipante)" :size="14" />
-            </div>
-          </div>
-        </div>
-
-        <div class="ps-footer">
-          <button
-            class="ps-btn-add"
-            :disabled="selectedParticipants.size === 0 || isAddingToList"
-            @click="addSelectedToWaitingList"
-          >
-            {{ isAddingToList ? 'Adicionando...' : `Adicionar (${selectedParticipants.size})` }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <ParticipantSearchModal
+      v-model="showParticipantSearch"
+      :results="participantSearchResults"
+      :selected="selectedParticipants"
+      :is-searching="isSearchingParticipants"
+      :is-adding="isAddingToList"
+      @close="showParticipantSearch = false"
+      @search="onParticipantSearch"
+      @toggle="toggleParticipantSelection"
+      @add-selected="addSelectedToWaitingList"
+    />
 
     <!-- Modal Código de Acesso -->
-    <div v-if="showAccessModal" class="modal-overlay" @click.self="showAccessModal = false">
-      <div class="modal-content access-modal" @click.stop>
-        <div class="modal-header">
-          <h2 class="access-title"><Key :size="20" /> Código de Acesso</h2>
-          <button class="close-btn" @click="showAccessModal = false"><X :size="24" /></button>
-        </div>
-        <div class="access-body">
-          <p class="access-desc">Digite o código de 6 dígitos fornecido pelo administrador para liberar as ações da partida.</p>
-          <input
-            v-model="acessoCodigoInput"
-            type="text"
-            maxlength="6"
-            placeholder="000000"
-            class="access-input"
-            inputmode="numeric"
-            @keyup.enter="validarCodigo"
-          />
-          <div v-if="acessoError" class="access-error">{{ acessoError }}</div>
-          <button
-            class="btn-access-confirm"
-            :disabled="acessoCodigoInput.length !== 6 || acessoLoading"
-            @click="validarCodigo"
-          >
-            {{ acessoLoading ? 'Verificando...' : 'Confirmar' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <AccessCodeModal
+      v-model="showAccessModal"
+      @close="showAccessModal = false"
+      @confirmed="onAccessConfirmed"
+    />
 
     <!-- Modal de Criação de Partida -->
-    <div v-if="showCreateMatch" class="modal-overlay" @click="showCreateMatch = false">
-      <div class="modal-content new-match-modal" @click.stop>
-        <div class="modal-header">
-          <h2 class="nm-title">Nova Partida</h2>
-          <button class="close-btn" @click="showCreateMatch = false"><X :size="24" /></button>
-        </div>
-
-        <div class="nm-body">
-          <div class="nm-field">
-            <label class="nm-label"><Calendar :size="15" /> Data da Partida</label>
-            <input v-model="newMatchDate" type="date" class="nm-input" />
-          </div>
-
-
-          <div class="nm-actions">
-            <button class="nm-btn-cancel" @click="showCreateMatch = false">Cancelar</button>
-            <button class="nm-btn-create" :disabled="!newMatchDate" @click="createNewMatch">
-              <Plus :size="16" /> Criar
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <CreateMatchModal
+      v-model="showCreateMatch"
+      @close="showCreateMatch = false"
+      @created="onMatchCreated"
+    />
   <!-- Toast: jogador substituído -->
   <transition name="toast-fade">
     <div v-if="quickGoalMsg" class="quick-goal-toast">{{ quickGoalMsg }}</div>
@@ -855,11 +355,21 @@ import {
 } from 'lucide-vue-next'
 import PlayerProfileModal from '~/components/PlayerProfileModal.vue'
 import SoccerBall from '~/components/SoccerBall.vue'
+import HelpModal from '~/components/HelpModal.vue'
+import PlayerActionsModal from '~/components/PlayerActionsModal.vue'
+import SummaryModal from '~/components/SummaryModal.vue'
+import MatchSearchModal from '~/components/MatchSearchModal.vue'
+import HalftimeModal from '~/components/HalftimeModal.vue'
+import WaitingListModal from '~/components/WaitingListModal.vue'
+import ParticipantSearchModal from '~/components/ParticipantSearchModal.vue'
+import AccessCodeModal from '~/components/AccessCodeModal.vue'
+import CreateMatchModal from '~/components/CreateMatchModal.vue'
 
 const route = useRoute()
 const router = useRouter()
 const supabase = useSupabaseClient()
 const { peladaAtual, nomeFormatado, setPelada, isVisitor } = usePelada()
+const { isProfileLoading, selectedProfile, openProfile } = usePlayerProfile()
 
 // Estado
 const partida = ref(null)
@@ -892,8 +402,7 @@ const showSearchModal = ref(false)
 
 // Modal Perfil do Jogador
 const showProfileModal = ref(false)
-const selectedProfile = ref(null)
-const isProfileLoading = ref(false)
+// selectedProfile and isProfileLoading come from usePlayerProfile composable above
 
 // Modal Ações do Jogador
 const showActionsModal = ref(false)
@@ -1112,6 +621,10 @@ const validarCodigo = async () => {
   }
 }
 
+
+const onAccessConfirmed = () => {
+  acessoLiberado.value = true
+}
 onMounted(async () => {
   // Verifica acesso liberado salvo na sessão
   if (process.client) {
@@ -1320,70 +833,9 @@ const substitutePlayer = async (p) => {
 }
 
 const viewPlayerProfile = async (participante) => {
-  isProfileLoading.value = true
+  const idJogador = participante.idParticipante || participante.IdParticipante
+  await openProfile(idJogador)
   showProfileModal.value = true
-  selectedProfile.value = null
-
-  try {
-    const today = new Date()
-    const anoAtual = today.getFullYear()
-    const dataHoje = `${anoAtual}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-    const dataIni = `${anoAtual}-01-01`
-
-    const idJogador = participante.idParticipante || participante.IdParticipante
-    const idPelada = peladaAtual.value.id
-
-    const [{ data: profile }, { data: criterios }, { data: jogadas }, { data: esperas }] = await Promise.all([
-      supabase.rpc('fn_perfil_jogador', {
-        p_idjogador: idJogador,
-        p_datainicial: dataIni,
-        p_datafinal: dataHoje
-      }).maybeSingle(),
-
-      supabase.from('Pontuacao').select('*').eq('IdPelada', idPelada).maybeSingle(),
-
-      supabase.from('JogadorPartida')
-        .select('Resultado, CartaoAmarelo, CartaoAzul, CartaoVermelho, partida:idPartida(Data, chuva)')
-        .eq('IdParticipante', idJogador)
-        .eq('IdPelada', idPelada),
-
-      supabase.from('ListaEspera')
-        .select('partida:IdPartida(Data, chuva, IdPelada)')
-        .eq('idParticipante', idJogador)
-    ])
-
-    if (profile && criterios) {
-      const jogadasAno = (jogadas || []).filter(j => {
-        const d = j.partida?.Data
-        return d && d >= dataIni && d <= dataHoje
-      })
-      const esperasAno = (esperas || []).filter(e => {
-        const d = e.partida?.Data
-        return d && d >= dataIni && d <= dataHoje && e.partida?.IdPelada == idPelada
-      })
-
-      const c = criterios
-      const pontuacaoCalculada =
-        jogadasAno.length * (c.PartidasJogadas || 0) +
-        esperasAno.length * (c.PartidasAssistida || 0) +
-        jogadasAno.filter(j => j.partida?.chuva).length * (c.JogadasChuva || 0) +
-        esperasAno.filter(e => e.partida?.chuva).length * (c.AssistidasChuva || 0) +
-        jogadasAno.filter(j => j.Resultado === 'Vitoria').length * (c.Vitorias || 0) +
-        jogadasAno.filter(j => j.Resultado === 'Empate').length * (c.Empates || 0) +
-        jogadasAno.filter(j => j.Resultado === 'Derrota').length * (c.Derrotas || 0) +
-        jogadasAno.filter(j => j.CartaoAmarelo).length * (c.Amarelo || 0) +
-        jogadasAno.filter(j => j.CartaoAzul).length * (c.Azul || 0) +
-        jogadasAno.filter(j => j.CartaoVermelho).length * (c.Vermelho || 0)
-
-      selectedProfile.value = { ...profile, pontuacao: pontuacaoCalculada }
-    } else {
-      selectedProfile.value = profile
-    }
-  } catch (e) {
-    console.error('Erro ao carregar perfil:', e)
-  } finally {
-    isProfileLoading.value = false
-  }
 }
 
 const openPlayerActions = (p) => {
@@ -1403,6 +855,12 @@ const openPlayerActions = (p) => {
   showActionsModal.value = true
 }
 
+
+const handleUpdateStat = (field, value) => {
+  if (field === 'goal') changeGoal(value)
+  else if (field === 'goalContra') changeGoalContra(value)
+  else toggleCard(field)
+}
 const updatePlayerStat = async (field, value) => {
   if (!selectedPlayer.value) return
 
@@ -1768,7 +1226,7 @@ const openParticipantSearch = async () => {
   participantSearchResults.value = []
   selectedParticipants.value = new Map()
   showParticipantSearch.value = true
-  await searchParticipants()
+  await onParticipantSearch()
 }
 
 const toggleParticipantSelection = (p) => {
@@ -1782,7 +1240,7 @@ const toggleParticipantSelection = (p) => {
   selectedParticipants.value = map
 }
 
-const searchParticipants = async () => {
+const onParticipantSearch = async () => {
   if (!peladaAtual.value.id) return
   isSearchingParticipants.value = true
 
@@ -1868,7 +1326,11 @@ const createNewMatch = async () => {
     console.error('Erro ao criar partida:', error)
   }
 }
-</script>
+
+
+const onMatchCreated = (idPartida) => {
+  router.push(`/partidas/${idPartida}`)
+}</script>
 
 <style scoped>
 .sumula-container {

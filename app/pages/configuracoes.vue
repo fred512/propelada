@@ -145,6 +145,8 @@
 import { Settings, BarChart2, Calendar, Save, Palette, Star, Sliders } from 'lucide-vue-next'
 import UiSwitch from '@/components/ui/switch/Switch.vue'
 import UiDialog from '@/components/ui/dialog/Dialog.vue'
+import { watchPelada } from '~/composables/usePelada'
+import { useTimedMessage } from '~/composables/useTimedMessage'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -156,11 +158,11 @@ const showModal = ref(false)
 
 // Estatísticas / Datas
 const exibeEstatistica = ref(false)
-const toggleMsgOk = ref(false)
+const { visible: toggleMsgOk, show: showToggleMsg } = useTimedMessage(3000)
 const dataInicial = ref('')
 const dataFinal = ref('')
 const isSaving = ref(false)
-const dataMsgOk = ref(false)
+const { visible: dataMsgOk, show: showDataMsg } = useTimedMessage(3000)
 const dataMsgErr = ref('')
 
 // Cores
@@ -172,7 +174,7 @@ const coresPredefinidas = [
 ]
 const corTime1 = ref('#FFD600')
 const corTime2 = ref('#1565C0')
-const coresMsgOk = ref(false)
+const { visible: coresMsgOk, show: showCoresMsg } = useTimedMessage(3000)
 
 // Pontuação
 const pontuacao = ref({
@@ -187,7 +189,7 @@ const pontuacao = ref({
   Azul: -1,
   Vermelho: -1,
 })
-const pontosMsgOk = ref(false)
+const { visible: pontosMsgOk, show: showPontosMsg } = useTimedMessage(3000)
 const pontosMsgErr = ref('')
 
 const camposPontuacao = [
@@ -243,31 +245,18 @@ async function carregarConfigs() {
 async function toggleEstatistica() {
   isSaving.value = true
   const novo = !exibeEstatistica.value
-  
-  // Try with 'ExibeEstatistica' uppercase and lowercase to be safe in Supabase
-  const updatePayload = peladaAtual.value.hasOwnProperty('exibeEstatistica') 
-    ? { ExibeEstatistica: novo } 
-    : { exibeEstatistica: novo };
 
-  // Just try both fields or the fallback
   let { error } = await supabase.from('Pelada').update({ ExibeEstatistica: novo }).eq('idPelada', peladaAtual.value.id)
-  
-  // Se falhar porque a coluna é minúscula no supabase
+
   if (error) {
     const res = await supabase.from('Pelada').update({ exibeEstatistica: novo }).eq('idPelada', peladaAtual.value.id)
     error = res.error
   }
 
-  if (!error) { 
-    exibeEstatistica.value = novo; 
-    // Force Vue reactivity by creating a new object reference
-    peladaAtual.value = { 
-      ...peladaAtual.value, 
-      exibeEstatistica: novo,
-      ExibeEstatistica: novo 
-    }
-    toggleMsgOk.value = true;
-    setTimeout(() => toggleMsgOk.value = false, 3000)
+  if (!error) {
+    exibeEstatistica.value = novo
+    peladaAtual.value = { ...peladaAtual.value, exibeEstatistica: novo, ExibeEstatistica: novo }
+    showToggleMsg()
   } else {
     console.error('Erro ao atualizar estatistica:', error)
   }
@@ -281,14 +270,14 @@ async function salvarDatas() {
     .from('Pelada')
     .update({ DataInicial: dataInicial.value, DataFinal: dataFinal.value })
     .eq('idPelada', peladaAtual.value.id)
-  if (error) { dataMsgErr.value = 'Erro ao salvar datas.' } else { dataMsgOk.value = true; setTimeout(() => (dataMsgOk.value = false), 3000) }
+  if (error) { dataMsgErr.value = 'Erro ao salvar datas.' } else { showDataMsg() }
   isSaving.value = false
 }
 
 async function salvarCores() {
   isSaving.value = true
   await supabase.from('Pelada').update({ CorTime1: corTime1.value, CorTime2: corTime2.value }).eq('idPelada', peladaAtual.value.id)
-  coresMsgOk.value = true; setTimeout(() => (coresMsgOk.value = false), 3000)
+  showCoresMsg()
   isSaving.value = false
 }
 
@@ -300,12 +289,11 @@ async function salvarPontuacao() {
     ? supabase.from('Pontuacao').update(payload).eq('IdPelada', peladaAtual.value.id)
     : supabase.from('Pontuacao').insert([payload])
   const { error } = await op
-  if (error) { pontosMsgErr.value = 'Erro ao salvar pontuação.' } else { pontosMsgOk.value = true; setTimeout(() => (pontosMsgOk.value = false), 3000) }
+  if (error) { pontosMsgErr.value = 'Erro ao salvar pontuação.' } else { showPontosMsg() }
   isSaving.value = false
 }
 
-onMounted(() => carregarConfigs())
-watch(() => peladaAtual.value.id, carregarConfigs)
+watchPelada(() => carregarConfigs())
 </script>
 
 <style scoped>
