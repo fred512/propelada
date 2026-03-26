@@ -46,17 +46,24 @@ export function usePlayerProfile() {
     selectedProfile.value = null
 
     try {
-      const today = new Date()
-      const anoAtual = today.getFullYear()
-      const dataIni = `${anoAtual}-01-01`
-      const dataHoje = today.toISOString().split('T')[0]
+      const dataHoje = new Date().toISOString().split('T')[0]
       const idPelada = peladaAtual.value.id
+
+      // Buscar período da pelada (DataInicial / DataFinal)
+      const { data: pelada } = await supabase
+        .from('Pelada')
+        .select('DataInicial, DataFinal')
+        .eq('idPelada', idPelada)
+        .maybeSingle()
+
+      const dataIni = pelada?.DataInicial || `${new Date().getFullYear()}-01-01`
+      const dataFim = pelada?.DataFinal || dataHoje
 
       const [{ data: profile }, { data: criterios }, { data: jogadas }, { data: esperas }, { data: todasPartidas }] = await Promise.all([
         supabase.rpc('fn_perfil_jogador', {
           p_idjogador: idJogador,
           p_datainicial: dataIni,
-          p_datafinal: dataHoje
+          p_datafinal: dataFim
         }).maybeSingle(),
 
         supabase.from('Pontuacao').select('*').eq('IdPelada', idPelada).maybeSingle(),
@@ -74,24 +81,31 @@ export function usePlayerProfile() {
           .select('idPartida')
           .eq('IdPelada', idPelada)
           .gte('Data', dataIni)
-          .lte('Data', dataHoje)
+          .lte('Data', dataFim)
       ])
 
       if (profile && criterios) {
         const criteriosComId = { ...criterios, IdPelada: idPelada }
-        const pontuacaoBase = calcularPontuacao(jogadas, esperas, criteriosComId, dataIni, dataHoje)
+        const pontuacaoBase = calcularPontuacao(jogadas, esperas, criteriosComId, dataIni, dataFim)
 
         // Calcular abono de faltas (2 primeiras faltas = +1 ponto cada)
         const jogadasIds = new Set((jogadas || [])
-          .filter(j => j.partida?.Data >= dataIni && j.partida?.Data <= dataHoje)
+          .filter(j => j.partida?.Data >= dataIni && j.partida?.Data <= dataFim)
           .map(j => j.partida?.idPartida))
         const esperasIds = new Set((esperas || [])
-          .filter(e => e.partida?.Data >= dataIni && e.partida?.Data <= dataHoje && e.partida?.IdPelada == idPelada)
+          .filter(e => e.partida?.Data >= dataIni && e.partida?.Data <= dataFim && e.partida?.IdPelada == idPelada)
           .map(e => e.partida?.idPartida))
         const faltas = (todasPartidas || []).filter(p => !jogadasIds.has(p.idPartida) && !esperasIds.has(p.idPartida)).length
-        const abono = Math.min(faltas, 2)
+        const faltasAbonadas = Math.min(faltas, 2)
+        const abono = faltasAbonadas * 2
 
-        selectedProfile.value = { ...profile, pontuacao: pontuacaoBase + abono }
+        selectedProfile.value = {
+          ...profile,
+          pontuacao: pontuacaoBase + abono,
+          abono_faltas: faltasAbonadas,
+          qtd_participacoes: jogadasIds.size,
+          qtd_esperas: esperasIds.size
+        }
       } else {
         selectedProfile.value = profile
       }

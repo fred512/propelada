@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { X, User, Contact, Target, Square, ThumbsUp, ThumbsDown, CloudRain, Trophy, Frown, Zap } from 'lucide-vue-next'
+import { X, User, Contact, Target, Square, ThumbsUp, ThumbsDown, CloudRain, Trophy, Frown, Zap, ShieldCheck, Eye } from 'lucide-vue-next'
 import Dialog from '@/components/ui/dialog/Dialog.vue'
 
 const props = defineProps({
@@ -89,6 +89,7 @@ const formatDate = (dateStr: string) => {
               <div class="stat-item blue"><ThumbsUp :size="24" /><span>{{ profile.qtd_participacoes }}</span></div>
               <div class="stat-item red"><ThumbsDown :size="24" /><span>{{ profile.qtd_ausencias }}</span></div>
               <div class="stat-item light-blue"><CloudRain :size="24" /><span>{{ profile.qtd_partidas_chuva }}</span></div>
+              <div v-if="profile.qtd_esperas" class="stat-item purple"><Eye :size="24" /><span>{{ profile.qtd_esperas }}</span></div>
             </div>
             <span class="stat-label">Presenças</span>
           </div>
@@ -107,6 +108,7 @@ const formatDate = (dateStr: string) => {
           <div class="stat-row no-border">
             <div class="stat-values">
               <div class="stat-item primary"><Zap :size="24" fill="currentColor" /><span class="score-value">{{ profile.pontuacao }}</span></div>
+              <div v-if="profile.abono_faltas" class="stat-item green"><ShieldCheck :size="20" /><span class="abono-value">{{ profile.abono_faltas }}</span></div>
             </div>
             <span class="stat-label">Pontuação</span>
           </div>
@@ -259,6 +261,7 @@ const formatDate = (dateStr: string) => {
 }
 
 .green { color: #4CAF50; }
+.purple { color: #CE93D8; }
 .red { color: #F44336; }
 .blue { color: #42A5F5; }
 .light-blue { color: #81D4FA; }
@@ -294,6 +297,11 @@ const formatDate = (dateStr: string) => {
 .score-value {
   font-size: 1.5rem;
   color: #42A5F5;
+}
+
+.abono-value {
+  font-size: 1rem;
+  color: #4CAF50;
 }
 
 .modal-footer {
