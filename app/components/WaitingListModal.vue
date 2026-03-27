@@ -16,14 +16,17 @@
         <!-- Modo seleção: aberto pelo "+" do time -->
         <template v-if="targetTeam">
           <div
-            v-for="w in waitingList"
+            v-for="w in sortedList"
             :key="w.idJogadorLista"
             class="waiting-item"
             :class="{ 'ps-item-selected': selectedWaitingPlayers.has(w.idJogadorLista) }"
             style="cursor:pointer; border: 1px solid transparent;"
             @click="$emit('toggle-selection', w)"
           >
-            <span>{{ w.Apelido || '?' }}</span>
+            <div class="wl-info">
+              <span class="wl-apelido">{{ w.Apelido || w.Nome || '?' }}</span>
+              <span v-if="w.Nome && w.Nome !== w.Apelido" class="wl-nome">{{ w.Nome }}</span>
+            </div>
             <div class="ps-checkbox" :class="{ 'ps-checked': selectedWaitingPlayers.has(w.idJogadorLista) }">
               <Check v-if="selectedWaitingPlayers.has(w.idJogadorLista)" :size="14" />
             </div>
@@ -32,8 +35,11 @@
 
         <!-- Modo normal: aberto pelo botão de lista de espera -->
         <template v-else>
-          <div v-for="w in waitingList" :key="w.idJogadorLista" class="waiting-item">
-            <span>{{ w.Apelido || '?' }}</span>
+          <div v-for="w in sortedList" :key="w.idJogadorLista" class="waiting-item">
+            <div class="wl-info">
+              <span class="wl-apelido">{{ w.Apelido || w.Nome || '?' }}</span>
+              <span v-if="w.Nome && w.Nome !== w.Apelido" class="wl-nome">{{ w.Nome }}</span>
+            </div>
             <button class="btn-delete-waiting" @click="$emit('remove', w)" title="Remover da lista">
               <Trash2 :size="16" />
             </button>
@@ -55,9 +61,10 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { X, Search, Check, Trash2 } from 'lucide-vue-next'
 
-defineProps({
+const props = defineProps({
   modelValue: Boolean,
   waitingList: { type: Array, default: () => [] },
   targetTeam: { type: String, default: '' },
@@ -66,6 +73,10 @@ defineProps({
 })
 
 defineEmits(['close', 'open-search', 'toggle-selection', 'remove', 'add-selected'])
+
+const sortedList = computed(() =>
+  [...props.waitingList].sort((a, b) => (a.Apelido || '').localeCompare(b.Apelido || '', 'pt-BR'))
+)
 </script>
 
 <style scoped>
@@ -146,6 +157,23 @@ defineEmits(['close', 'open-search', 'toggle-selection', 'remove', 'add-selected
   padding: 12px;
   background: var(--bg-primary);
   border-radius: 8px;
+}
+
+.wl-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wl-apelido {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.wl-nome {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
 }
 
 .btn-delete-waiting {

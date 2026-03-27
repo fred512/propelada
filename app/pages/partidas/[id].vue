@@ -129,6 +129,7 @@
           >
             <div class="player-top">
               <span class="player-name">{{ p.Nome }}</span>
+              <span v-if="p.TipoParticipante === 'Goleiro'" class="goalkeeper-icon" title="Goleiro">🧤</span>
               <div class="player-cards">
                 <span v-if="p.CartaoAmarelo" class="card-chip card-yellow" />
                 <span v-if="p.CartaoAzul" class="card-chip card-blue" />
@@ -188,6 +189,7 @@
             <!-- Estrutura idêntica ao time 1 -->
             <div class="player-top">
               <span class="player-name">{{ p.Nome }}</span>
+              <span v-if="p.TipoParticipante === 'Goleiro'" class="goalkeeper-icon" title="Goleiro">🧤</span>
               <div class="player-cards">
                 <span v-if="p.CartaoAmarelo" class="card-chip card-yellow" />
                 <span v-if="p.CartaoAzul" class="card-chip card-blue" />
@@ -569,7 +571,18 @@ const fetchMatchData = async () => {
       console.error('Erro ao buscar jogadores da partida:', playersError)
     } else {
       console.log('Jogadores da partida carregados:', playersData?.length || 0, 'jogadores')
-      processPlayers(playersData || [])
+      // Buscar TipoParticipante dos jogadores
+      const ids = [...new Set((playersData || []).map(p => p.IdParticipante).filter(Boolean))]
+      let tipoMap = {}
+      if (ids.length > 0) {
+        const { data: partsData } = await supabase
+          .from('Participantes')
+          .select('IdParticipante, TipoParticipante')
+          .in('IdParticipante', ids)
+        ;(partsData || []).forEach(p => { tipoMap[p.IdParticipante] = p.TipoParticipante })
+      }
+      const playersWithTipo = (playersData || []).map(p => ({ ...p, TipoParticipante: tipoMap[p.IdParticipante] || null }))
+      processPlayers(playersWithTipo)
     }
     
     // Sincroniza a pelada atual
@@ -1240,7 +1253,8 @@ const toggleParticipantSelection = (p) => {
   selectedParticipants.value = map
 }
 
-const onParticipantSearch = async () => {
+const onParticipantSearch = async (searchTerm) => {
+  if (searchTerm !== undefined) participantSearchQuery.value = searchTerm
   if (!peladaAtual.value.id) return
   isSearchingParticipants.value = true
 
@@ -1248,10 +1262,11 @@ const onParticipantSearch = async () => {
     .from('Participantes')
     .select('*')
     .eq('IdPelada', peladaAtual.value.id)
-    .order('Nome')
+    .order('Apelido')
 
   if (participantSearchQuery.value.trim()) {
-    query = query.ilike('Nome', `%${participantSearchQuery.value.trim()}%`)
+    const termo = participantSearchQuery.value.trim()
+    query = query.or(`Nome.ilike.%${termo}%,Apelido.ilike.%${termo}%`)
   }
 
   const { data } = await query
@@ -1857,6 +1872,12 @@ const onMatchCreated = (idPartida) => {
 .card-yellow::after { background: #FDD835; }
 .card-blue::after   { background: #2196F3; }
 .card-red::after    { background: #F44336; }
+
+.goalkeeper-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
 
 .player-name {
   font-weight: 700;

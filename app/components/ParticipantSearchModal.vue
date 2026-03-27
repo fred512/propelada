@@ -22,7 +22,7 @@
           Nenhum participante encontrado
         </div>
         <div
-          v-for="p in results"
+          v-for="p in sortedResults"
           :key="p.IdParticipante"
           class="ps-item"
           :class="{ 'ps-item-selected': selected.has(p.IdParticipante) }"
@@ -30,7 +30,12 @@
         >
           <div class="ps-info">
             <span class="ps-name">{{ p.Apelido || p.apelido || p.Nome || p.nome }}</span>
-            <span class="ps-type">{{ p.TipoParticipante }}</span>
+            <span class="ps-type">
+              <template v-if="(p.Apelido || p.apelido) && (p.Nome || p.nome) && (p.Apelido || p.apelido) !== (p.Nome || p.nome)">
+                {{ p.Nome || p.nome }} ·
+              </template>
+              {{ p.TipoParticipante }}
+            </span>
           </div>
           <div class="ps-checkbox" :class="{ 'ps-checked': selected.has(p.IdParticipante) }">
             <Check v-if="selected.has(p.IdParticipante)" :size="14" />
@@ -52,10 +57,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { X, Check } from 'lucide-vue-next'
 
-defineProps({
+const props = defineProps({
   modelValue: Boolean,
   results: { type: Array, default: () => [] },
   selected: { type: Map, default: () => new Map() },
@@ -66,6 +71,14 @@ defineProps({
 defineEmits(['close', 'search', 'toggle', 'add-selected'])
 
 const query = ref('')
+
+const sortedResults = computed(() =>
+  [...props.results].sort((a, b) => {
+    const ap = (a.Apelido || a.apelido || a.Nome || '').toLowerCase()
+    const bp = (b.Apelido || b.apelido || b.Nome || '').toLowerCase()
+    return ap.localeCompare(bp, 'pt-BR')
+  })
+)
 </script>
 
 <style scoped>

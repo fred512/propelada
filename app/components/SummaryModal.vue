@@ -32,7 +32,7 @@
             <div class="s-team-card t1-bg">
               <p class="s-section-lbl">TIME 1</p>
               <div v-for="p in team1Players" :key="'g1_'+p.id" class="s-full-player">
-                <span class="s-fp-name" :class="{'fp-sub': p.substituido}">{{ p.Nome }}</span>
+                <span class="s-fp-name" :class="{'fp-sub': p.substituido}">{{ p.Nome }}<span v-if="p.TipoParticipante === 'Goleiro'" class="gk-icon">🧤</span></span>
                 <div class="s-fp-events">
                   <span v-if="p.entrou_no_intervalo" class="s-fp-entry-tag">ENT</span>
                   <span v-if="(p.Gol||0)>0" class="s-fp-stat">⚽ {{ p.Gol }}</span>
@@ -46,7 +46,7 @@
             <div class="s-team-card t2-bg">
               <p class="s-section-lbl">TIME 2</p>
               <div v-for="p in team2Players" :key="'g2_'+p.id" class="s-full-player">
-                <span class="s-fp-name" :class="{'fp-sub': p.substituido}">{{ p.Nome }}</span>
+                <span class="s-fp-name" :class="{'fp-sub': p.substituido}">{{ p.Nome }}<span v-if="p.TipoParticipante === 'Goleiro'" class="gk-icon">🧤</span></span>
                 <div class="s-fp-events">
                   <span v-if="p.entrou_no_intervalo" class="s-fp-entry-tag">ENT</span>
                   <span v-if="(p.Gol||0)>0" class="s-fp-stat">⚽ {{ p.Gol }}</span>
@@ -77,7 +77,7 @@
             <div class="s-team-card t1-bg">
               <p class="s-section-lbl">TIME 1</p>
               <div v-for="p in team1Primeiro" :key="'1p1_'+p.id" class="s-full-player">
-                <span class="s-fp-name">{{ p.Nome }}</span>
+                <span class="s-fp-name">{{ p.Nome }}<span v-if="p.TipoParticipante === 'Goleiro'" class="gk-icon">🧤</span></span>
                 <div class="s-fp-events">
                   <span v-if="(p.GolPrimeiro||0)>0" class="s-fp-stat">⚽ {{ p.GolPrimeiro }}</span>
                   <span v-if="(p.GolContraPrimeiro||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContraPrimeiro }}</span>
@@ -90,7 +90,7 @@
             <div class="s-team-card t2-bg">
               <p class="s-section-lbl">TIME 2</p>
               <div v-for="p in team2Primeiro" :key="'1p2_'+p.id" class="s-full-player">
-                <span class="s-fp-name">{{ p.Nome }}</span>
+                <span class="s-fp-name">{{ p.Nome }}<span v-if="p.TipoParticipante === 'Goleiro'" class="gk-icon">🧤</span></span>
                 <div class="s-fp-events">
                   <span v-if="(p.GolPrimeiro||0)>0" class="s-fp-stat">⚽ {{ p.GolPrimeiro }}</span>
                   <span v-if="(p.GolContraPrimeiro||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContraPrimeiro }}</span>
@@ -120,7 +120,7 @@
             <div class="s-team-card t1-bg">
               <p class="s-section-lbl">TIME 1</p>
               <div v-for="p in team1Segundo" :key="'2p1_'+p.id" class="s-full-player">
-                <span class="s-fp-name">{{ p.Nome }}</span>
+                <span class="s-fp-name">{{ p.Nome }}<span v-if="p.TipoParticipante === 'Goleiro'" class="gk-icon">🧤</span></span>
                 <div class="s-fp-events">
                   <span v-if="(p.GolSegundo||0)>0" class="s-fp-stat">⚽ {{ p.GolSegundo }}</span>
                   <span v-if="(p.GolContraSegundo||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContraSegundo }}</span>
@@ -133,7 +133,7 @@
             <div class="s-team-card t2-bg">
               <p class="s-section-lbl">TIME 2</p>
               <div v-for="p in team2Segundo" :key="'2p2_'+p.id" class="s-full-player">
-                <span class="s-fp-name">{{ p.Nome }}</span>
+                <span class="s-fp-name">{{ p.Nome }}<span v-if="p.TipoParticipante === 'Goleiro'" class="gk-icon">🧤</span></span>
                 <div class="s-fp-events">
                   <span v-if="(p.GolSegundo||0)>0" class="s-fp-stat">⚽ {{ p.GolSegundo }}</span>
                   <span v-if="(p.GolContraSegundo||0)>0" class="s-fp-stat s-fp-stat-contra">GC {{ p.GolContraSegundo }}</span>
@@ -358,6 +358,8 @@ const formatDate = (date) => {
   border-bottom: 1px solid rgba(0,0,0,0.06);
   gap: 4px;
 }
+
+.gk-icon { font-size: 0.7rem; margin-left: 3px; }
 
 .s-fp-name {
   font-size: 0.78rem;
