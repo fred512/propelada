@@ -500,8 +500,7 @@ td {
 @media print {
   .ranking-header,
   .pagination-bar,
-  .filter-section,
-  .table-card {
+  .page-card {
     display: none !important;
   }
 
