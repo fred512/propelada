@@ -131,7 +131,84 @@ watch(() => props.isOpen, (val) => {
   if (val) carregarDados()
 })
 
-const handlePrint = () => window.print()
+const handlePrint = () => {
+  const pelada = nomeFormatado.value
+  const data = dataAtual.value
+  const logoUrl = window.location.origin + '/images/Propelada8.png'
+
+  const rows = jogadoresComPontuacao.value.map((j, i) => `
+    <tr class="${i % 2 !== 0 ? 'stripe' : ''}">
+      <td>${i + 1}º</td>
+      <td class="col-jogador">${j.apelido_jogador || j.nome_jogador}</td>
+      <td>${j.numero_de_gols}</td>
+      <td>${j.numero_de_gols_contra}</td>
+      <td>${j.total_cartao_amarelo}</td>
+      <td>${j.total_cartao_azul}</td>
+      <td>${j.total_cartao_vermelho}</td>
+      <td>${j.qtd_participacoes}</td>
+      <td>${j.qtd_ausencias}</td>
+      <td>${j.qtd_partidas_chuva}</td>
+      <td>${j.qtd_esperas || 0}</td>
+      <td>${j.vitorias}</td>
+      <td>${j.empates}</td>
+      <td>${j.derrotas}</td>
+      <td class="pts">${j.pontuacao}</td>
+    </tr>
+  `).join('')
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatório de Pontuação - ${pelada}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; font-size: 11px; color: #1b5e20; padding: 20px; }
+    .header { text-align: center; border-bottom: 3px solid #1b5e20; padding-bottom: 12px; margin-bottom: 16px; }
+    .header img { height: 40px; margin-bottom: 6px; display: block; margin-left: auto; margin-right: auto; }
+    .header h1 { font-size: 18px; font-weight: 900; margin-bottom: 4px; }
+    .header p { font-size: 12px; font-weight: 600; margin: 2px 0; }
+    .header .data { font-size: 10px; color: #2e7d32; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { background-color: #1b5e20; color: #fff; padding: 6px 4px; text-align: center; font-weight: 700; font-size: 10px; }
+    th.col-jogador, td.col-jogador { text-align: left; padding-left: 6px; min-width: 110px; }
+    td { padding: 5px 4px; border-bottom: 1px solid #c8e6c9; text-align: center; }
+    tr.stripe td { background-color: #f5f5f5; }
+    td.pts { font-weight: 800; font-size: 12px; }
+    .footer { margin-top: 10px; font-size: 9px; color: #2e7d32; text-align: right; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="${logoUrl}" alt="ProPelada" />
+    <h1>Relatório de Pontuação</h1>
+    <p>${pelada}</p>
+    <p class="data">Gerado em: ${data}</p>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th class="col-jogador">Jogador</th>
+        <th>Gols</th><th>GC</th>
+        <th>Amr</th><th>Azul</th><th>Verm</th>
+        <th>P</th><th>F</th><th>Chuva</th><th>Esp</th>
+        <th>V</th><th>E</th><th>D</th>
+        <th>Pts</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <p class="footer">${jogadoresComPontuacao.value.length} jogadores com pontuação</p>
+</body>
+</html>`
+
+  const w = window.open('', '_blank', 'width=1000,height=750')
+  if (!w) return
+  w.document.write(html)
+  w.document.close()
+  w.focus()
+  setTimeout(() => { w.print() }, 600)
+}
 </script>
 
 <template>
@@ -227,56 +304,6 @@ const handlePrint = () => window.print()
       {{ jogadoresComPontuacao.length }} jogadores · {{ nomeFormatado }}
     </div>
 
-    <!-- Área exclusiva para impressão -->
-    <div class="print-only">
-      <div class="print-header">
-        <img src="/images/Propelada8.png" alt="ProPelada" class="print-logo" />
-        <h1>Relatório de Pontuação</h1>
-        <p>{{ nomeFormatado }}</p>
-        <p class="print-date">Gerado em: {{ dataAtual }}</p>
-      </div>
-      <table class="print-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Jogador</th>
-            <th>Gols</th>
-            <th>GC</th>
-            <th>Amr</th>
-            <th>Azul</th>
-            <th>Verm</th>
-            <th>P</th>
-            <th>F</th>
-            <th>Chuva</th>
-            <th>Esp</th>
-            <th>V</th>
-            <th>E</th>
-            <th>D</th>
-            <th>Pts</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(j, i) in jogadoresComPontuacao" :key="i" :class="{ 'stripe-row': i % 2 !== 0 }">
-            <td>{{ i + 1 }}º</td>
-            <td class="col-jogador">{{ j.apelido_jogador || j.nome_jogador }}</td>
-            <td>{{ j.numero_de_gols }}</td>
-            <td>{{ j.numero_de_gols_contra }}</td>
-            <td>{{ j.total_cartao_amarelo }}</td>
-            <td>{{ j.total_cartao_azul }}</td>
-            <td>{{ j.total_cartao_vermelho }}</td>
-            <td>{{ j.qtd_participacoes }}</td>
-            <td>{{ j.qtd_ausencias }}</td>
-            <td>{{ j.qtd_partidas_chuva }}</td>
-            <td>{{ j.qtd_esperas || 0 }}</td>
-            <td>{{ j.vitorias }}</td>
-            <td>{{ j.empates }}</td>
-            <td>{{ j.derrotas }}</td>
-            <td class="pts-cell">{{ j.pontuacao }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <p class="print-footer">{{ jogadoresComPontuacao.length }} jogadores com pontuação</p>
-    </div>
   </Dialog>
 </template>
 
@@ -430,55 +457,4 @@ const handlePrint = () => window.print()
 .pts-value    { font-size: 1.1rem; font-weight: 800; color: #42A5F5; }
 .abono-badge  { font-size: 0.65rem; color: #4CAF50; margin-left: 3px; font-weight: 700; }
 
-/* ---- Print ---- */
-.print-only { display: none; }
-
-@media print {
-  .rel-header,
-  .rel-body,
-  .rel-footer { display: none !important; }
-
-  .print-only { display: block !important; }
-
-  .print-header {
-    text-align: center;
-    margin-bottom: 16px;
-    border-bottom: 3px solid #1b5e20;
-    padding-bottom: 10px;
-  }
-  .print-logo { height: 36px; width: auto; display: block; margin: 0 auto 6px; }
-  .print-header h1 { font-size: 18px; color: #1b5e20; font-weight: 900; margin: 0 0 4px; }
-  .print-header p  { font-size: 12px; color: #1b5e20; font-weight: 600; margin: 2px 0; }
-  .print-date { font-size: 10px; color: #2e7d32; }
-
-  .print-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 10px;
-    color: #1b5e20;
-  }
-  .print-table thead th {
-    background-color: #1b5e20 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-    color: #fff !important;
-    padding: 5px 3px;
-    text-align: center;
-    font-weight: 700;
-  }
-  .print-table .col-jogador { text-align: left !important; padding-left: 4px; min-width: 100px; }
-  .print-table td {
-    padding: 4px 3px;
-    border-bottom: 1px solid #c8e6c9;
-    text-align: center;
-    color: #1b5e20;
-  }
-  .print-table .stripe-row td {
-    background-color: #f5f5f5 !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  .pts-cell { font-weight: 800; }
-  .print-footer { font-size: 9px; color: #2e7d32; text-align: right; margin-top: 8px; }
-}
 </style>
