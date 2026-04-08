@@ -1,9 +1,11 @@
 <script setup>
 import { ref } from 'vue'
-import { FileText } from 'lucide-vue-next'
+import { FileText, ClipboardCheck } from 'lucide-vue-next'
 import RelatorioPontuacaoModal from '~/components/RelatorioPontuacaoModal.vue'
+import RelatorioConferenciaModal from '~/components/RelatorioConferenciaModal.vue'
 
 const isPontuacaoModalOpen = ref(false)
+const isConferenciaModalOpen = ref(false)
 </script>
 
 <template>
@@ -15,6 +17,11 @@ const isPontuacaoModalOpen = ref(false)
       @close="isPontuacaoModalOpen = false"
     />
 
+    <RelatorioConferenciaModal
+      :is-open="isConferenciaModalOpen"
+      @close="isConferenciaModalOpen = false"
+    />
+
     <div class="relatorio-grid">
       <button class="relatorio-card" @click="isPontuacaoModalOpen = true">
         <div class="relatorio-card-icon">
@@ -24,6 +31,19 @@ const isPontuacaoModalOpen = ref(false)
           <h3 class="relatorio-card-title">Pontuação Jogadores</h3>
           <p class="relatorio-card-desc">
             Tabela completa com gols, cartões, presenças, resultados e pontuação de todos os jogadores.
+          </p>
+        </div>
+        <span class="relatorio-card-cta">Gerar Relatório →</span>
+      </button>
+
+      <button class="relatorio-card" @click="isConferenciaModalOpen = true">
+        <div class="relatorio-card-icon">
+          <ClipboardCheck :size="36" />
+        </div>
+        <div class="relatorio-card-body">
+          <h3 class="relatorio-card-title">Conferência de Pontuação</h3>
+          <p class="relatorio-card-desc">
+            Detalhamento por categoria: presença, falta, jogo assistido, abono e chuva — para conferir a pontuação de cada jogador.
           </p>
         </div>
         <span class="relatorio-card-cta">Gerar Relatório →</span>
