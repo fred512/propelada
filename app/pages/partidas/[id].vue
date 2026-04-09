@@ -942,7 +942,8 @@ const changeGoal = async (delta) => {
 
     const { data: freshPartida } = await supabase.from('Partida').select('Tempo').eq('idPartida', route.params.id).single()
     const isFirstHalf = freshPartida?.Tempo !== '2'
-    const halfField = isFirstHalf ? 'GolPrimeiro' : 'GolSegundo'
+    const effectiveFirstHalf = freshPlayer.entrou_no_intervalo ? false : isFirstHalf
+    const halfField = effectiveFirstHalf ? 'GolPrimeiro' : 'GolSegundo'
     const newGol = Math.max(0, (freshPlayer.Gol || 0) + delta)
     const newHalfVal = Math.max(0, (freshPlayer[halfField] || 0) + delta)
     await updatePlayerStats({ Gol: newGol, [halfField]: newHalfVal })
@@ -964,7 +965,8 @@ const changeGoalContra = async (delta) => {
 
     const { data: freshPartida } = await supabase.from('Partida').select('Tempo').eq('idPartida', route.params.id).single()
     const isFirstHalf = freshPartida?.Tempo !== '2'
-    const halfField = isFirstHalf ? 'GolContraPrimeiro' : 'GolContraSegundo'
+    const effectiveFirstHalf = freshPlayer.entrou_no_intervalo ? false : isFirstHalf
+    const halfField = effectiveFirstHalf ? 'GolContraPrimeiro' : 'GolContraSegundo'
     const newGolContra = Math.max(0, (freshPlayer.GolContra || 0) + delta)
     const newHalfVal = Math.max(0, (freshPlayer[halfField] || 0) + delta)
     await updatePlayerStats({ GolContra: newGolContra, [halfField]: newHalfVal })
@@ -997,7 +999,8 @@ const quickAddGoal = async (p) => {
 
     const { data: freshPartida } = await supabase.from('Partida').select('Tempo').eq('idPartida', route.params.id).single()
     const isFirstHalf = freshPartida?.Tempo !== '2'
-    const halfField = isFirstHalf ? 'GolPrimeiro' : 'GolSegundo'
+    const effectiveFirstHalf = freshPlayer.entrou_no_intervalo ? false : isFirstHalf
+    const halfField = effectiveFirstHalf ? 'GolPrimeiro' : 'GolSegundo'
     const newGol = (freshPlayer.Gol || 0) + 1
     const newHalfVal = (freshPlayer[halfField] || 0) + 1
 
