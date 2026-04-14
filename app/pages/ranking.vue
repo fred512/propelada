@@ -597,8 +597,29 @@ td {
     max-height: none !important;
   }
 
-  :global(html), :global(body) {
-    overflow: hidden !important;
+  :global(html),
+  :global(body),
+  :global(.layout-wrapper),
+  :global(.main-container),
+  :global(.page-content) {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    display: block !important;
   }
+
+  :global(.page-content) {
+    padding-top: 0 !important;
+  }
+
+  :global(.top-header),
+  :global(.sidebar-overlay),
+  :global(.rotate-overlay) {
+    display: none !important;
+  }
+
+  thead { display: table-header-group; }
+  tbody tr { break-inside: avoid; page-break-inside: avoid; }
 }
 </style>

@@ -176,6 +176,12 @@ const handlePrint = () => {
     tr.stripe td { background-color: #f5f5f5; }
     td.pts { font-weight: 800; font-size: 12px; }
     .footer { margin-top: 10px; font-size: 9px; color: #2e7d32; text-align: right; }
+    @media print {
+      @page { margin: 10mm; }
+      html, body { height: auto !important; overflow: visible !important; }
+      thead { display: table-header-group; }
+      tbody tr { break-inside: avoid; page-break-inside: avoid; }
+    }
   </style>
 </head>
 <body>
