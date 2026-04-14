@@ -79,30 +79,30 @@
               <div class="color-swatches">
                 <button
                   v-for="c in coresPredefinidas"
-                  :key="c.valor"
+                  :key="c.nome"
                   class="swatch-btn"
-                  :class="{ selected: corTime1 === c.valor }"
-                  :style="{ background: c.valor }"
+                  :class="{ selected: corTime1 === c.nome }"
+                  :style="{ background: c.hex }"
                   :title="c.nome"
-                  @click="corTime1 = c.valor"
+                  @click="corTime1 = c.nome"
                 ></button>
               </div>
-              <span class="team-preview" :style="{ background: corTime1 }">Time 1</span>
+              <span class="team-preview" :style="{ background: hexDaCor(corTime1) }">Time {{ corTime1 }}</span>
             </div>
             <div class="team-color-block">
               <label>Time 2</label>
               <div class="color-swatches">
                 <button
                   v-for="c in coresPredefinidas"
-                  :key="c.valor"
+                  :key="c.nome"
                   class="swatch-btn"
-                  :class="{ selected: corTime2 === c.valor }"
-                  :style="{ background: c.valor }"
+                  :class="{ selected: corTime2 === c.nome }"
+                  :style="{ background: c.hex }"
                   :title="c.nome"
-                  @click="corTime2 = c.valor"
+                  @click="corTime2 = c.nome"
                 ></button>
               </div>
-              <span class="team-preview" :style="{ background: corTime2 }">Time 2</span>
+              <span class="team-preview" :style="{ background: hexDaCor(corTime2) }">Time {{ corTime2 }}</span>
             </div>
           </div>
           <button class="btn btn-primary btn-sm" @click="salvarCores" :disabled="isSaving">
@@ -166,14 +166,9 @@ const { visible: dataMsgOk, show: showDataMsg } = useTimedMessage(3000)
 const dataMsgErr = ref('')
 
 // Cores
-const coresPredefinidas = [
-  { nome: 'Verde',    valor: '#4CAF50' },
-  { nome: 'Azul',     valor: '#1565C0' },
-  { nome: 'Vermelho', valor: '#F44336' },
-  { nome: 'Amarelo',  valor: '#FFD600' },
-]
-const corTime1 = ref('#FFD600')
-const corTime2 = ref('#1565C0')
+const { cores: coresPredefinidas, hexDaCor } = useTeamColors()
+const corTime1 = ref('Amarelo')
+const corTime2 = ref('Azul')
 const { visible: coresMsgOk, show: showCoresMsg } = useTimedMessage(3000)
 
 // Pontuação

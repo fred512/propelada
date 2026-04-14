@@ -107,13 +107,13 @@
       <div
         class="team-column"
         :class="{ 'drag-over': dragOverTeam === '1' }"
-        :style="{ backgroundColor: configCores.time1 }"
+        :style="{ backgroundColor: hexDaCor(configCores.time1) }"
         @dragover.prevent="dragOverTeam = '1'"
         @dragleave="dragOverTeam = null"
         @drop.prevent="dropOnTeam('1')"
       >
         <div class="team-header">
-          <span>TIME 1 (Azul)</span>
+          <span>TIME {{ configCores.time1 }}</span>
           <button class="btn-add-mini" @click="openAddPlayer('1')">
             <Plus :size="16" />
           </button>
@@ -166,13 +166,13 @@
       <div
         class="team-column"
         :class="{ 'drag-over': dragOverTeam === '2' }"
-        :style="{ backgroundColor: configCores.time2 }"
+        :style="{ backgroundColor: hexDaCor(configCores.time2) }"
         @dragover.prevent="dragOverTeam = '2'"
         @dragleave="dragOverTeam = null"
         @drop.prevent="dropOnTeam('2')"
       >
         <div class="team-header">
-          <span>TIME 2 (Amarelo)</span>
+          <span>TIME {{ configCores.time2 }}</span>
           <button class="btn-add-mini" @click="openAddPlayer('2')">
             <Plus :size="16" />
           </button>
@@ -266,6 +266,8 @@
     <SummaryModal
       v-model="showSummary"
       :partida="partida"
+      :nome-time1="configCores.time1"
+      :nome-time2="configCores.time2"
       :team1-players="team1Players"
       :team2-players="team2Players"
       :team1-primeiro="team1Primeiro"
@@ -382,7 +384,8 @@ const scoreTeam1 = ref(0)
 const scoreTeam2 = ref(0)
 const timeRemaining = ref(0)
 const tipoUsuario = computed(() => isVisitor.value ? 'Visitante' : 'Admin')
-const configCores = ref({ time1: '#2196F3', time2: '#FFEB3B' })
+const { hexDaCor } = useTeamColors()
+const configCores = ref({ time1: 'Azul', time2: 'Amarelo' })
 
 // Controle de acesso visitante
 const acessoLiberado = ref(false)
@@ -593,8 +596,8 @@ const fetchMatchData = async () => {
     // Aplica cores dos times salvas na Pelada
     if (matchData.Pelada) {
       configCores.value = {
-        time1: matchData.Pelada.CorTime1 || '#2196F3',
-        time2: matchData.Pelada.CorTime2 || '#FFEB3B',
+        time1: matchData.Pelada.CorTime1 || 'Azul',
+        time2: matchData.Pelada.CorTime2 || 'Amarelo',
       }
     }
     
