@@ -591,5 +591,14 @@ td {
     color: #1b5e20;
     font-weight: 800;
   }
+
+  .table-wrapper {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  :global(html), :global(body) {
+    overflow: hidden !important;
+  }
 }
 </style>
