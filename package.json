@@ -1,6 +1,6 @@
 {
   "name": "propelada-web",
-  "version": "65",
+  "version": "66",
   "type": "module",
   "private": true,
   "scripts": {

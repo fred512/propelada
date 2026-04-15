@@ -2,6 +2,11 @@
   <div v-if="modelValue" class="sm-overlay" @click="$emit('close')">
     <div class="sm-panel" @click.stop>
 
+      <!-- Imagem de fundo do campo -->
+      <div class="sm-bg-field" :style="{ backgroundImage: `url('/images/campo-futebol.png')` }" />
+      <!-- Overlay escuro sobre a imagem -->
+      <div class="sm-bg-overlay" />
+
       <!-- Glows laterais das cores dos times -->
       <div class="sm-glow sm-glow-1" :style="{ background: `radial-gradient(ellipse at -20% 40%, ${hexAlpha(corTime1, 0.28)} 0%, transparent 65%)` }" />
       <div class="sm-glow sm-glow-2" :style="{ background: `radial-gradient(ellipse at 120% 40%, ${hexAlpha(corTime2, 0.28)} 0%, transparent 65%)` }" />
@@ -34,9 +39,6 @@
         <div class="sm-tab-line" :style="{ transform: `translateX(${tabIndex * 100}%)` }" />
       </div>
 
-      <!-- TÍTULO DO PERÍODO -->
-      <div class="sm-period">{{ periodLabel }}</div>
-
       <!-- CABEÇALHOS DAS COLUNAS -->
       <div class="sm-col-heads">
         <div class="sm-col-head" :style="{ color: corTime1 }">{{ nomeTime1 }}</div>
@@ -52,12 +54,17 @@
             <div class="sm-col">
               <template v-if="tab === 'geral'">
                 <div v-for="(p, i) in team1Players" :key="'g1_'+p.id" class="sm-row" :style="{ '--ri': i }">
+                  <button class="sm-avatar" @click.stop="$emit('open-profile', p)">
+                    <img v-if="p.foto_url" :src="p.foto_url" :alt="p.Nome" />
+                    <span v-else>{{ p.Nome.charAt(0) }}</span>
+                  </button>
                   <span class="sm-rname" :class="{ 'sm-sub': p.substituido }">{{ p.Nome }}</span>
                   <span class="sm-rdetail">
                     <span v-if="p.TipoParticipante==='Goleiro'" class="sm-gk">Goleiro</span>
                     <span v-if="(p.Gol||0)>0" class="sm-gols">({{ p.Gol }} {{ p.Gol===1?'gol':'gols' }})⚽</span>
                     <span v-if="(p.GolContra||0)>0" class="sm-gc">GC</span>
-                    <span v-if="p.entrou_no_intervalo" class="sm-ent">ENT</span>
+                    <span v-if="p.substituido" class="sm-saiu">SAIU</span>
+                    <span v-else-if="p.entrou_no_intervalo" class="sm-ent">ENT</span>
                     <span v-if="p.CartaoAmarelo" class="sm-card sm-yl" />
                     <span v-if="p.CartaoAzul"    class="sm-card sm-bl" />
                     <span v-if="p.CartaoVermelho" class="sm-card sm-rd" />
@@ -66,6 +73,10 @@
               </template>
               <template v-else-if="tab === 'primeiro'">
                 <div v-for="(p, i) in team1Primeiro" :key="'1p1_'+p.id" class="sm-row" :style="{ '--ri': i }">
+                  <button class="sm-avatar" @click.stop="$emit('open-profile', p)">
+                    <img v-if="p.foto_url" :src="p.foto_url" :alt="p.Nome" />
+                    <span v-else>{{ p.Nome.charAt(0) }}</span>
+                  </button>
                   <span class="sm-rname">{{ p.Nome }}</span>
                   <span class="sm-rdetail">
                     <span v-if="p.TipoParticipante==='Goleiro'" class="sm-gk">Goleiro</span>
@@ -79,6 +90,10 @@
               </template>
               <template v-else>
                 <div v-for="(p, i) in team1Segundo" :key="'2p1_'+p.id" class="sm-row" :style="{ '--ri': i }">
+                  <button class="sm-avatar" @click.stop="$emit('open-profile', p)">
+                    <img v-if="p.foto_url" :src="p.foto_url" :alt="p.Nome" />
+                    <span v-else>{{ p.Nome.charAt(0) }}</span>
+                  </button>
                   <span class="sm-rname">{{ p.Nome }}</span>
                   <span class="sm-rdetail">
                     <span v-if="p.TipoParticipante==='Goleiro'" class="sm-gk">Goleiro</span>
@@ -96,12 +111,17 @@
             <div class="sm-col">
               <template v-if="tab === 'geral'">
                 <div v-for="(p, i) in team2Players" :key="'g2_'+p.id" class="sm-row sm-row-t2" :style="{ '--ri': i, color: corTime2 }">
+                  <button class="sm-avatar" @click.stop="$emit('open-profile', p)">
+                    <img v-if="p.foto_url" :src="p.foto_url" :alt="p.Nome" />
+                    <span v-else>{{ p.Nome.charAt(0) }}</span>
+                  </button>
                   <span class="sm-rname" :class="{ 'sm-sub': p.substituido }">{{ p.Nome }}</span>
                   <span class="sm-rdetail">
                     <span v-if="p.TipoParticipante==='Goleiro'" class="sm-gk">Goleiro</span>
                     <span v-if="(p.Gol||0)>0" class="sm-gols">({{ p.Gol }} {{ p.Gol===1?'gol':'gols' }})⚽</span>
                     <span v-if="(p.GolContra||0)>0" class="sm-gc">GC</span>
-                    <span v-if="p.entrou_no_intervalo" class="sm-ent">ENT</span>
+                    <span v-if="p.substituido" class="sm-saiu">SAIU</span>
+                    <span v-else-if="p.entrou_no_intervalo" class="sm-ent">ENT</span>
                     <span v-if="p.CartaoAmarelo" class="sm-card sm-yl" />
                     <span v-if="p.CartaoAzul"    class="sm-card sm-bl" />
                     <span v-if="p.CartaoVermelho" class="sm-card sm-rd" />
@@ -110,6 +130,10 @@
               </template>
               <template v-else-if="tab === 'primeiro'">
                 <div v-for="(p, i) in team2Primeiro" :key="'1p2_'+p.id" class="sm-row sm-row-t2" :style="{ '--ri': i, color: corTime2 }">
+                  <button class="sm-avatar" @click.stop="$emit('open-profile', p)">
+                    <img v-if="p.foto_url" :src="p.foto_url" :alt="p.Nome" />
+                    <span v-else>{{ p.Nome.charAt(0) }}</span>
+                  </button>
                   <span class="sm-rname">{{ p.Nome }}</span>
                   <span class="sm-rdetail">
                     <span v-if="p.TipoParticipante==='Goleiro'" class="sm-gk">Goleiro</span>
@@ -123,6 +147,10 @@
               </template>
               <template v-else>
                 <div v-for="(p, i) in team2Segundo" :key="'2p2_'+p.id" class="sm-row sm-row-t2" :style="{ '--ri': i, color: corTime2 }">
+                  <button class="sm-avatar" @click.stop="$emit('open-profile', p)">
+                    <img v-if="p.foto_url" :src="p.foto_url" :alt="p.Nome" />
+                    <span v-else>{{ p.Nome.charAt(0) }}</span>
+                  </button>
                   <span class="sm-rname">{{ p.Nome }}</span>
                   <span class="sm-rdetail">
                     <span v-if="p.TipoParticipante==='Goleiro'" class="sm-gk">Goleiro</span>
@@ -145,7 +173,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
 import { X, CloudRain } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -166,7 +193,7 @@ const props = defineProps({
   score2T1: { type: Number, default: 0 },
   score2T2: { type: Number, default: 0 },
 })
-defineEmits(['close'])
+defineEmits(['close', 'open-profile'])
 
 // ── Cores ─────────────────────────────────────────
 const { hexDaCor } = useTeamColors()
@@ -235,14 +262,30 @@ const formatDate = (d) => {
 .sm-panel {
   position: relative;
   width: 100%; max-width: 460px;
-  height: min(92vh, 700px);
+  height: min(96vh, 900px);
   border-radius: 20px;
   display: flex; flex-direction: column;
   overflow: hidden;
-  background: linear-gradient(160deg, #0b1a10 0%, #071009 55%, #04080a 100%);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: #071009;
+  border: 1px solid rgba(255,255,255,0.12);
   box-shadow: 0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06);
   animation: smIn .32s cubic-bezier(.34,1.56,.64,1);
+}
+.sm-bg-field {
+  position: absolute; inset: 0;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+.sm-bg-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg,
+    rgba(5,10,20,0.82) 0%,
+    rgba(5,10,20,0.70) 25%,
+    rgba(5,10,20,0.75) 60%,
+    rgba(5,10,20,0.88) 100%);
+  z-index: 0;
 }
 @keyframes smIn {
   from { opacity: 0; transform: scale(.92) translateY(14px); }
@@ -251,7 +294,7 @@ const formatDate = (d) => {
 
 /* Glows laterais */
 .sm-glow {
-  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
 }
 
 /* ── TOPO ─────────────────────────────────────────── */
@@ -369,6 +412,7 @@ const formatDate = (d) => {
   flex: 1; min-height: 0;
   overflow-y: auto; overflow-x: hidden;
   padding: 4px 0 12px;
+  opacity: 0.7;
 }
 .sm-scroll::-webkit-scrollbar { width: 3px; }
 .sm-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -394,8 +438,9 @@ const formatDate = (d) => {
   overflow: hidden;
 }
 .sm-col {
-  background: rgba(0,0,0,0.15);
+  background: rgba(0,0,0,0.45);
   padding: 6px 10px;
+  backdrop-filter: blur(4px);
 }
 .sm-col:last-child {
   border-left: 1px solid rgba(255,255,255,0.06);
@@ -403,8 +448,9 @@ const formatDate = (d) => {
 
 /* ── LINHAS DE JOGADORES ──────────────────────────── */
 .sm-row {
-  display: flex; flex-direction: column;
-  padding: 5px 0;
+  display: flex; flex-direction: row; flex-wrap: wrap; align-items: center;
+  gap: 3px;
+  padding: 3px 0;
   border-bottom: 1px solid rgba(255,255,255,0.05);
   animation: rowIn .2s both;
   animation-delay: calc(var(--ri, 0) * 25ms);
@@ -418,15 +464,15 @@ const formatDate = (d) => {
 .sm-rname {
   font-family: 'Outfit', sans-serif;
   font-size: .8rem; font-weight: 600;
-  color: rgba(255,255,255,0.88);
-  line-height: 1.2;
+  color: rgba(255,255,255,0.95);
+  line-height: 1.3;
 }
 .sm-row-t2 .sm-rname { color: inherit; }
-.sm-sub { text-decoration: line-through; opacity: .38; }
+.sm-sub { text-decoration: line-through; }
 
 .sm-rdetail {
   display: flex; align-items: center; flex-wrap: wrap;
-  gap: 3px; margin-top: 1px;
+  gap: 3px;
 }
 
 .sm-gk {
@@ -456,6 +502,32 @@ const formatDate = (d) => {
   font-size: .58rem; font-weight: 800;
   background: rgba(74,222,128,.15); color: #86efac;
   padding: 1px 3px; border-radius: 3px;
+}
+
+.sm-saiu {
+  font-family: 'Outfit', sans-serif;
+  font-size: .58rem; font-weight: 800;
+  background: rgba(248,113,113,.15); color: #fca5a5;
+  padding: 1px 3px; border-radius: 3px;
+}
+
+/* ── AVATAR ───────────────────────────────────────── */
+.sm-avatar {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.15);
+  border: none; cursor: pointer; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .15s;
+}
+.sm-avatar:hover { opacity: 0.75; }
+.sm-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sm-avatar > span {
+  font-family: 'Outfit', sans-serif;
+  font-size: .55rem; font-weight: 700;
+  color: rgba(255,255,255,0.8);
 }
 
 .sm-card {

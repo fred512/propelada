@@ -281,6 +281,7 @@
       :score2-t1="score2T1"
       :score2-t2="score2T2"
       @close="showSummary = false"
+      @open-profile="viewPlayerProfile"
     />
 
     <!-- Modal Pesquisa de Partidas -->
@@ -574,17 +575,25 @@ const fetchMatchData = async () => {
       console.error('Erro ao buscar jogadores da partida:', playersError)
     } else {
       console.log('Jogadores da partida carregados:', playersData?.length || 0, 'jogadores')
-      // Buscar TipoParticipante dos jogadores
+      // Buscar TipoParticipante e FotoURL dos jogadores
       const ids = [...new Set((playersData || []).map(p => p.IdParticipante).filter(Boolean))]
       let tipoMap = {}
+      let fotoMap = {}
       if (ids.length > 0) {
         const { data: partsData } = await supabase
           .from('Participantes')
-          .select('IdParticipante, TipoParticipante')
+          .select('IdParticipante, TipoParticipante, FotoURL')
           .in('IdParticipante', ids)
-        ;(partsData || []).forEach(p => { tipoMap[p.IdParticipante] = p.TipoParticipante })
+        ;(partsData || []).forEach(p => {
+          tipoMap[p.IdParticipante] = p.TipoParticipante
+          fotoMap[p.IdParticipante] = p.FotoURL
+        })
       }
-      const playersWithTipo = (playersData || []).map(p => ({ ...p, TipoParticipante: tipoMap[p.IdParticipante] || null }))
+      const playersWithTipo = (playersData || []).map(p => ({
+        ...p,
+        TipoParticipante: tipoMap[p.IdParticipante] || null,
+        foto_url: fotoMap[p.IdParticipante] || null
+      }))
       processPlayers(playersWithTipo)
     }
     
