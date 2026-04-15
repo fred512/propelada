@@ -22,6 +22,9 @@
           <button class="icon-btn yellow" title="Resumo da Partida" @click="showSummary = true; summaryTab = 'geral'">
             <FileText :size="20" />
           </button>
+          <button class="icon-btn-ig" title="Resumo Instagram" @click="showSummaryIG = true">
+            <ImagePlus :size="20" />
+          </button>
           <button v-if="podeEditar" class="icon-btn red" title="Criar Nova Partida" @click="showCreateMatch = true">
             <Plus :size="20" />
           </button>
@@ -262,8 +265,8 @@
       @remove="removeFromMatch"
     />
 
-    <!-- Modal Resumo da Partida -->
-    <SummaryModal
+    <!-- Modal Resumo Simples (grupo) -->
+    <SummaryModalSimple
       v-model="showSummary"
       :partida="partida"
       :nome-time1="configCores.time1"
@@ -281,6 +284,27 @@
       :score2-t1="score2T1"
       :score2-t2="score2T2"
       @close="showSummary = false"
+    />
+
+    <!-- Modal Resumo Instagram (dark stadium) -->
+    <SummaryModal
+      v-model="showSummaryIG"
+      :partida="partida"
+      :nome-time1="configCores.time1"
+      :nome-time2="configCores.time2"
+      :team1-players="team1Players"
+      :team2-players="team2Players"
+      :team1-primeiro="team1Primeiro"
+      :team2-primeiro="team2Primeiro"
+      :team1-segundo="team1Segundo"
+      :team2-segundo="team2Segundo"
+      :score-team1="scoreTeam1"
+      :score-team2="scoreTeam2"
+      :score1-t1="score1T1"
+      :score1-t2="score1T2"
+      :score2-t1="score2T1"
+      :score2-t2="score2T2"
+      @close="showSummaryIG = false"
       @open-profile="viewPlayerProfile"
     />
 
@@ -354,7 +378,7 @@
 
 <script setup>
 import {
-  Key, Search, FileText, Plus, Users, CheckSquare,
+  Key, Search, FileText, Plus, Users, CheckSquare, ImagePlus,
   Clock, User, RefreshCw, Menu, CloudRain, X,
   StickyNote, RotateCcw, Calendar, Check, Minus, Trash2, LockOpen
 } from 'lucide-vue-next'
@@ -363,6 +387,7 @@ import SoccerBall from '~/components/SoccerBall.vue'
 import HelpModal from '~/components/HelpModal.vue'
 import PlayerActionsModal from '~/components/PlayerActionsModal.vue'
 import SummaryModal from '~/components/SummaryModal.vue'
+import SummaryModalSimple from '~/components/SummaryModalSimple.vue'
 import MatchSearchModal from '~/components/MatchSearchModal.vue'
 import HalftimeModal from '~/components/HalftimeModal.vue'
 import WaitingListModal from '~/components/WaitingListModal.vue'
@@ -400,6 +425,7 @@ const newMatchDate = ref(`${today.getFullYear()}-${String(today.getMonth() + 1).
 // Modais
 const showHelp = ref(false)
 const showSummary = ref(false)
+const showSummaryIG = ref(false)
 const showWaitingList = ref(false)
 const showHalftimeModal = ref(false)
 const showAccessModal = ref(false)
@@ -1542,6 +1568,20 @@ const onMatchCreated = (idPartida) => {
 .icon-btn.teal { background: #96D2D9; color: #1a1a2e; }
 .icon-btn.green { background: #1C6A4E; }
 .icon-btn.orange { background: #E65100; }
+
+.icon-btn-ig {
+  width: 48px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+}
 
 .badge-encerrada {
   background: #C62828;

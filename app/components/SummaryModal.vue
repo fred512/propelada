@@ -7,9 +7,9 @@
       <!-- Overlay escuro sobre a imagem -->
       <div class="sm-bg-overlay" />
 
-      <!-- Glows laterais das cores dos times -->
-      <div class="sm-glow sm-glow-1" :style="{ background: `radial-gradient(ellipse at -20% 40%, ${hexAlpha(corTime1, 0.28)} 0%, transparent 65%)` }" />
-      <div class="sm-glow sm-glow-2" :style="{ background: `radial-gradient(ellipse at 120% 40%, ${hexAlpha(corTime2, 0.28)} 0%, transparent 65%)` }" />
+      <!-- Glows laterais estilo Instagram -->
+      <div class="sm-glow sm-glow-1" style="background: radial-gradient(ellipse at -20% 40%, rgba(247,119,55,0.30) 0%, transparent 65%)" />
+      <div class="sm-glow sm-glow-2" style="background: radial-gradient(ellipse at 120% 40%, rgba(193,53,132,0.25) 0%, transparent 65%)" />
 
       <!-- TOPO: data + fechar -->
       <div class="sm-top">
@@ -266,9 +266,9 @@ const formatDate = (d) => {
   border-radius: 20px;
   display: flex; flex-direction: column;
   overflow: hidden;
-  background: #071009;
-  border: 1px solid rgba(255,255,255,0.12);
-  box-shadow: 0 32px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06);
+  background: #1a0a00;
+  border: 1px solid rgba(247,119,55,0.35);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 40px rgba(247,119,55,0.15), inset 0 1px 0 rgba(247,119,55,0.1);
   animation: smIn .32s cubic-bezier(.34,1.56,.64,1);
 }
 .sm-bg-field {
@@ -281,10 +281,10 @@ const formatDate = (d) => {
 .sm-bg-overlay {
   position: absolute; inset: 0;
   background: linear-gradient(180deg,
-    rgba(5,10,20,0.82) 0%,
-    rgba(5,10,20,0.70) 25%,
-    rgba(5,10,20,0.75) 60%,
-    rgba(5,10,20,0.88) 100%);
+    rgba(30,10,0,0.82) 0%,
+    rgba(20,8,0,0.70) 25%,
+    rgba(25,10,0,0.75) 60%,
+    rgba(35,12,0,0.88) 100%);
   z-index: 0;
 }
 @keyframes smIn {
