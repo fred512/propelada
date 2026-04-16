@@ -7,13 +7,18 @@
       </div>
 
       <div class="ps-search-row">
-        <input
-          v-model="query"
-          type="text"
-          placeholder="Nome ou apelido..."
-          class="ps-input"
-          @input="$emit('search', query)"
-        />
+        <div class="ps-input-wrap">
+          <input
+            v-model="query"
+            type="text"
+            placeholder="Nome ou apelido..."
+            class="ps-input"
+            @input="$emit('search', query)"
+          />
+          <button v-if="query" class="ps-clear-btn" @click="clearQuery">
+            <X :size="16" />
+          </button>
+        </div>
       </div>
 
       <div class="ps-list">
@@ -68,9 +73,14 @@ const props = defineProps({
   isAdding: { type: Boolean, default: false },
 })
 
-defineEmits(['close', 'search', 'toggle', 'add-selected'])
+const emit = defineEmits(['close', 'search', 'toggle', 'add-selected'])
 
 const query = ref('')
+
+function clearQuery() {
+  query.value = ''
+  emit('search', '')
+}
 
 const sortedResults = computed(() =>
   [...props.results].sort((a, b) => {
@@ -148,14 +158,37 @@ const sortedResults = computed(() =>
   margin-bottom: 12px;
 }
 
+.ps-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .ps-input {
   width: 100%;
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 10px;
-  padding: 10px 14px;
+  padding: 10px 36px 10px 14px;
   color: var(--text-primary);
   font-size: 0.95rem;
+}
+
+.ps-clear-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  line-height: 1;
+}
+
+.ps-clear-btn:hover {
+  color: var(--text-primary);
 }
 
 .ps-list {

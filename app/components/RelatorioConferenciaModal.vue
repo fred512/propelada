@@ -109,7 +109,7 @@ const carregarDados = async () => {
         const abono_faltas = Math.min(faltas, 2)
 
         const pontuacaoBase = calcularPontuacao(jogadas, esperas, criteriosComId, dataIni, dataFim)
-        const pontuacao = pontuacaoBase + abono_faltas * 2
+        const pontuacao = pontuacaoBase + abono_faltas * 4
 
         return {
           nome: profile.apelido_jogador || profile.nome_jogador,
@@ -152,7 +152,7 @@ const handlePrint = () => {
       <td>${j.qtd_assistido}</td>
       <td class="sub">${pts(j.qtd_assistido, cr.PartidasAssistida)}</td>
       <td>${j.abono_faltas}</td>
-      <td class="sub">${j.abono_faltas * 2}</td>
+      <td class="sub">${j.abono_faltas * 4}</td>
       <td>${j.qtd_chuva_jogado}</td>
       <td class="sub">${pts(j.qtd_chuva_jogado, cr.JogadasChuva)}</td>
       <td>${j.qtd_chuva_assistido}</td>
@@ -202,7 +202,7 @@ const handlePrint = () => {
         <th colspan="2">Presença (×${cr.PartidasJogadas || 0})</th>
         <th rowspan="2">Falta</th>
         <th colspan="2">Assistido (×${cr.PartidasAssistida || 0})</th>
-        <th colspan="2">Abono (×2)</th>
+        <th colspan="2">Abono (×4)</th>
         <th colspan="2">Chuva Jog. (×${cr.JogadasChuva || 0})</th>
         <th colspan="2">Chuva Ass. (×${cr.AssistidasChuva || 0})</th>
         <th rowspan="2">Pts</th>
@@ -252,7 +252,7 @@ const handlePrint = () => {
     <div v-if="criterios" class="rel-criterios">
       <span class="crit-badge">Presença ×{{ c.PartidasJogadas }}</span>
       <span class="crit-badge">Assistido ×{{ c.PartidasAssistida }}</span>
-      <span class="crit-badge">Abono ×2</span>
+      <span class="crit-badge">Abono ×4</span>
       <span class="crit-badge rain">Chuva Jog. ×{{ c.JogadasChuva }}</span>
       <span class="crit-badge rain">Chuva Ass. ×{{ c.AssistidasChuva }}</span>
     </div>
@@ -271,7 +271,7 @@ const handlePrint = () => {
               <th colspan="2" class="group-hdr">Presença ×{{ c.PartidasJogadas }}</th>
               <th rowspan="2" class="col-sm">Falta</th>
               <th colspan="2" class="group-hdr">Assistido ×{{ c.PartidasAssistida }}</th>
-              <th colspan="2" class="group-hdr">Abono ×2</th>
+              <th colspan="2" class="group-hdr">Abono ×4</th>
               <th colspan="2" class="group-hdr rain-hdr">Chuva Jog. ×{{ c.JogadasChuva }}</th>
               <th colspan="2" class="group-hdr rain-hdr">Chuva Ass. ×{{ c.AssistidasChuva }}</th>
               <th rowspan="2" class="col-pts">Pts</th>
@@ -310,7 +310,7 @@ const handlePrint = () => {
 
               <!-- Abono -->
               <td class="text-center">{{ j.abono_faltas }}</td>
-              <td class="text-center pts-sub">{{ j.abono_faltas * 2 }}</td>
+              <td class="text-center pts-sub">{{ j.abono_faltas * 4 }}</td>
 
               <!-- Chuva Jogado -->
               <td class="text-center">{{ j.qtd_chuva_jogado }}</td>
