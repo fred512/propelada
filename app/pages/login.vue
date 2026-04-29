@@ -12,7 +12,6 @@
     <div class="login-header">
       <div class="logo-area">
         <img src="/images/logo-dark.png" alt="ProPelada" class="login-logo" />
-        <HelpCircle class="help-icon" :size="32" />
       </div>
     </div>
 
@@ -108,7 +107,7 @@
 </template>
 
 <script setup>
-import { HelpCircle, Eye, EyeOff, PlayCircle, Sun, Moon } from 'lucide-vue-next'
+import { Eye, EyeOff, PlayCircle, Sun, Moon } from 'lucide-vue-next'
 
 const colorMode = useColorMode()
 const isDark = computed(() => colorMode.value === 'dark')
@@ -270,11 +269,6 @@ async function handleSignup() {
 .login-logo {
   max-height: 70px;
   width: auto;
-}
-
-.help-icon {
-  color: #42a5f5;
-  cursor: pointer;
 }
 
 .login-card {

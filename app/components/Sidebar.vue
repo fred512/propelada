@@ -77,6 +77,7 @@ import {
   LogOut,
   X,
   FileText,
+  BookOpen,
 } from "lucide-vue-next";
 
 defineProps({
@@ -127,6 +128,7 @@ const allMenuItems = [
   { label: "Ranking", to: "/ranking", icon: Award },
   { label: "Relatórios", to: "/relatorio", icon: FileText, adminOnly: true },
   { label: "Assinatura", to: "/assinatura", icon: DollarSign, adminOnly: true },
+  { label: "Manual", to: "/manual", icon: BookOpen },
   { label: "Tutoriais", to: "/tutoriais", icon: PlayCircle },
   { label: "Mensagens", to: "/mensagens", icon: MessageSquare, adminOnly: true, badge: mensagensNaoLidas },
 ];
