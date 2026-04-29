@@ -47,6 +47,7 @@
         </template>
       </div>
 
+      <!-- Footer: modo seleção -->
       <div v-if="targetTeam" class="ps-footer">
         <button
           class="ps-btn-add"
@@ -56,13 +57,44 @@
           {{ isAdding ? 'Adicionando...' : `Adicionar (${selectedWaitingPlayers.size})` }}
         </button>
       </div>
+
+      <!-- Footer: modo normal — botão distribuir -->
+      <div v-else-if="waitingList.length > 0" class="ps-footer">
+        <div class="distribuir-info">
+          <span class="distribuir-count" :class="{ pronto: podeDistribuir }">
+            {{ waitingList.length }}/{{ esquemaTotal }} na lista
+          </span>
+        </div>
+        <button
+          class="ps-btn-distribuir"
+          :disabled="!podeDistribuir || distributing"
+          @click="confirmarDistribuir = true"
+        >
+          <Shuffle :size="16" />
+          {{ distributing ? 'Distribuindo...' : 'Distribuir Times' }}
+        </button>
+      </div>
+
+      <!-- Confirmação distribuição -->
+      <div v-if="confirmarDistribuir" class="confirm-overlay" @click.self="confirmarDistribuir = false">
+        <div class="confirm-box">
+          <p class="confirm-titulo">Distribuir times?</p>
+          <p class="confirm-desc">
+            Os {{ waitingList.length }} jogadores da lista serão divididos automaticamente em dois times conforme o esquema de jogo.
+          </p>
+          <div class="confirm-actions">
+            <button class="btn-sim" @click="executarDistribuicao">Sim, distribuir</button>
+            <button class="btn-nao" @click="confirmarDistribuir = false">Cancelar</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { X, Search, Check, Trash2 } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
+import { X, Search, Check, Trash2, Shuffle } from 'lucide-vue-next'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -70,13 +102,24 @@ const props = defineProps({
   targetTeam: { type: String, default: '' },
   selectedWaitingPlayers: { type: Map, default: () => new Map() },
   isAdding: { type: Boolean, default: false },
+  esquemaTotal: { type: Number, default: 18 },
+  distributing: { type: Boolean, default: false },
 })
 
-defineEmits(['close', 'open-search', 'toggle-selection', 'remove', 'add-selected'])
+const emit = defineEmits(['close', 'open-search', 'toggle-selection', 'remove', 'add-selected', 'distribuir'])
+
+const confirmarDistribuir = ref(false)
 
 const sortedList = computed(() =>
   [...props.waitingList].sort((a, b) => (a.Apelido || '').localeCompare(b.Apelido || '', 'pt-BR'))
 )
+
+const podeDistribuir = computed(() => props.waitingList.length >= props.esquemaTotal)
+
+function executarDistribuicao() {
+  confirmarDistribuir.value = false
+  emit('distribuir')
+}
 </script>
 
 <style scoped>
@@ -228,4 +271,109 @@ const sortedList = computed(() =>
 }
 
 .ps-btn-add:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Distribuir */
+.distribuir-info {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.distribuir-count {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  border-radius: 20px;
+  padding: 3px 12px;
+}
+
+.distribuir-count.pronto { color: var(--primary-color); }
+
+.ps-btn-distribuir {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(90deg, #6C63FF, #48CAE4);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.ps-btn-distribuir:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* Confirmação */
+.confirm-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 10;
+}
+
+.confirm-box {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.confirm-titulo {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.confirm-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn-sim {
+  flex: 1;
+  background: var(--primary-color);
+  color: #0d1a0d;
+  border: none;
+  border-radius: 10px;
+  padding: 11px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.btn-nao {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: 11px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
 </style>

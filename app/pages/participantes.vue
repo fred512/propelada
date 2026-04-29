@@ -108,7 +108,6 @@
               <option value="Jogador">Jogador</option>
               <option value="Ex-Jogador">Ex-Jogador</option>
               <option value="Convidado">Convidado</option>
-              <option value="Goleiro">Goleiro</option>
               <option value="Juiz">Juiz</option>
             </select>
           </div>
@@ -116,6 +115,7 @@
           <div class="form-group">
             <label>Posição</label>
             <select v-model="form.posicao">
+              <option value="Goleiro">Goleiro</option>
               <option value="Zagueiro">Zagueiro</option>
               <option value="Meio campo">Meio campo</option>
               <option value="Lateral">Lateral</option>

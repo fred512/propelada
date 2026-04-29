@@ -60,7 +60,7 @@
                   </button>
                   <span class="sm-rname" :class="{ 'sm-sub': p.substituido }">{{ p.Nome }}</span>
                   <span class="sm-rdetail">
-                    <span v-if="p.TipoParticipante==='Goleiro'" class="sm-gk">Goleiro</span>
+                    <span v-if="p.Posicao==='Goleiro'" class="sm-gk">Goleiro</span>
                     <span v-if="(p.Gol||0)>0" class="sm-gols">({{ p.Gol }} {{ p.Gol===1?'gol':'gols' }})⚽</span>
                     <span v-if="(p.GolContra||0)>0" class="sm-gc">GC</span>
                     <span v-if="p.substituido" class="sm-saiu">SAIU</span>
@@ -79,7 +79,7 @@
                   </button>
                   <span class="sm-rname">{{ p.Nome }}</span>
                   <span class="sm-rdetail">
-                    <span v-if="p.TipoParticipante==='Goleiro'" class="sm-gk">Goleiro</span>
+                    <span v-if="p.Posicao==='Goleiro'" class="sm-gk">Goleiro</span>
                     <span v-if="(p.GolPrimeiro||0)>0" class="sm-gols">({{ p.GolPrimeiro }} {{ p.GolPrimeiro===1?'gol':'gols' }})⚽</span>
                     <span v-if="(p.GolContraPrimeiro||0)>0" class="sm-gc">GC</span>
                     <span v-if="p.CartaoAmarelo" class="sm-card sm-yl" />
@@ -96,7 +96,7 @@
                   </button>
                   <span class="sm-rname">{{ p.Nome }}</span>
                   <span class="sm-rdetail">
-                    <span v-if="p.TipoParticipante==='Goleiro'" class="sm-gk">Goleiro</span>
+                    <span v-if="p.Posicao==='Goleiro'" class="sm-gk">Goleiro</span>
                     <span v-if="(p.GolSegundo||0)>0" class="sm-gols">({{ p.GolSegundo }} {{ p.GolSegundo===1?'gol':'gols' }})⚽</span>
                     <span v-if="(p.GolContraSegundo||0)>0" class="sm-gc">GC</span>
                     <span v-if="p.CartaoAmarelo" class="sm-card sm-yl" />
@@ -117,7 +117,7 @@
                   </button>
                   <span class="sm-rname" :class="{ 'sm-sub': p.substituido }">{{ p.Nome }}</span>
                   <span class="sm-rdetail">
-                    <span v-if="p.TipoParticipante==='Goleiro'" class="sm-gk">Goleiro</span>
+                    <span v-if="p.Posicao==='Goleiro'" class="sm-gk">Goleiro</span>
                     <span v-if="(p.Gol||0)>0" class="sm-gols">({{ p.Gol }} {{ p.Gol===1?'gol':'gols' }})⚽</span>
                     <span v-if="(p.GolContra||0)>0" class="sm-gc">GC</span>
                     <span v-if="p.substituido" class="sm-saiu">SAIU</span>
@@ -136,7 +136,7 @@
                   </button>
                   <span class="sm-rname">{{ p.Nome }}</span>
                   <span class="sm-rdetail">
-                    <span v-if="p.TipoParticipante==='Goleiro'" class="sm-gk">Goleiro</span>
+                    <span v-if="p.Posicao==='Goleiro'" class="sm-gk">Goleiro</span>
                     <span v-if="(p.GolPrimeiro||0)>0" class="sm-gols">({{ p.GolPrimeiro }} {{ p.GolPrimeiro===1?'gol':'gols' }})⚽</span>
                     <span v-if="(p.GolContraPrimeiro||0)>0" class="sm-gc">GC</span>
                     <span v-if="p.CartaoAmarelo" class="sm-card sm-yl" />
@@ -153,7 +153,7 @@
                   </button>
                   <span class="sm-rname">{{ p.Nome }}</span>
                   <span class="sm-rdetail">
-                    <span v-if="p.TipoParticipante==='Goleiro'" class="sm-gk">Goleiro</span>
+                    <span v-if="p.Posicao==='Goleiro'" class="sm-gk">Goleiro</span>
                     <span v-if="(p.GolSegundo||0)>0" class="sm-gols">({{ p.GolSegundo }} {{ p.GolSegundo===1?'gol':'gols' }})⚽</span>
                     <span v-if="(p.GolContraSegundo||0)>0" class="sm-gc">GC</span>
                     <span v-if="p.CartaoAmarelo" class="sm-card sm-yl" />

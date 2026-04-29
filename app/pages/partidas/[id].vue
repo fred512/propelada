@@ -132,7 +132,7 @@
           >
             <div class="player-top">
               <span class="player-name">{{ p.Nome }}</span>
-              <span v-if="p.TipoParticipante === 'Goleiro'" class="goalkeeper-icon" title="Goleiro">🧤</span>
+              <span v-if="p.Posicao === 'Goleiro'" class="goalkeeper-icon" title="Goleiro">🧤</span>
               <div class="player-cards">
                 <span v-if="p.CartaoAmarelo" class="card-chip card-yellow" />
                 <span v-if="p.CartaoAzul" class="card-chip card-blue" />
@@ -192,7 +192,7 @@
             <!-- Estrutura idêntica ao time 1 -->
             <div class="player-top">
               <span class="player-name">{{ p.Nome }}</span>
-              <span v-if="p.TipoParticipante === 'Goleiro'" class="goalkeeper-icon" title="Goleiro">🧤</span>
+              <span v-if="p.Posicao === 'Goleiro'" class="goalkeeper-icon" title="Goleiro">🧤</span>
               <div class="player-cards">
                 <span v-if="p.CartaoAmarelo" class="card-chip card-yellow" />
                 <span v-if="p.CartaoAzul" class="card-chip card-blue" />
@@ -335,11 +335,14 @@
       :target-team="targetTeam"
       :selected-waiting-players="selectedWaitingPlayers"
       :is-adding="isAddingToTeam"
+      :esquema-total="esquemaTotal"
+      :distributing="isDistributing"
       @close="showWaitingList = false"
       @open-search="openParticipantSearch"
       @toggle-selection="toggleWaitingSelection"
       @remove="removeFromWaitingList"
       @add-selected="addSelectedToTeam"
+      @distribuir="distribuirTimes"
     />
 
     <!-- Modal Busca de Participantes -->
@@ -406,6 +409,8 @@ const partida = ref(null)
 const team1Players = ref([])
 const team2Players = ref([])
 const waitingList = ref([])
+const esquemaTotal = ref(18)
+const isDistributing = ref(false)
 const scoreTeam1 = ref(0)
 const scoreTeam2 = ref(0)
 const timeRemaining = ref(0)
@@ -531,6 +536,35 @@ onUnmounted(() => {
   clearTimeout(timerClickTimeout)
 })
 
+const carregarEsquema = async () => {
+  const idPelada = peladaAtual.value?.id || partida.value?.IdPelada
+  if (!idPelada) return
+  const { data } = await supabase
+    .from('EsquemaJogo')
+    .select('Goleiro, Zagueiro, Lateral, MeioCampo, Atacante')
+    .eq('IdPelada', idPelada)
+    .maybeSingle()
+  if (data) {
+    esquemaTotal.value = (data.Goleiro + data.Zagueiro + data.Lateral + data.MeioCampo + data.Atacante) * 2
+  }
+}
+
+const distribuirTimes = async () => {
+  const matchId = route.params.id
+  if (!matchId) return
+  isDistributing.value = true
+  try {
+    await supabase.rpc('executar_distribuicao_e_limpeza', { partida: Number(matchId) })
+    await fetchWaitingList()
+    await fetchMatchData()
+  } catch (e) {
+    console.error('Erro ao distribuir times:', e)
+  } finally {
+    isDistributing.value = false
+    showWaitingList.value = false
+  }
+}
+
 const fetchWaitingList = async () => {
   const matchId = route.params.id
   if (!matchId) return
@@ -570,6 +604,13 @@ const fetchMatchData = async () => {
   const matchId = route.params.id
   if (!matchId) return
 
+  // Guard: ID deve ser numérico (evita erros com tokens de auth no hash routing)
+  if (isNaN(Number(matchId)) || !Number.isFinite(Number(matchId))) {
+    console.warn('ID de partida inválido, redirecionando:', matchId)
+    await navigateTo('/partidas')
+    return
+  }
+
   console.log('Iniciando fetchMatchData para ID:', matchId)
 
   // 1. Buscar dados básicos da partida e Pelada
@@ -604,20 +645,23 @@ const fetchMatchData = async () => {
       // Buscar TipoParticipante e FotoURL dos jogadores
       const ids = [...new Set((playersData || []).map(p => p.IdParticipante).filter(Boolean))]
       let tipoMap = {}
+      let posMap = {}
       let fotoMap = {}
       if (ids.length > 0) {
         const { data: partsData } = await supabase
           .from('Participantes')
-          .select('IdParticipante, TipoParticipante, FotoURL')
+          .select('IdParticipante, TipoParticipante, Posicao, FotoURL')
           .in('IdParticipante', ids)
         ;(partsData || []).forEach(p => {
           tipoMap[p.IdParticipante] = p.TipoParticipante
+          posMap[p.IdParticipante] = p.Posicao
           fotoMap[p.IdParticipante] = p.FotoURL
         })
       }
       const playersWithTipo = (playersData || []).map(p => ({
         ...p,
         TipoParticipante: tipoMap[p.IdParticipante] || null,
+          Posicao: posMap[p.IdParticipante] || null,
         foto_url: fotoMap[p.IdParticipante] || null
       }))
       processPlayers(playersWithTipo)
@@ -689,6 +733,7 @@ onMounted(async () => {
     }
   }
   await fetchMatchData()
+  await carregarEsquema()
   resumeIfRunning()
 })
 
@@ -1312,7 +1357,7 @@ const onParticipantSearch = async (searchTerm) => {
 
   const { data } = await query
   // Filtra tipos válidos no cliente (Jogador, Goleiro, Convidado)
-  const valid = ['Jogador', 'Goleiro', 'Convidado', 'jogador', 'goleiro', 'convidado']
+  const valid = ['Jogador', 'Convidado', 'jogador', 'convidado', 'Ex-Jogador']
   participantSearchResults.value = (data || []).filter(p =>
     !p.TipoParticipante || valid.includes(p.TipoParticipante)
   )

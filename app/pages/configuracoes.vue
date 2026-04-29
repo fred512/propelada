@@ -50,6 +50,34 @@
         <div v-if="dataMsgErr" class="error-msg">{{ dataMsgErr }}</div>
       </PageCard>
 
+      <!-- Esquema de Jogo -->
+      <PageCard class="config-card">
+        <SectionTitle :icon="Users" title="Esquema de Jogo" />
+        <p class="section-desc">Defina quantos jogadores de cada posição compõem o time. O total é o número de jogadores por time.</p>
+
+        <div class="esquema-grid">
+          <div class="esquema-item" v-for="pos in posicoes" :key="pos.key">
+            <label>{{ pos.label }}</label>
+            <div class="esquema-controls">
+              <button class="esq-btn" @click="ajustarEsquema(pos.key, -1)">−</button>
+              <span class="esq-val">{{ esquema[pos.key] }}</span>
+              <button class="esq-btn" @click="ajustarEsquema(pos.key, 1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="esquema-total-row">
+          <span class="esquema-total-label">Total por time:</span>
+          <span class="esquema-total-num">{{ totalEsquema }} jogadores</span>
+        </div>
+
+        <button class="btn btn-primary btn-sm" @click="salvarEsquema" :disabled="isSaving">
+          <Save :size="14" /> {{ isSaving ? 'Salvando...' : 'Salvar Esquema' }}
+        </button>
+        <div v-if="esquemaMsgOk" class="success-msg">Esquema salvo!</div>
+        <div v-if="esquemaMsgErr" class="error-msg">{{ esquemaMsgErr }}</div>
+      </PageCard>
+
       <!-- Botão para abrir modal de Cores e Pontuação -->
       <button class="btn btn-open-modal" @click="showModal = true">
         <Sliders :size="18" />
@@ -142,7 +170,7 @@
 </template>
 
 <script setup>
-import { Settings, BarChart2, Calendar, Save, Palette, Star, Sliders } from 'lucide-vue-next'
+import { Settings, BarChart2, Calendar, Save, Palette, Star, Sliders, Users } from 'lucide-vue-next'
 import UiSwitch from '@/components/ui/switch/Switch.vue'
 import UiDialog from '@/components/ui/dialog/Dialog.vue'
 import { watchPelada } from '~/composables/usePelada'
@@ -155,6 +183,45 @@ const { peladaAtual } = usePelada()
 
 // Modal
 const showModal = ref(false)
+
+// Esquema de Jogo
+const esquema = ref({ Goleiro: 1, Lateral: 2, Zagueiro: 1, MeioCampo: 4, Atacante: 1 })
+const posicoes = [
+  { key: 'Goleiro',   label: 'Goleiro' },
+  { key: 'Lateral',   label: 'Lateral' },
+  { key: 'Zagueiro',  label: 'Zagueiro' },
+  { key: 'MeioCampo', label: 'Meio-campo' },
+  { key: 'Atacante',  label: 'Atacante' },
+]
+const totalEsquema = computed(() => Object.values(esquema.value).reduce((a, b) => a + b, 0))
+const { visible: esquemaMsgOk, show: showEsquemaMsg } = useTimedMessage(3000)
+const esquemaMsgErr = ref('')
+
+function ajustarEsquema(key, delta) {
+  const novo = (esquema.value[key] || 0) + delta
+  if (novo < 0) return
+  esquema.value[key] = novo
+}
+
+async function salvarEsquema() {
+  isSaving.value = true
+  esquemaMsgErr.value = ''
+  const payload = {
+    IdPelada:  peladaAtual.value.id,
+    Goleiro:   esquema.value.Goleiro,
+    Lateral:   esquema.value.Lateral,
+    Zagueiro:  esquema.value.Zagueiro,
+    MeioCampo: esquema.value.MeioCampo,
+    Atacante:  esquema.value.Atacante,
+  }
+  const { data: ex } = await supabase.from('EsquemaJogo').select('id').eq('IdPelada', peladaAtual.value.id).maybeSingle()
+  const op = ex
+    ? supabase.from('EsquemaJogo').update(payload).eq('IdPelada', peladaAtual.value.id)
+    : supabase.from('EsquemaJogo').insert([payload])
+  const { error } = await op
+  if (error) { esquemaMsgErr.value = 'Erro ao salvar esquema.' } else { showEsquemaMsg() }
+  isSaving.value = false
+}
 
 // Estatísticas / Datas
 const exibeEstatistica = ref(false)
@@ -208,6 +275,11 @@ function toInputDate(s) {
 
 async function carregarConfigs() {
   if (!peladaAtual.value.id) return
+
+  const { data: esq } = await supabase.from('EsquemaJogo').select('*').eq('IdPelada', peladaAtual.value.id).maybeSingle()
+  if (esq) {
+    esquema.value = { Goleiro: esq.Goleiro, Lateral: esq.Lateral, Zagueiro: esq.Zagueiro, MeioCampo: esq.MeioCampo, Atacante: esq.Atacante }
+  }
 
   const { data: pelada } = await supabase
     .from('Pelada')
@@ -433,4 +505,70 @@ input[type="date"]:focus { border-color: var(--secondary-color); outline: none; 
 
 .success-msg { color: #4caf50; font-size: 0.85rem; text-align: center; }
 .error-msg { color: #ff5252; font-size: 0.85rem; text-align: center; }
+
+/* Esquema de Jogo */
+.esquema-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.esquema-item {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.esquema-item label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.esquema-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.esq-btn {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 1rem; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+.esq-btn:hover { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+
+.esq-val {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--primary-color);
+  min-width: 24px;
+  text-align: center;
+}
+
+.esquema-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.esquema-total-label { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; }
+.esquema-total-num   { font-size: 1rem; font-weight: 900; color: var(--primary-color); }
 </style>

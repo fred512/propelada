@@ -50,7 +50,7 @@
                   <div class="sm-player-info">
                     <span class="sm-player-name" :class="{ 'sm-sub': p.substituido }">{{ p.Nome }}</span>
                     <div class="sm-player-badges">
-                      <span v-if="p.TipoParticipante==='Goleiro'" class="badge sm-gk">Goleiro</span>
+                      <span v-if="p.Posicao==='Goleiro'" class="badge sm-gk">Goleiro</span>
                       <span v-if="(p.Gol||0)>0" class="badge sm-goal">⚽ {{ p.Gol }} {{ p.Gol===1?'gol':'gols' }}</span>
                       <span v-if="(p.GolContra||0)>0" class="badge sm-gc">GC</span>
                       <span v-if="p.substituido" class="badge sm-saiu">SAIU</span>
@@ -71,7 +71,7 @@
                   <div class="sm-player-info">
                     <span class="sm-player-name">{{ p.Nome }}</span>
                     <div class="sm-player-badges">
-                      <span v-if="p.TipoParticipante==='Goleiro'" class="badge sm-gk">Goleiro</span>
+                      <span v-if="p.Posicao==='Goleiro'" class="badge sm-gk">Goleiro</span>
                       <span v-if="(p.GolPrimeiro||0)>0" class="badge sm-goal">⚽ {{ p.GolPrimeiro }} {{ p.GolPrimeiro===1?'gol':'gols' }}</span>
                       <span v-if="(p.GolContraPrimeiro||0)>0" class="badge sm-gc">GC</span>
                       <span v-if="p.CartaoAmarelo" class="badge sm-card sm-yl" />
@@ -90,7 +90,7 @@
                   <div class="sm-player-info">
                     <span class="sm-player-name">{{ p.Nome }}</span>
                     <div class="sm-player-badges">
-                      <span v-if="p.TipoParticipante==='Goleiro'" class="badge sm-gk">Goleiro</span>
+                      <span v-if="p.Posicao==='Goleiro'" class="badge sm-gk">Goleiro</span>
                       <span v-if="(p.GolSegundo||0)>0" class="badge sm-goal">⚽ {{ p.GolSegundo }} {{ p.GolSegundo===1?'gol':'gols' }}</span>
                       <span v-if="(p.GolContraSegundo||0)>0" class="badge sm-gc">GC</span>
                       <span v-if="p.CartaoAmarelo" class="badge sm-card sm-yl" />
@@ -117,7 +117,7 @@
                   <div class="sm-player-info">
                     <span class="sm-player-name" :class="{ 'sm-sub': p.substituido }">{{ p.Nome }}</span>
                     <div class="sm-player-badges">
-                      <span v-if="p.TipoParticipante==='Goleiro'" class="badge sm-gk">Goleiro</span>
+                      <span v-if="p.Posicao==='Goleiro'" class="badge sm-gk">Goleiro</span>
                       <span v-if="(p.Gol||0)>0" class="badge sm-goal">⚽ {{ p.Gol }} {{ p.Gol===1?'gol':'gols' }}</span>
                       <span v-if="(p.GolContra||0)>0" class="badge sm-gc">GC</span>
                       <span v-if="p.substituido" class="badge sm-saiu">SAIU</span>
@@ -138,7 +138,7 @@
                   <div class="sm-player-info">
                     <span class="sm-player-name">{{ p.Nome }}</span>
                     <div class="sm-player-badges">
-                      <span v-if="p.TipoParticipante==='Goleiro'" class="badge sm-gk">Goleiro</span>
+                      <span v-if="p.Posicao==='Goleiro'" class="badge sm-gk">Goleiro</span>
                       <span v-if="(p.GolPrimeiro||0)>0" class="badge sm-goal">⚽ {{ p.GolPrimeiro }} {{ p.GolPrimeiro===1?'gol':'gols' }}</span>
                       <span v-if="(p.GolContraPrimeiro||0)>0" class="badge sm-gc">GC</span>
                       <span v-if="p.CartaoAmarelo" class="badge sm-card sm-yl" />
@@ -157,7 +157,7 @@
                   <div class="sm-player-info">
                     <span class="sm-player-name">{{ p.Nome }}</span>
                     <div class="sm-player-badges">
-                      <span v-if="p.TipoParticipante==='Goleiro'" class="badge sm-gk">Goleiro</span>
+                      <span v-if="p.Posicao==='Goleiro'" class="badge sm-gk">Goleiro</span>
                       <span v-if="(p.GolSegundo||0)>0" class="badge sm-goal">⚽ {{ p.GolSegundo }} {{ p.GolSegundo===1?'gol':'gols' }}</span>
                       <span v-if="(p.GolContraSegundo||0)>0" class="badge sm-gc">GC</span>
                       <span v-if="p.CartaoAmarelo" class="badge sm-card sm-yl" />
