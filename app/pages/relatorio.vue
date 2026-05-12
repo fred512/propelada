@@ -1,52 +1,52 @@
 <script setup>
 import { ref } from 'vue'
-import { FileText, ClipboardCheck } from 'lucide-vue-next'
-import RelatorioPontuacaoModal from '~/components/RelatorioPontuacaoModal.vue'
+import { ClipboardCheck, Trophy } from 'lucide-vue-next'
 import RelatorioConferenciaModal from '~/components/RelatorioConferenciaModal.vue'
+import RankingModal from '~/components/RankingModal.vue'
 
-const isPontuacaoModalOpen = ref(false)
-const isConferenciaModalOpen = ref(false)
+const isConferenciaOpen = ref(false)
+const isRankingOpen = ref(false)
 </script>
 
 <template>
   <div class="relatorio-container">
     <PageHeader title="Relatórios" subtitle="Selecione um relatório para visualizar" />
 
-    <RelatorioPontuacaoModal
-      :is-open="isPontuacaoModalOpen"
-      @close="isPontuacaoModalOpen = false"
-    />
-
     <RelatorioConferenciaModal
-      :is-open="isConferenciaModalOpen"
-      @close="isConferenciaModalOpen = false"
+      :is-open="isConferenciaOpen"
+      @close="isConferenciaOpen = false"
     />
 
-    <div class="relatorio-grid">
-      <button class="relatorio-card" @click="isPontuacaoModalOpen = true">
-        <div class="relatorio-card-icon">
-          <FileText :size="36" />
-        </div>
-        <div class="relatorio-card-body">
-          <h3 class="relatorio-card-title">Pontuação Jogadores</h3>
-          <p class="relatorio-card-desc">
-            Tabela completa com gols, cartões, presenças, resultados e pontuação de todos os jogadores.
-          </p>
-        </div>
-        <span class="relatorio-card-cta">Gerar Relatório →</span>
-      </button>
+    <RankingModal
+      :is-open="isRankingOpen"
+      @close="isRankingOpen = false"
+    />
 
-      <button class="relatorio-card" @click="isConferenciaModalOpen = true">
-        <div class="relatorio-card-icon">
+    <div class="cards-grid">
+      <button class="relatorio-card" @click="isConferenciaOpen = true">
+        <div class="card-icon conferencia-icon">
           <ClipboardCheck :size="36" />
         </div>
-        <div class="relatorio-card-body">
-          <h3 class="relatorio-card-title">Conferência de Pontuação</h3>
-          <p class="relatorio-card-desc">
-            Detalhamento por categoria: presença, falta, jogo assistido, abono e chuva — para conferir a pontuação de cada jogador.
+        <div class="card-body">
+          <h3 class="card-title">Conferência de Pontuação</h3>
+          <p class="card-desc">
+            Detalhamento por categoria: presença, falta, jogo assistido, abono e chuva.
           </p>
         </div>
-        <span class="relatorio-card-cta">Gerar Relatório →</span>
+        <span class="card-cta">Gerar Relatório →</span>
+      </button>
+
+      <button class="relatorio-card" @click="isRankingOpen = true">
+        <div class="card-icon ranking-icon">
+          <Trophy :size="36" />
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">Ranking</h3>
+          <p class="card-desc">
+            Classificação geral com pontos, vitórias, empates, derrotas e saldo de gols.
+          </p>
+        </div>
+        <span class="card-cta">Ver Ranking →</span>
       </button>
     </div>
   </div>
@@ -55,16 +55,17 @@ const isConferenciaModalOpen = ref(false)
 <style scoped>
 .relatorio-container {
   padding: 16px;
-  max-width: 100%;
+  max-width: 650px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 20px;
   color: var(--text-primary);
 }
 
-.relatorio-grid {
+.cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 16px;
 }
 
@@ -89,9 +90,7 @@ const isConferenciaModalOpen = ref(false)
   border-color: var(--primary-color);
 }
 
-.relatorio-card-icon {
-  color: var(--primary-color);
-  background: rgba(76, 175, 80, 0.1);
+.card-icon {
   border-radius: 12px;
   padding: 10px;
   display: flex;
@@ -99,25 +98,33 @@ const isConferenciaModalOpen = ref(false)
   justify-content: center;
 }
 
-.relatorio-card-body {
-  flex: 1;
+.conferencia-icon {
+  color: var(--primary-color);
+  background: rgba(76,175,80,0.1);
 }
 
-.relatorio-card-title {
+.ranking-icon {
+  color: #F59E0B;
+  background: rgba(245,158,11,0.1);
+}
+
+.card-body { flex: 1; }
+
+.card-title {
   font-size: 1.1rem;
   font-weight: 800;
   color: var(--secondary-color);
   margin: 0 0 6px;
 }
 
-.relatorio-card-desc {
+.card-desc {
   font-size: 0.85rem;
   color: var(--text-secondary);
   margin: 0;
   line-height: 1.5;
 }
 
-.relatorio-card-cta {
+.card-cta {
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--primary-color);
