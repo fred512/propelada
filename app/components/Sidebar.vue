@@ -124,7 +124,7 @@ const allMenuItems = [
   { label: "Partidas", to: "/partidas", icon: Trophy },
   { label: "Estatísticas", to: "/estatisticas", icon: BarChart2, visitorNeedsPermission: true },
   { label: "Acesso", to: "/acesso", icon: Key, adminOnly: true },
-  { label: "Relatórios", to: "/relatorio", icon: FileText, adminOnly: true },
+  { label: "Relatórios", to: "/relatorio", icon: FileText },
   { label: "Assinatura", to: "/assinatura", icon: DollarSign, adminOnly: true },
   { label: "Manual", to: "/manual", icon: BookOpen },
   { label: "Tutoriais", to: "/tutoriais", icon: PlayCircle },
