@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { X, Printer } from 'lucide-vue-next'
-import { calcularPontuacao } from '~/composables/usePlayerProfile'
+import { calcularPontuacao, calcularPresencaAbono } from '~/composables/usePlayerProfile'
 import Dialog from '@/components/ui/dialog/Dialog.vue'
 
 const props = defineProps({ isOpen: Boolean })
@@ -15,7 +15,7 @@ const jogadores = ref([])
 const criterios = ref(null)
 
 const jogadoresOrdenados = computed(() =>
-  [...jogadores.value].sort((a, b) => b.pontuacao - a.pontuacao)
+  [...jogadores.value].sort((a, b) => b.qtd_presenca - a.qtd_presenca || b.pontuacao - a.pontuacao)
 )
 
 const dataAtual = computed(() =>
@@ -59,7 +59,7 @@ const carregarDados = async () => {
         .maybeSingle(),
 
       supabase.from('Partida')
-        .select('idPartida')
+        .select('idPartida, Data')
         .eq('IdPelada', idPelada)
         .gte('Data', dataIni)
         .lte('Data', dataFim),
@@ -99,23 +99,42 @@ const carregarDados = async () => {
         )
 
         const qtd_presenca = jogadasAno.length
-        const qtd_assistido = esperasAno.length
         const qtd_chuva_jogado = jogadasAno.filter(j => j.partida?.chuva).length
         const qtd_chuva_assistido = esperasAno.filter(e => e.partida?.chuva).length
 
         const jogadasIds = new Set(jogadasAno.map(j => j.partida?.idPartida))
         const esperasIds = new Set(esperasAno.map(e => e.partida?.idPartida))
         const faltas = (todasPartidas || []).filter(pt => !jogadasIds.has(pt.idPartida) && !esperasIds.has(pt.idPartida)).length
-        const abono_faltas = Math.min(faltas, 2)
 
-        const pontuacaoBase = calcularPontuacao(jogadas, esperas, criteriosComId, dataIni, dataFim)
-        const pontuacao = pontuacaoBase + abono_faltas * 4
+        const ptJogou    = crit.PartidasJogadas  ?? 4
+        const ptAssistiu = crit.PartidasAssistida ?? 2
+
+        const { pontos: ptPresenca, abonos } = calcularPresencaAbono(
+          todasPartidas, jogadasIds, esperasIds, ptJogou, ptAssistiu
+        )
+        const abono_faltas = abonos
+        const outrosPontos = calcularPontuacao(jogadas, esperas, criteriosComId, dataIni, dataFim)
+        const pontuacao = ptPresenca + outrosPontos
+
+        // Assistências que geraram +2 pts = esperas após abonos esgotados
+        const ausenciasTotal = (todasPartidas || []).filter(pt => !jogadasIds.has(pt.idPartida)).length
+        const qtd_assistido_pts = ausenciasTotal > 2
+          ? (todasPartidas || [])
+              .sort((a, b) => (a.Data || '').localeCompare(b.Data || ''))
+              .filter((pt, idx) => {
+                const ausAte = (todasPartidas || [])
+                  .sort((a, b) => (a.Data || '').localeCompare(b.Data || ''))
+                  .slice(0, idx)
+                  .filter(p => !jogadasIds.has(p.idPartida)).length
+                return !jogadasIds.has(pt.idPartida) && ausAte >= 2 && esperasIds.has(pt.idPartida)
+              }).length
+          : 0
 
         return {
           nome: profile.apelido_jogador || profile.nome_jogador,
           qtd_presenca,
           qtd_falta: faltas,
-          qtd_assistido,
+          qtd_assistido: qtd_assistido_pts,
           abono_faltas,
           qtd_chuva_jogado,
           qtd_chuva_assistido,

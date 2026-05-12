@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { X, Printer } from 'lucide-vue-next'
-import { calcularPontuacao } from '~/composables/usePlayerProfile'
+import { calcularPontuacao, calcularPresencaAbono } from '~/composables/usePlayerProfile'
 import Dialog from '@/components/ui/dialog/Dialog.vue'
 
 const props = defineProps({
@@ -60,7 +60,7 @@ const carregarDados = async () => {
         .maybeSingle(),
 
       supabase.from('Partida')
-        .select('idPartida')
+        .select('idPartida, Data')
         .eq('IdPelada', idPelada)
         .gte('Data', dataIni)
         .lte('Data', dataFim),
@@ -94,8 +94,6 @@ const carregarDados = async () => {
 
         if (!profile || !criterios) return null
 
-        const pontuacaoBase = calcularPontuacao(jogadas, esperas, criteriosComId, dataIni, dataFim)
-
         const jogadasIds = new Set(
           (jogadas || [])
             .filter(j => j.partida?.Data >= dataIni && j.partida?.Data <= dataFim)
@@ -106,13 +104,19 @@ const carregarDados = async () => {
             .filter(e => e.partida?.Data >= dataIni && e.partida?.Data <= dataFim && e.partida?.IdPelada == idPelada)
             .map(e => e.partida?.idPartida)
         )
-        const faltas = (todasPartidas || []).filter(pt => !jogadasIds.has(pt.idPartida) && !esperasIds.has(pt.idPartida)).length
-        const faltasAbonadas = Math.min(faltas, 2)
+
+        const ptJogou    = criteriosComId.PartidasJogadas  ?? 4
+        const ptAssistiu = criteriosComId.PartidasAssistida ?? 2
+
+        const { pontos: ptPresenca, abonos } = calcularPresencaAbono(
+          todasPartidas, jogadasIds, esperasIds, ptJogou, ptAssistiu
+        )
+        const outrosPontos = calcularPontuacao(jogadas, esperas, criteriosComId, dataIni, dataFim)
 
         return {
           ...profile,
-          pontuacao: pontuacaoBase + faltasAbonadas * 2,
-          abono_faltas: faltasAbonadas,
+          pontuacao: ptPresenca + outrosPontos,
+          abono_faltas: abonos,
           qtd_participacoes: jogadasIds.size,
           qtd_esperas: esperasIds.size,
         }

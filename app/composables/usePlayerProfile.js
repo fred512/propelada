@@ -1,7 +1,49 @@
 import { ref } from 'vue'
 
 /**
- * Pure function — calculates score from a player's match/waiting records.
+ * Calcula pontos de presença/ausência com lógica de abono.
+ *
+ * Regras:
+ * - Jogou (in JogadorPartida): +ptJogou
+ * - Não jogou, abonos usados < 2: +ptJogou (abono, independente de ListaEspera)
+ * - Não jogou, abonos usados >= 2, in ListaEspera: +ptAssistiu
+ * - Não jogou, abonos usados >= 2, não in ListaEspera: 0
+ *
+ * @param {Array}  todasPartidas  - partidas do período ordenadas por Data asc [{idPartida, Data}]
+ * @param {Set}    jogadasIds     - IDs das partidas que jogou
+ * @param {Set}    esperasIds     - IDs das partidas que estava na ListaEspera
+ * @param {number} ptJogou        - pontos por presença/abono (ex: 4)
+ * @param {number} ptAssistiu     - pontos por assistência pós-abono (ex: 2)
+ * @returns {{ pontos: number, abonos: number }}
+ */
+export function calcularPresencaAbono(todasPartidas, jogadasIds, esperasIds, ptJogou, ptAssistiu) {
+  const sorted = [...(todasPartidas || [])].sort((a, b) =>
+    (a.Data || '').localeCompare(b.Data || '')
+  )
+  let pontos = 0
+  let ausencias = 0
+  let abonos = 0
+
+  for (const p of sorted) {
+    const id = p.idPartida
+    if (jogadasIds.has(id)) {
+      pontos += ptJogou
+    } else {
+      if (ausencias < 2) {
+        pontos += ptJogou  // abono
+        abonos++
+      } else if (esperasIds.has(id)) {
+        pontos += ptAssistiu
+      }
+      ausencias++
+    }
+  }
+
+  return { pontos, abonos }
+}
+
+/**
+ * Calcula pontos de resultado, cartões e chuva (sem presença — use calcularPresencaAbono para isso).
  */
 export function calcularPontuacao(jogadas, esperas, criterios, dataIni, dataHoje) {
   const c = criterios
@@ -10,23 +52,20 @@ export function calcularPontuacao(jogadas, esperas, criterios, dataIni, dataHoje
     return d && d >= dataIni && d <= dataHoje
   })
   const idPelada = criterios.IdPelada
-
   const esperasAno = (esperas || []).filter(e => {
     const d = e.partida?.Data
     return d && d >= dataIni && d <= dataHoje && e.partida?.IdPelada == idPelada
   })
 
   return (
-    jogadasAno.length                                         * (c.PartidasJogadas  || 0) +
-    esperasAno.length                                         * (c.PartidasAssistida || 0) +
-    jogadasAno.filter(j => j.partida?.chuva).length          * (c.JogadasChuva     || 0) +
-    esperasAno.filter(e => e.partida?.chuva).length          * (c.AssistidasChuva  || 0) +
-    jogadasAno.filter(j => j.Resultado === 'Vitoria').length  * (c.Vitorias         || 0) +
-    jogadasAno.filter(j => j.Resultado === 'Empate').length   * (c.Empates          || 0) +
-    jogadasAno.filter(j => j.Resultado === 'Derrota').length  * (c.Derrotas         || 0) +
-    jogadasAno.filter(j => j.CartaoAmarelo).length            * (c.Amarelo          || 0) +
-    jogadasAno.filter(j => j.CartaoAzul).length               * (c.Azul             || 0) +
-    jogadasAno.filter(j => j.CartaoVermelho).length           * (c.Vermelho         || 0)
+    jogadasAno.filter(j => j.partida?.chuva).length          * (c.JogadasChuva  || 0) +
+    esperasAno.filter(e => e.partida?.chuva).length           * (c.AssistidasChuva || 0) +
+    jogadasAno.filter(j => j.Resultado === 'Vitoria').length  * (c.Vitorias      || 0) +
+    jogadasAno.filter(j => j.Resultado === 'Empate').length   * (c.Empates       || 0) +
+    jogadasAno.filter(j => j.Resultado === 'Derrota').length  * (c.Derrotas      || 0) +
+    jogadasAno.filter(j => j.CartaoAmarelo).length            * (c.Amarelo       || 0) +
+    jogadasAno.filter(j => j.CartaoAzul).length               * (c.Azul          || 0) +
+    jogadasAno.filter(j => j.CartaoVermelho).length           * (c.Vermelho      || 0)
   )
 }
 
@@ -49,7 +88,6 @@ export function usePlayerProfile() {
       const dataHoje = new Date().toISOString().split('T')[0]
       const idPelada = peladaAtual.value.id
 
-      // Buscar período da pelada (DataInicial / DataFinal)
       const { data: pelada } = await supabase
         .from('Pelada')
         .select('DataInicial, DataFinal')
@@ -78,7 +116,7 @@ export function usePlayerProfile() {
           .eq('idParticipante', idJogador),
 
         supabase.from('Partida')
-          .select('idPartida')
+          .select('idPartida, Data')
           .eq('IdPelada', idPelada)
           .gte('Data', dataIni)
           .lte('Data', dataFim)
@@ -86,23 +124,28 @@ export function usePlayerProfile() {
 
       if (profile && criterios) {
         const criteriosComId = { ...criterios, IdPelada: idPelada }
-        const pontuacaoBase = calcularPontuacao(jogadas, esperas, criteriosComId, dataIni, dataFim)
 
-        // Calcular abono de faltas (2 primeiras faltas = +1 ponto cada)
         const jogadasIds = new Set((jogadas || [])
           .filter(j => j.partida?.Data >= dataIni && j.partida?.Data <= dataFim)
           .map(j => j.partida?.idPartida))
+
         const esperasIds = new Set((esperas || [])
           .filter(e => e.partida?.Data >= dataIni && e.partida?.Data <= dataFim && e.partida?.IdPelada == idPelada)
           .map(e => e.partida?.idPartida))
-        const faltas = (todasPartidas || []).filter(p => !jogadasIds.has(p.idPartida) && !esperasIds.has(p.idPartida)).length
-        const faltasAbonadas = Math.min(faltas, 2)
-        const abono = faltasAbonadas * 2
+
+        const ptJogou    = criterios.PartidasJogadas  ?? 4
+        const ptAssistiu = criterios.PartidasAssistida ?? 2
+
+        const { pontos: ptPresenca, abonos } = calcularPresencaAbono(
+          todasPartidas, jogadasIds, esperasIds, ptJogou, ptAssistiu
+        )
+
+        const outrosPontos = calcularPontuacao(jogadas, esperas, criteriosComId, dataIni, dataFim)
 
         selectedProfile.value = {
           ...profile,
-          pontuacao: pontuacaoBase + abono,
-          abono_faltas: faltasAbonadas,
+          pontuacao: ptPresenca + outrosPontos,
+          abono_faltas: abonos,
           qtd_participacoes: jogadasIds.size,
           qtd_esperas: esperasIds.size
         }
