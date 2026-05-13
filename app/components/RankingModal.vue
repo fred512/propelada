@@ -139,17 +139,17 @@ function handlePrint() {
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
   <title>Ranking ProPelada</title>
   <style>
-    body { font-family: Arial, sans-serif; font-size: 11px; padding: 20px; color: #111; }
+    body { font-family: Arial, sans-serif; font-size: 13px; padding: 20px; color: #111; }
     .header { text-align: center; margin-bottom: 16px; }
-    .header img { height: 36px; display: block; margin: 0 auto 6px; }
-    .header h1 { font-size: 16px; margin: 0; }
-    .header p { color: #666; margin: 3px 0 0; font-size: 10px; }
+    .header img { height: 48px; display: block; margin: 0 auto 6px; }
+    .header h1 { font-size: 22px; margin: 0; font-weight: 900; }
+    .header p { color: #666; margin: 3px 0 0; font-size: 13px; }
     table { width: 100%; border-collapse: collapse; }
-    th { background: #1b5e20; color: white; padding: 6px 8px; font-size: 10px; text-align: center; }
-    td { padding: 5px 8px; border-bottom: 1px solid #ddd; }
+    th { background: #1b5e20; color: white; padding: 7px 8px; font-size: 12px; text-align: center; font-weight: 700; }
+    td { padding: 6px 8px; border-bottom: 1px solid #ddd; font-size: 13px; }
     .stripe td { background: #f5f5f5; }
     .text-center { text-align: center; }
-    .pts { font-weight: 800; color: #1565c0; }
+    .pts { font-weight: 800; font-size: 14px; color: #1565c0; }
   </style></head><body>
   <div class="header">
     <img src="${logoUrl}" />
