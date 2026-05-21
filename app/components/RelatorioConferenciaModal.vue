@@ -134,7 +134,8 @@ const carregarDados = async () => {
           nome: profile.apelido_jogador || profile.nome_jogador,
           qtd_presenca,
           qtd_falta: faltas,
-          qtd_assistido: qtd_assistido_pts,
+          qtd_assistido: esperasIds.size,
+          qtd_assistido_pts,
           abono_faltas,
           qtd_chuva_jogado,
           qtd_chuva_assistido,
@@ -169,7 +170,7 @@ const handlePrint = () => {
       <td class="sub">${pts(j.qtd_presenca, cr.PartidasJogadas)}</td>
       <td>${j.qtd_falta}</td>
       <td>${j.qtd_assistido}</td>
-      <td class="sub">${pts(j.qtd_assistido, cr.PartidasAssistida)}</td>
+      <td class="sub">${pts(j.qtd_assistido_pts, cr.PartidasAssistida)}</td>
       <td>${j.abono_faltas}</td>
       <td class="sub">${j.abono_faltas * 4}</td>
       <td>${j.qtd_chuva_jogado}</td>
@@ -325,7 +326,7 @@ const handlePrint = () => {
 
               <!-- Assistido -->
               <td class="text-center">{{ j.qtd_assistido }}</td>
-              <td class="text-center pts-sub">{{ pts(j.qtd_assistido, c.PartidasAssistida) }}</td>
+              <td class="text-center pts-sub">{{ pts(j.qtd_assistido_pts, c.PartidasAssistida) }}</td>
 
               <!-- Abono -->
               <td class="text-center">{{ j.abono_faltas }}</td>

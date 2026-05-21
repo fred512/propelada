@@ -57,43 +57,43 @@
       <!-- Menu de navegação principal -->
       <div v-if="peladaAtual.id || !isVisitor" class="nav-grid">
         <NuxtLink to="/partidas" class="nav-card">
-          <div class="nav-icon-wrap nav-green">
-            <Trophy :size="28" />
+          <div class="nav-icon-wrap">
+            <Trophy :size="26" />
           </div>
           <span class="nav-label">Partidas</span>
         </NuxtLink>
 
         <NuxtLink v-if="!isVisitor" to="/participantes" class="nav-card">
-          <div class="nav-icon-wrap nav-blue">
-            <Users :size="28" />
+          <div class="nav-icon-wrap">
+            <Users :size="26" />
           </div>
           <span class="nav-label">Participantes</span>
         </NuxtLink>
 
         <NuxtLink v-if="canViewEstatisticas" to="/estatisticas" class="nav-card">
-          <div class="nav-icon-wrap nav-yellow">
-            <BarChart2 :size="28" />
+          <div class="nav-icon-wrap">
+            <BarChart2 :size="26" />
           </div>
           <span class="nav-label">Estatísticas</span>
         </NuxtLink>
 
         <NuxtLink to="/ranking" class="nav-card">
-          <div class="nav-icon-wrap nav-orange">
-            <Award :size="28" />
+          <div class="nav-icon-wrap">
+            <Award :size="26" />
           </div>
           <span class="nav-label">Ranking</span>
         </NuxtLink>
 
         <NuxtLink v-if="!isVisitor" to="/configuracoes" class="nav-card">
-          <div class="nav-icon-wrap nav-gray">
-            <Settings :size="28" />
+          <div class="nav-icon-wrap">
+            <Settings :size="26" />
           </div>
           <span class="nav-label">Configurações</span>
         </NuxtLink>
 
         <NuxtLink to="/tutoriais" class="nav-card">
-          <div class="nav-icon-wrap nav-purple">
-            <PlayCircle :size="28" />
+          <div class="nav-icon-wrap">
+            <PlayCircle :size="26" />
           </div>
           <span class="nav-label">Tutoriais</span>
         </NuxtLink>
@@ -157,21 +157,30 @@ onMounted(async () => {
   margin: 0 auto;
 }
 
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .welcome-header {
   margin-bottom: 2rem;
   text-align: center;
+  animation: slideUp 0.4s ease both;
 }
 
 .welcome-header h1 {
   font-size: 1.8rem;
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   color: var(--primary-color);
   margin-bottom: 0.5rem;
 }
 
 .welcome-header p {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-secondary);
-  opacity: 0.9;
 }
 
 .stats-grid {
@@ -215,6 +224,7 @@ onMounted(async () => {
 /* Seletor de Visitante */
 .visitor-selection {
   margin-bottom: 2rem;
+  animation: slideUp 0.4s ease 0.05s both;
 }
 
 .selection-card {
@@ -305,6 +315,7 @@ onMounted(async () => {
 
 /* Card da pelada selecionada */
 .selected-pelada-card {
+  animation: slideUp 0.4s ease 0.05s both;
   background: var(--bg-secondary);
   border: 1px solid var(--secondary-color);
   border-radius: 16px;
@@ -373,13 +384,19 @@ onMounted(async () => {
 .nav-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 10px;
   margin-top: 8px;
 }
 
-@media (min-width: 480px) {
-  .nav-grid { grid-template-columns: repeat(3, 1fr); }
+.nav-grid .nav-card {
+  animation: slideUp 0.4s ease both;
 }
+.nav-grid .nav-card:nth-child(1) { animation-delay: 0.05s; }
+.nav-grid .nav-card:nth-child(2) { animation-delay: 0.10s; }
+.nav-grid .nav-card:nth-child(3) { animation-delay: 0.15s; }
+.nav-grid .nav-card:nth-child(4) { animation-delay: 0.20s; }
+.nav-grid .nav-card:nth-child(5) { animation-delay: 0.25s; }
+.nav-grid .nav-card:nth-child(6) { animation-delay: 0.30s; }
 
 .nav-card {
   display: flex;
@@ -387,42 +404,65 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 20px 10px;
+  padding: 20px 8px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 16px;
   text-decoration: none;
-  transition: all 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,255,135,0.07) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
 }
 
 .nav-card:hover {
   transform: translateY(-3px);
-  border-color: var(--secondary-color);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  border-color: rgba(0, 200, 83, 0.4);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,200,83,0.08);
+}
+
+.nav-card:hover::after { opacity: 1; }
+
+:root:not(.dark) .nav-card::after {
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(27,94,32,0.06) 0%, transparent 70%);
+}
+
+:root:not(.dark) .nav-card:hover {
+  border-color: rgba(27,94,32,0.35);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
 }
 
 .nav-icon-wrap {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  transition: background 0.2s;
 }
 
-.nav-green  { background: #1C6A4E; }
-.nav-blue   { background: #1565C0; }
-.nav-yellow { background: #E65100; }
-.nav-orange { background: #FF6F00; }
-.nav-gray   { background: #455A64; }
-.nav-purple { background: #6A1B9A; }
+.nav-card:hover .nav-icon-wrap {
+  background: color-mix(in srgb, var(--primary-color) 18%, transparent);
+}
 
 .nav-label {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--text-primary);
   text-align: center;
+  letter-spacing: 0.2px;
 }
 </style>

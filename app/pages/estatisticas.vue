@@ -269,6 +269,11 @@ watchPelada(async () => {
 </script>
 
 <style scoped>
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .stats-container {
   padding: 16px;
   color: var(--text-primary);
@@ -363,7 +368,20 @@ watchPelada(async () => {
   .charts-grid { grid-template-columns: 1fr 1fr; }
 }
 
-.chart-card { padding: 5px; width: 99%; }
+.chart-card {
+  padding: 5px;
+  width: 99%;
+  animation: slideUp 0.4s ease both;
+}
+
+.charts-grid .chart-card:nth-child(1) { animation-delay: 0.05s; }
+.charts-grid .chart-card:nth-child(2) { animation-delay: 0.12s; }
+.charts-grid .chart-card:nth-child(3) { animation-delay: 0.19s; }
+.charts-grid .chart-card:nth-child(4) { animation-delay: 0.26s; }
+.charts-grid .chart-card:nth-child(5) { animation-delay: 0.33s; }
+.charts-grid .chart-card:nth-child(6) { animation-delay: 0.40s; }
+.charts-grid .chart-card:nth-child(7) { animation-delay: 0.47s; }
+.charts-grid .chart-card:nth-child(8) { animation-delay: 0.54s; }
 
 .chart-title {
   font-size: 1rem;
