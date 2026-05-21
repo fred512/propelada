@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProPelada — Documentação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green: #00FF87;
+      --green-dim: #00c46a;
+      --green-glow: rgba(0, 255, 135, 0.15);
+      --navy: #050d1a;
+      --navy-mid: #0a1628;
+      --navy-card: #0d1e35;
+      --navy-border: #132840;
+      --navy-hover: #162f4a;
+      --text-primary: #e8f0fe;
+      --text-secondary: #7a96b8;
+      --text-muted: #3d5a7a;
+      --yellow: #ffd94a;
+      --red: #ff4d6d;
+      --blue-card: #4d9fff;
+      --sidebar-w: 260px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--navy);
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Field texture bg ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 79px, rgba(0,255,135,.03) 80px),
+        repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(0,255,135,.03) 80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: var(--navy-mid);
+      border-right: 1px solid var(--navy-border);
+      padding: 0 0 40px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 2px; }
+
+    .sidebar-logo {
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid var(--navy-border);
+      margin-bottom: 12px;
+    }
+
+    .sidebar-logo .brand {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      letter-spacing: 0.04em;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-logo .brand svg {
+      width: 20px; height: 20px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-logo .tagline {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .nav-group-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 16px 24px 6px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 24px;
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all .18s ease;
+      border-left: 2px solid transparent;
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+      background: var(--green-glow);
+      border-left-color: var(--green-dim);
+    }
+
+    .nav-link.active {
+      color: var(--green);
+      background: var(--green-glow);
+      border-left-color: var(--green);
+      font-weight: 500;
+    }
+
+    .nav-link .icon {
+      font-size: 15px;
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    /* ── Main content ── */
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: 0 0 80px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      padding: 64px 64px 56px;
+      border-bottom: 1px solid var(--navy-border);
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(0,255,135,.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--green-glow);
+      border: 1px solid rgba(0,255,135,.25);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    .hero-badge::before { content: '●'; font-size: 8px; }
+
+    .hero h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(48px, 6vw, 76px);
+      line-height: 0.95;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .hero h1 span {
+      color: var(--green);
+      display: block;
+    }
+
+    .hero-desc {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 520px;
+      margin-top: 16px;
+      line-height: 1.6;
+    }
+
+    .hero-meta {
+      display: flex;
+      gap: 32px;
+      margin-top: 32px;
+    }
+
+    .hero-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .hero-stat .val {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--green);
+      line-height: 1;
+    }
+
+    .hero-stat .lbl {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── Section ── */
+    .section {
+      padding: 56px 64px;
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .section:last-child { border-bottom: none; }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .section-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: var(--green-glow);
+      border: 1px solid rgba(0,255,135,.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .section-title-block h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 32px;
+      letter-spacing: 0.01em;
+      line-height: 1;
+      color: var(--text-primary);
+    }
+
+    .section-title-block p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+      max-width: 600px;
+    }
+
+    /* ── Step list ── */
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 8px;
+    }
+
+    .step {
+      display: flex;
+      gap: 20px;
+      position: relative;
+    }
+
+    .step + .step { margin-top: 0; }
+
+    .step-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+      width: 32px;
+    }
+
+    .step-num {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--navy-card);
+      border: 1px solid var(--navy-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--green);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-line {
+      width: 1px;
+      flex: 1;
+      background: var(--navy-border);
+      min-height: 20px;
+    }
+
+    .step-body {
+      padding: 4px 0 28px;
+      flex: 1;
+    }
+
+    .step-body h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.02em;
+      margin-bottom: 6px;
+    }
+
+    .step-body p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* ── Cards grid ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--navy-card);
+      border: 1px solid var(--navy-border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color .2s, background .2s;
+    }
+
+    .card:hover {
+      border-color: rgba(0,255,135,.25);
+      background: var(--navy-hover);
+    }
+
+    .card-icon { font-size: 24px; margin-bottom: 12px; display: block; }
+
+    .card h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+
+    .card p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    /* ── Info block ── */
+    .info-block {
+      background: var(--navy-card);
+      border: 1px solid var(--navy-border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+
+    .info-block h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      letter-spacing: 0.03em;
+    }
+
+    .info-block ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .info-block li {
+      font-size: 14px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.5;
+    }
+
+    .info-block li::before {
+      content: '→';
+      color: var(--green);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Two columns ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* ── Callout ── */
+    .callout {
+      border-radius: 10px;
+      padding: 16px 20px;
+      font-size: 13.5px;
+      line-height: 1.55;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-top: 16px;
+    }
+
+    .callout.tip {
+      background: rgba(0,255,135,.07);
+      border: 1px solid rgba(0,255,135,.2);
+      color: #9de8c6;
+    }
+
+    .callout.warning {
+      background: rgba(255,217,74,.07);
+      border: 1px solid rgba(255,217,74,.2);
+      color: #e8d49a;
+    }
+
+    .callout-icon { flex-shrink: 0; font-size: 16px; margin-top: 1px; }
+
+    /* ── Badge chips ── */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    .chip.yellow { background: rgba(255,217,74,.15); color: var(--yellow); border: 1px solid rgba(255,217,74,.25); }
+    .chip.blue   { background: rgba(77,159,255,.15); color: var(--blue-card); border: 1px solid rgba(77,159,255,.25); }
+    .chip.red    { background: rgba(255,77,109,.15); color: var(--red); border: 1px solid rgba(255,77,109,.25); }
+    .chip.green  { background: rgba(0,255,135,.1); color: var(--green); border: 1px solid rgba(0,255,135,.2); }
+
+    /* ── Table ── */
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      margin-top: 8px;
+    }
+
+    .doc-table th {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--navy-border);
+    }
+
+    .doc-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(19,40,64,.6);
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+
+    .doc-table tr:hover td { background: var(--navy-hover); }
+
+    .doc-table td:first-child {
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    /* ── Timer UI mock ── */
+    .mock-scoreboard {
+      background: var(--navy-card);
+      border: 1px solid var(--navy-border);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .mock-score {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 72px;
+      font-weight: 900;
+      color: var(--text-primary);
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+
+    .mock-score .sep { color: var(--text-muted); margin: 0 8px; }
+
+    .mock-teams {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .mock-timer {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--green);
+      margin-top: 16px;
+    }
+
+    /* ── Flow diagram ── */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin: 20px 0;
+      gap: 4px;
+    }
+
+    .flow-node {
+      background: var(--navy-card);
+      border: 1px solid var(--navy-border);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .flow-node.active {
+      background: var(--green-glow);
+      border-color: rgba(0,255,135,.3);
+      color: var(--green);
+      font-weight: 500;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 16px;
+      padding: 0 4px;
+    }
+
+    /* ── Ranking table preview ── */
+    .rank-preview {
+      background: var(--navy-card);
+      border: 1px solid var(--navy-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .rank-header {
+      display: grid;
+      grid-template-columns: 36px 1fr repeat(6, 40px);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--navy-border);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      gap: 8px;
+    }
+
+    .rank-row {
+      display: grid;
+      grid-template-columns: 36px 1fr repeat(6, 40px);
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(19,40,64,.5);
+      font-size: 13.5px;
+      gap: 8px;
+      align-items: center;
+      transition: background .15s;
+    }
+
+    .rank-row:hover { background: var(--navy-hover); }
+    .rank-row:last-child { border-bottom: none; }
+
+    .rank-pos {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .medal-gold   { color: #ffd700; }
+    .medal-silver { color: #c0c0c0; }
+    .medal-bronze { color: #cd7f32; }
+
+    .rank-name { color: var(--text-primary); font-weight: 500; }
+    .rank-num  { color: var(--text-secondary); text-align: center; }
+    .rank-highlight { color: var(--green); font-weight: 600; text-align: center; }
+
+    /* ── Scrollspy ── */
+    .section[data-section] { scroll-margin-top: 0; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .hero, .section { padding: 40px 24px; }
+      .two-col { grid-template-columns: 1fr; }
+      .mock-score { font-size: 48px; }
+      .rank-header,
+      .rank-row { grid-template-columns: 36px 1fr repeat(4, 36px); }
+      .rank-header span:nth-child(n+7),
+      .rank-row span:nth-child(n+7) { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M12 2C12 2 8 6 8 12s4 10 4 10M12 2c0 0 4 4 4 10s-4 10-4 10M2 12h20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        PROPELADA
+      </div>
+      <div class="tagline">Guia do Usuário</div>
+    </div>
+
+    <span class="nav-group-label">Início</span>
+    <a class="nav-link active" href="#visao-geral"><span class="icon">🏠</span> Visão Geral</a>
+    <a class="nav-link" href="#modos-acesso"><span class="icon">🔑</span> Modos de Acesso</a>
+
+    <span class="nav-group-label">Partida</span>
+    <a class="nav-link" href="#gerenciar-partida"><span class="icon">⚽</span> Gerenciar Partida</a>
+    <a class="nav-link" href="#placar-timer"><span class="icon">⏱</span> Placar e Cronômetro</a>
+    <a class="nav-link" href="#jogadores-time"><span class="icon">👥</span> Jogadores e Times</a>
+    <a class="nav-link" href="#acoes-jogador"><span class="icon">🎯</span> Ações do Jogador</a>
+    <a class="nav-link" href="#lista-espera"><span class="icon">📋</span> Lista de Espera</a>
+    <a class="nav-link" href="#intervalo"><span class="icon">🔄</span> Intervalo</a>
+    <a class="nav-link" href="#resumo"><span class="icon">📊</span> Resumo da Partida</a>
+
+    <span class="nav-group-label">Estatísticas</span>
+    <a class="nav-link" href="#ranking"><span class="icon">🏆</span> Ranking</a>
+    <a class="nav-link" href="#estatisticas"><span class="icon">📈</span> Estatísticas</a>
+    <a class="nav-link" href="#relatorios"><span class="icon">📄</span> Relatórios</a>
+
+    <span class="nav-group-label">Gestão</span>
+    <a class="nav-link" href="#participantes"><span class="icon">🙋</span> Participantes</a>
+    <a class="nav-link" href="#configuracoes"><span class="icon">⚙️</span> Configurações</a>
+    <a class="nav-link" href="#codigo-acesso"><span class="icon">🔐</span> Código de Acesso</a>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Hero -->
+    <div class="hero" id="visao-geral">
+      <div class="hero-badge">Documentação Oficial</div>
+      <h1>
+        Bem-vindo ao
+        <span>ProPelada</span>
+      </h1>
+      <p class="hero-desc">
+        Tudo que você precisa saber para organizar sua pelada de forma profissional — desde o apito inicial até o relatório final de pontuação.
+      </p>
+      <div class="hero-meta">
+        <div class="hero-stat">
+          <span class="val">2</span>
+          <span class="lbl">Times</span>
+        </div>
+        <div class="hero-stat">
+          <span class="val">18</span>
+          <span class="lbl">Jogadores</span>
+        </div>
+        <div class="hero-stat">
+          <span class="val">2</span>
+          <span class="lbl">Tempos</span>
+        </div>
+        <div class="hero-stat">
+          <span class="val">∞</span>
+          <span class="lbl">Peladas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modos de Acesso -->
+    <div class="section" id="modos-acesso" data-section>
+      <div class="section-header">
+        <div class="section-icon">🔑</div>
+        <div class="section-title-block">
+          <h2>Modos de Acesso</h2>
+          <p>O ProPelada tem dois perfis de acesso com permissões diferentes.</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="info-block">
+          <h3>👤 Administrador</h3>
+          <ul>
+            <li>Acessa com login e senha cadastrados</li>
+            <li>Cria e gerencia partidas</li>
+            <li>Adiciona e edita participantes</li>
+            <li>Configura pontuação e cores dos times</li>
+            <li>Gera códigos de acesso para visitantes</li>
+            <li>Acessa todos os relatórios</li>
+          </ul>
+        </div>
+        <div class="info-block">
+          <h3>👁 Visitante</h3>
+          <ul>
+            <li>Acessa com código de 6 dígitos fornecido pelo admin</li>
+            <li>Visualiza partidas em andamento</li>
+            <li>Consulta ranking e estatísticas (se o admin liberar)</li>
+            <li>Não pode editar nada</li>
+            <li>Código válido por 3 horas</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <span>Para gerar um código de acesso para visitantes, vá até a página <strong>Acesso</strong> no menu lateral.</span>
+      </div>
+    </div>
+
+    <!-- Gerenciar Partida -->
+    <div class="section" id="gerenciar-partida" data-section>
+      <div class="section-header">
+        <div class="section-icon">⚽</div>
+        <div class="section-title-block">
+          <h2>Gerenciar Partida</h2>
+          <p>O fluxo completo de uma pelada, do início ao fim.</p>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="flow-node active">Criar partida</div>
+        <div class="flow-arrow">›</div>
+        <div class="flow-node">Montar times</div>
+        <div class="flow-arrow">›</div>
+        <div class="flow-node">1º Tempo</div>
+        <div class="flow-arrow">›</div>
+        <div class="flow-node">Intervalo</div>
+        <div class="flow-arrow">›</div>
+        <div class="flow-node">2º Tempo</div>
+        <div class="flow-arrow">›</div>
+        <div class="flow-node">Encerrar</div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">1</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Criar uma nova partida</h3>
+            <p>Na tela principal da pelada, clique no botão <strong>+</strong> (criar partida) no canto superior direito. Informe a data e confirme. A partida começa no <strong>1º Tempo</strong>.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">2</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Montar os times</h3>
+            <p>Use o botão <strong>+</strong> abaixo de cada time para adicionar jogadores da lista de espera. Você pode adicionar vários de uma vez marcando as caixinhas e clicando em <strong>Adicionar</strong>.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">3</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Registrar gols e cartões</h3>
+            <p>Toque no nome de um jogador para abrir as ações. Use os botões <strong>–</strong> e <strong>+</strong> para gols, e os botões coloridos para cartões. Também é possível registrar gols contra.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">4</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Iniciar o intervalo</h3>
+            <p>Clique no botão <strong>1º Tempo</strong> para abrir o modal de intervalo. Marque quem sai, adicione substitutos e clique em <strong>Iniciar 2º Tempo</strong>.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">5</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Encerrar a partida</h3>
+            <p>Ao final, clique no ícone de cadeado no topo para encerrar a partida. Ela ficará salva com todos os registros. Você pode ver o resumo completo pelo botão <strong>Resumo</strong> (ícone de lista).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Placar e Cronômetro -->
+    <div class="section" id="placar-timer" data-section>
+      <div class="section-header">
+        <div class="section-icon">⏱</div>
+        <div class="section-title-block">
+          <h2>Placar e Cronômetro</h2>
+          <p>Acompanhe o placar em tempo real e controle o tempo de jogo.</p>
+        </div>
+      </div>
+
+      <div class="mock-scoreboard">
+        <div class="mock-teams">
+          <span>Time 1 (Azul)</span>
+          <span>Time 2 (Amarelo)</span>
+        </div>
+        <div class="mock-score">
+          2 <span class="sep">×</span> 1
+        </div>
+        <div class="mock-timer">⏱ 23:47</div>
+        <div style="margin-top:10px; font-size:12px; color:var(--text-muted);">Clique no tempo para pausar · Duplo clique para zerar</div>
+      </div>
+
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Ação</th>
+            <th>Como fazer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Iniciar / Pausar</td><td>Clique uma vez no cronômetro</td></tr>
+          <tr><td>Zerar o tempo</td><td>Clique duas vezes rapidamente no cronômetro</td></tr>
+          <tr><td>Ver placar atualizado</td><td>O placar atualiza automaticamente a cada gol registrado</td></tr>
+          <tr><td>Ver contagem de jogadores</td><td>O número ao lado do nome de cada time mostra quantos jogadores estão em campo</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Jogadores e Times -->
+    <div class="section" id="jogadores-time" data-section>
+      <div class="section-header">
+        <div class="section-icon">👥</div>
+        <div class="section-title-block">
+          <h2>Jogadores e Times</h2>
+          <p>Cada partida tem dois times com até 9 jogadores cada.</p>
+        </div>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <span class="card-icon">➕</span>
+          <h3>Adicionar jogador</h3>
+          <p>Clique no botão <strong>+</strong> abaixo de cada time para escolher jogadores da lista de espera.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">↔️</span>
+          <h3>Mover entre times</h3>
+          <p>Abra as ações do jogador e use o botão <strong>Mover para Time</strong> para transferi-lo para o outro time.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🧤</span>
+          <h3>Goleiro</h3>
+          <p>Goleiros aparecem com o ícone de luva ao lado do nome, facilitando a identificação rápida.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🔴</span>
+          <h3>Remover jogador</h3>
+          <p>Abra as ações do jogador e use o botão vermelho <strong>Remover da Partida</strong>. O jogador volta à lista de espera.</p>
+        </div>
+      </div>
+
+      <div class="callout warning">
+        <span class="callout-icon">⚠️</span>
+        <span>Cada time deve ter exatamente <strong>9 jogadores</strong> por tempo. O sistema alerta quando o número está incorreto, especialmente no intervalo.</span>
+      </div>
+    </div>
+
+    <!-- Ações do Jogador -->
+    <div class="section" id="acoes-jogador" data-section>
+      <div class="section-header">
+        <div class="section-icon">🎯</div>
+        <div class="section-title-block">
+          <h2>Ações do Jogador</h2>
+          <p>Toque no nome de qualquer jogador para registrar ocorrências da partida.</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="info-block">
+          <h3>⚽ Gols</h3>
+          <ul>
+            <li>Use os botões <strong>–</strong> e <strong>+</strong> para somar ou subtrair gols</li>
+            <li>Há um contador separado para <strong>gols contra</strong></li>
+            <li>Os gols são contabilizados por tempo (1º ou 2º)</li>
+          </ul>
+        </div>
+        <div class="info-block">
+          <h3>🟨 Cartões</h3>
+          <ul>
+            <li><span class="chip yellow">🟨 Amarelo</span> — advertência</li>
+            <li><span class="chip blue">🟦 Azul</span> — suspensão temporária</li>
+            <li><span class="chip red">🟥 Vermelho</span> — expulsão</li>
+            <li>Cartões acesos ficam com brilho colorido. Clique novamente para remover.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="info-block" style="margin-top:16px">
+        <h3>🔄 Substituição</h3>
+        <ul>
+          <li><strong>Não</strong> — jogador ainda em campo (padrão)</li>
+          <li><strong>1º Tempo</strong> — substituído durante o primeiro tempo</li>
+          <li><strong>Intervalo</strong> — substituído na pausa entre os tempos</li>
+          <li>Quando substituído, os botões de gol e cartão ficam desabilitados</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Lista de Espera -->
+    <div class="section" id="lista-espera" data-section>
+      <div class="section-header">
+        <div class="section-icon">📋</div>
+        <div class="section-title-block">
+          <h2>Lista de Espera</h2>
+          <p>Jogadores que aguardam para entrar na partida ficam na lista de espera.</p>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">1</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Acessar a lista</h3>
+            <p>Clique no ícone de lista com número (🟢) no topo da tela de partida. O número indica quantos jogadores estão aguardando.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">2</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Adicionar ao time</h3>
+            <p>Clique no <strong>+</strong> abaixo de um time, marque os jogadores desejados na lista e toque em <strong>Adicionar</strong>. É possível selecionar vários de uma vez.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">3</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Remover da lista</h3>
+            <p>Abra a lista de espera e toque no ícone de lixeira ao lado do jogador que deseja remover.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Intervalo -->
+    <div class="section" id="intervalo" data-section>
+      <div class="section-header">
+        <div class="section-icon">🔄</div>
+        <div class="section-title-block">
+          <h2>Intervalo</h2>
+          <p>O intervalo é o momento de fazer substituições antes de iniciar o 2º Tempo.</p>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">1</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Abrir o intervalo</h3>
+            <p>Clique no botão <strong>1º Tempo</strong> quando o primeiro tempo terminar. O modal de intervalo será exibido.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">2</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Marcar quem sai</h3>
+            <p>Para cada jogador que vai sair, clique em <strong>Sai</strong>. O botão muda para <strong>Volta</strong> caso queira desfazer. O contador de jogadores atualiza em tempo real.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">3</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Adicionar substitutos</h3>
+            <p>Use o botão <strong>+ Espera</strong> de cada time para trazer jogadores da lista de espera. Eles são marcados automaticamente como <em>entrou no intervalo</em>.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">4</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Iniciar 2º Tempo</h3>
+            <p>Certifique-se que cada time tem <strong>9 jogadores</strong> (contador fica verde). Então clique em <strong>Iniciar 2º Tempo</strong>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout warning">
+        <span class="callout-icon">⚠️</span>
+        <span>O contador fica laranja se o time tiver mais ou menos de 9 jogadores. Ajuste antes de iniciar o 2º tempo.</span>
+      </div>
+    </div>
+
+    <!-- Resumo -->
+    <div class="section" id="resumo" data-section>
+      <div class="section-header">
+        <div class="section-icon">📊</div>
+        <div class="section-title-block">
+          <h2>Resumo da Partida</h2>
+          <p>Veja todas as estatísticas da partida organizadas por tempo.</p>
+        </div>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <span class="card-icon">📋</span>
+          <h3>Aba Geral</h3>
+          <p>Todos os jogadores da partida. Jogadores substituídos aparecem com nome riscado. Quem entrou no intervalo tem a tag <strong>ENT</strong>.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">1️⃣</span>
+          <h3>Aba 1º Tempo</h3>
+          <p>Jogadores que jogaram o primeiro tempo com seus gols e cartões deste período.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">2️⃣</span>
+          <h3>Aba 2º Tempo</h3>
+          <p>Jogadores que jogaram o segundo tempo com seus gols e cartões deste período.</p>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <span>O resumo pode ser acessado a qualquer momento durante a partida, clicando no botão de lista no topo da tela.</span>
+      </div>
+    </div>
+
+    <!-- Ranking -->
+    <div class="section" id="ranking" data-section>
+      <div class="section-header">
+        <div class="section-icon">🏆</div>
+        <div class="section-title-block">
+          <h2>Ranking</h2>
+          <p>Classificação geral dos jogadores com desempenho acumulado em todas as peladas.</p>
+        </div>
+      </div>
+
+      <div class="rank-preview">
+        <div class="rank-header">
+          <span>#</span>
+          <span>Jogador</span>
+          <span>J</span>
+          <span>V</span>
+          <span>D</span>
+          <span>E</span>
+          <span>GP</span>
+          <span>GC</span>
+        </div>
+        <div class="rank-row">
+          <span class="rank-pos medal-gold">🥇</span>
+          <span class="rank-name">Lucas</span>
+          <span class="rank-highlight">24</span>
+          <span class="rank-num">16</span>
+          <span class="rank-num">5</span>
+          <span class="rank-num">3</span>
+          <span class="rank-num">31</span>
+          <span class="rank-num">18</span>
+        </div>
+        <div class="rank-row">
+          <span class="rank-pos medal-silver">🥈</span>
+          <span class="rank-name">Marcos</span>
+          <span class="rank-highlight">22</span>
+          <span class="rank-num">13</span>
+          <span class="rank-num">6</span>
+          <span class="rank-num">3</span>
+          <span class="rank-num">27</span>
+          <span class="rank-num">22</span>
+        </div>
+        <div class="rank-row">
+          <span class="rank-pos medal-bronze">🥉</span>
+          <span class="rank-name">Rafael</span>
+          <span class="rank-highlight">21</span>
+          <span class="rank-num">12</span>
+          <span class="rank-num">7</span>
+          <span class="rank-num">2</span>
+          <span class="rank-num">18</span>
+          <span class="rank-num">20</span>
+        </div>
+      </div>
+
+      <table class="doc-table" style="margin-top:20px">
+        <thead>
+          <tr>
+            <th>Coluna</th>
+            <th>Significado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>%A</td><td>Porcentagem de presença nas peladas</td></tr>
+          <tr><td>J</td><td>Jogos disputados em campo</td></tr>
+          <tr><td>P</td><td>Jogos assistidos na arquibancada</td></tr>
+          <tr><td>V / D / E</td><td>Vitórias, Derrotas e Empates</td></tr>
+          <tr><td>GP</td><td>Gols pró (marcados pelo time do jogador)</td></tr>
+          <tr><td>GC</td><td>Gols contra (sofridos pelo time do jogador)</td></tr>
+          <tr><td>SG</td><td>Saldo de gols (GP – GC)</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <span>Clique nos cabeçalhos da tabela para ordenar por qualquer coluna. Use o botão de impressão para gerar um PDF do ranking.</span>
+      </div>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="section" id="estatisticas" data-section>
+      <div class="section-header">
+        <div class="section-icon">📈</div>
+        <div class="section-title-block">
+          <h2>Estatísticas</h2>
+          <p>Gráficos com os top 10 jogadores em cada categoria, filtráveis por período.</p>
+        </div>
+      </div>
+
+      <div class="cards">
+        <div class="card"><span class="card-icon">⚽</span><h3>Gols</h3><p>Top artilheiros do período selecionado.</p></div>
+        <div class="card"><span class="card-icon">📅</span><h3>Presenças</h3><p>Jogadores que mais compareceram às peladas.</p></div>
+        <div class="card"><span class="card-icon">🏆</span><h3>Vitórias</h3><p>Quem venceu mais partidas.</p></div>
+        <div class="card"><span class="card-icon">❌</span><h3>Derrotas</h3><p>Quem sofreu mais derrotas no período.</p></div>
+        <div class="card"><span class="card-icon">🤝</span><h3>Empates</h3><p>Jogadores com mais empates acumulados.</p></div>
+        <div class="card"><span class="card-icon">🟨🟦🟥</span><h3>Cartões</h3><p>Ranking de cartões amarelos, azuis e vermelhos.</p></div>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <span>Use os campos <strong>Início</strong> e <strong>Fim</strong> no topo para filtrar as estatísticas por um período específico. Clique no botão de sincronização para atualizar os gráficos.</span>
+      </div>
+    </div>
+
+    <!-- Relatórios -->
+    <div class="section" id="relatorios" data-section>
+      <div class="section-header">
+        <div class="section-icon">📄</div>
+        <div class="section-title-block">
+          <h2>Relatórios</h2>
+          <p>Documentos detalhados para conferência e transparência da pontuação.</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="info-block">
+          <h3>📊 Tabela de Pontuação</h3>
+          <ul>
+            <li>Lista completa de todos os jogadores</li>
+            <li>Gols, cartões, presenças e resultados</li>
+            <li>Pontuação total calculada automaticamente</li>
+            <li>Ideal para ver o ranking de pontos</li>
+          </ul>
+        </div>
+        <div class="info-block">
+          <h3>🔍 Relatório de Conferência</h3>
+          <ul>
+            <li>Detalhamento por categoria de pontuação</li>
+            <li>Presenças, faltas, jogos assistidos</li>
+            <li>Bônus (ex: jogo na chuva)</li>
+            <li>Permite verificar cada ponto atribuído</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <span>Os relatórios abrem em uma nova janela para facilitar a impressão ou exportação como PDF pelo navegador.</span>
+      </div>
+    </div>
+
+    <!-- Participantes -->
+    <div class="section" id="participantes" data-section>
+      <div class="section-header">
+        <div class="section-icon">🙋</div>
+        <div class="section-title-block">
+          <h2>Participantes</h2>
+          <p>Cadastro e gestão de todos os jogadores da sua pelada.</p>
+        </div>
+      </div>
+
+      <div class="info-block">
+        <h3>Campos do Cadastro</h3>
+        <ul>
+          <li><strong>Nome e Apelido</strong> — identificação do jogador</li>
+          <li><strong>Celular e Data de Nascimento</strong> — dados de contato</li>
+          <li><strong>Tipo</strong>: Jogador, Ex-Jogador, Convidado, Goleiro, Juiz</li>
+          <li><strong>Posição</strong>: Zagueiro, Meia, Lateral, Atacante</li>
+          <li><strong>Nível</strong>: Bom, Médio, Ruim — classificação de desempenho</li>
+          <li><strong>Faixa etária</strong>: Novo, Médio, Velho</li>
+          <li><strong>Velocidade</strong>: Rápido, Médio, Lento</li>
+          <li><strong>Foto</strong> — imagem de perfil do jogador</li>
+        </ul>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <span>Use a barra de busca para encontrar jogadores rapidamente pelo nome ou apelido. Clique em um resultado para carregar os dados no formulário e editar.</span>
+      </div>
+    </div>
+
+    <!-- Configurações -->
+    <div class="section" id="configuracoes" data-section>
+      <div class="section-header">
+        <div class="section-icon">⚙️</div>
+        <div class="section-title-block">
+          <h2>Configurações</h2>
+          <p>Personalize a pelada de acordo com as regras do seu grupo.</p>
+        </div>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <span class="card-icon">👁</span>
+          <h3>Exibir Estatísticas</h3>
+          <p>Controla se visitantes podem acessar as estatísticas e ranking da pelada. Ative ou desative com o botão de alternância.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">📅</span>
+          <h3>Período dos Gráficos</h3>
+          <p>Define o intervalo de datas padrão para exibição nas estatísticas e gráficos.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🎨</span>
+          <h3>Cores dos Times</h3>
+          <p>Escolha entre Verde, Azul, Vermelho ou Amarelo para cada time. A cor aparece nos cards dos jogadores na tela de partida.</p>
+        </div>
+        <div class="card">
+          <span class="card-icon">🏅</span>
+          <h3>Critérios de Pontuação</h3>
+          <p>Configure quantos pontos valem: jogo disputado, jogo assistido, vitória, empate, derrota, jogo na chuva e cada tipo de cartão.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Código de Acesso -->
+    <div class="section" id="codigo-acesso" data-section>
+      <div class="section-header">
+        <div class="section-icon">🔐</div>
+        <div class="section-title-block">
+          <h2>Código de Acesso</h2>
+          <p>Gere e compartilhe códigos para que visitantes possam ver a pelada.</p>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">1</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Gerar novo código</h3>
+            <p>Na página <strong>Acesso</strong>, clique em <strong>Gerar novo código</strong>. Uma confirmação será exibida avisando que o código anterior será invalidado.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">2</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Compartilhar</h3>
+            <p>O código de 6 dígitos é exibido na tela com o horário de expiração. Compartilhe com quem quiser dar acesso de visitante.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-left">
+            <div class="step-num">3</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-body">
+            <h3>Validade</h3>
+            <p>Cada código é válido por <strong>3 horas</strong>. Após expirar, um novo código deve ser gerado para continuar acessando.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout warning">
+        <span class="callout-icon">⚠️</span>
+        <span>Ao gerar um novo código, o código anterior é imediatamente invalidado. Visitantes que estavam usando o código antigo precisarão do novo.</span>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Scrollspy
+  const sections = document.querySelectorAll('[data-section]');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(link => {
+          link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Hero is treated as a section for scrollspy
+  const hero = document.getElementById('visao-geral');
+  const heroObserver = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      navLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === '#visao-geral');
+      });
+    }
+  }, { rootMargin: '0px 0px -80% 0px' });
+  if (hero) heroObserver.observe(hero);
+</script>
+</body>
+</html>
