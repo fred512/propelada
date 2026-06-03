@@ -15,7 +15,7 @@ const jogadores = ref([])
 const criterios = ref(null)
 
 const jogadoresOrdenados = computed(() =>
-  [...jogadores.value].sort((a, b) => b.qtd_presenca - a.qtd_presenca || b.pontuacao - a.pontuacao)
+  [...jogadores.value].sort((a, b) => b.pontuacao - a.pontuacao || b.qtd_presenca - a.qtd_presenca)
 )
 
 const dataAtual = computed(() =>

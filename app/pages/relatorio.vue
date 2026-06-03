@@ -1,11 +1,13 @@
 <script setup>
 import { ref } from 'vue'
-import { ClipboardCheck, Trophy } from 'lucide-vue-next'
+import { ClipboardCheck, Trophy, BarChart2 } from 'lucide-vue-next'
 import RelatorioConferenciaModal from '~/components/RelatorioConferenciaModal.vue'
 import RankingModal from '~/components/RankingModal.vue'
+import ResumoModal from '~/components/ResumoModal.vue'
 
 const isConferenciaOpen = ref(false)
 const isRankingOpen = ref(false)
+const isResumoOpen = ref(false)
 </script>
 
 <template>
@@ -20,6 +22,11 @@ const isRankingOpen = ref(false)
     <RankingModal
       :is-open="isRankingOpen"
       @close="isRankingOpen = false"
+    />
+
+    <ResumoModal
+      :is-open="isResumoOpen"
+      @close="isResumoOpen = false"
     />
 
     <div class="cards-grid">
@@ -47,6 +54,19 @@ const isRankingOpen = ref(false)
           </p>
         </div>
         <span class="card-cta">Ver Ranking →</span>
+      </button>
+
+      <button class="relatorio-card" @click="isResumoOpen = true">
+        <div class="card-icon resumo-icon">
+          <BarChart2 :size="36" />
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">Resumo da Pelada</h3>
+          <p class="card-desc">
+            Visão geral: jogadores, partidas, gols por tempo, cartões e desempenho dos times.
+          </p>
+        </div>
+        <span class="card-cta">Ver Resumo →</span>
       </button>
     </div>
   </div>
@@ -106,6 +126,11 @@ const isRankingOpen = ref(false)
 .ranking-icon {
   color: #F59E0B;
   background: rgba(245,158,11,0.1);
+}
+
+.resumo-icon {
+  color: #42A5F5;
+  background: rgba(66,165,245,0.1);
 }
 
 .card-body { flex: 1; }
