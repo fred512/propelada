@@ -140,15 +140,15 @@ const handlePrint = () => {
     body { font-family: Arial, sans-serif; color: #1b5e20; padding: 28px 60px; max-width: 720px; margin: 0 auto; }
     .header { text-align: center; border-bottom: 3px solid #1b5e20; padding-bottom: 12px; margin-bottom: 20px; }
     .header img { height: 48px; display: block; margin: 0 auto 6px; }
-    .header h1 { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
-    .header p { font-size: 14px; font-weight: 600; margin: 2px 0; }
-    .periodo { font-size: 12px; color: #555; }
+    .header h1 { font-size: 25px; font-weight: 900; margin-bottom: 4px; }
+    .header p { font-size: 16px; font-weight: 600; margin: 2px 0; }
+    .periodo { font-size: 14px; color: #555; }
     .section { margin-bottom: 20px; }
-    .section-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; border-bottom: 2px solid #1b5e20; padding-bottom: 4px; margin-bottom: 10px; }
+    .section-title { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; border-bottom: 2px solid #1b5e20; padding-bottom: 4px; margin-bottom: 10px; }
     .cards { display: flex; gap: 10px; flex-wrap: wrap; }
     .card { flex: 1; min-width: 70px; background: #f1f8e9; border-radius: 8px; padding: 10px; text-align: center; }
-    .card-val { display: block; font-size: 26px; font-weight: 900; color: #1565c0; }
-    .card-lbl { display: block; font-size: 10px; color: #2e7d32; font-weight: 700; margin-top: 2px; }
+    .card-val { display: block; font-size: 29px; font-weight: 900; color: #1565c0; }
+    .card-lbl { display: block; font-size: 12px; color: #2e7d32; font-weight: 700; margin-top: 2px; }
     .c-am { background: #fffbeb; } .c-am .card-val { color: #d97706; }
     .c-az { background: #eff6ff; } .c-az .card-val { color: #1565c0; }
     .c-vr { background: #fef2f2; } .c-vr .card-val { color: #dc2626; }
@@ -156,12 +156,12 @@ const handlePrint = () => {
     .time-box { flex: 1; border-radius: 8px; padding: 12px; text-align: center; }
     .t-am { background: #fffbeb; } .t-am .time-name { color: #d97706; }
     .t-az { background: #eff6ff; } .t-az .time-name { color: #1565c0; }
-    .time-name { font-size: 13px; font-weight: 800; margin-bottom: 8px; }
+    .time-name { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
     .time-stats { display: flex; justify-content: center; gap: 20px; }
-    .ts-val { display: block; font-size: 22px; font-weight: 900; }
-    .ts-lbl { display: block; font-size: 10px; font-weight: 700; color: #555; }
+    .ts-val { display: block; font-size: 25px; font-weight: 900; }
+    .ts-lbl { display: block; font-size: 12px; font-weight: 700; color: #555; }
     .win { color: #16a34a; } .draw { color: #6b7280; } .loss { color: #dc2626; }
-    .footer { margin-top: 16px; font-size: 11px; color: #2e7d32; text-align: right; }
+    .footer { margin-top: 16px; font-size: 13px; color: #2e7d32; text-align: right; }
   </style>
 </head>
 <body>
@@ -192,9 +192,9 @@ const handlePrint = () => {
       <div class="card"><span class="card-val">${d.golsSegundo}</span><span class="card-lbl">Gols 2º Tempo</span></div>
     </div>
     <div class="cards">
-      <div class="card" style="background:#f8f8f8"><span class="card-val" style="color:#666;font-size:20px">${d.mediaGols}</span><span class="card-lbl">Média Geral</span></div>
-      <div class="card" style="background:#f8f8f8"><span class="card-val" style="color:#666;font-size:20px">${d.mediaPrimeiro}</span><span class="card-lbl">Média 1º Tempo</span></div>
-      <div class="card" style="background:#f8f8f8"><span class="card-val" style="color:#666;font-size:20px">${d.mediaSegundo}</span><span class="card-lbl">Média 2º Tempo</span></div>
+      <div class="card" style="background:#f8f8f8"><span class="card-val" style="color:#666;font-size:23px">${d.mediaGols}</span><span class="card-lbl">Média Geral</span></div>
+      <div class="card" style="background:#f8f8f8"><span class="card-val" style="color:#666;font-size:23px">${d.mediaPrimeiro}</span><span class="card-lbl">Média 1º Tempo</span></div>
+      <div class="card" style="background:#f8f8f8"><span class="card-val" style="color:#666;font-size:23px">${d.mediaSegundo}</span><span class="card-lbl">Média 2º Tempo</span></div>
     </div>
   </div>
   <div class="section">

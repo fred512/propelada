@@ -188,23 +188,23 @@ const handlePrint = () => {
   <title>Conferência de Pontuação - ${pelada}</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; font-size: 13px; color: #1b5e20; padding: 20px; }
+    body { font-family: Arial, sans-serif; font-size: 15px; color: #1b5e20; padding: 20px; }
     .header { text-align: center; border-bottom: 3px solid #1b5e20; padding-bottom: 12px; margin-bottom: 16px; }
     .header img { height: 48px; margin-bottom: 6px; display: block; margin-left: auto; margin-right: auto; }
-    .header h1 { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
-    .header p { font-size: 14px; font-weight: 600; margin: 2px 0; }
-    .header .data { font-size: 12px; color: #2e7d32; }
+    .header h1 { font-size: 25px; font-weight: 900; margin-bottom: 4px; }
+    .header p { font-size: 16px; font-weight: 600; margin: 2px 0; }
+    .header .data { font-size: 14px; color: #2e7d32; }
     table { width: 100%; border-collapse: collapse; }
-    thead tr:first-child th { background-color: #1b5e20; color: #fff; padding: 7px 4px; text-align: center; font-weight: 700; font-size: 12px; }
-    thead tr:last-child th { background-color: #2e7d32; color: #fff; padding: 5px 4px; text-align: center; font-size: 11px; font-weight: 600; font-style: italic; }
+    thead tr:first-child th { background-color: #1b5e20; color: #fff; padding: 7px 4px; text-align: center; font-weight: 700; font-size: 14px; }
+    thead tr:last-child th { background-color: #2e7d32; color: #fff; padding: 5px 4px; text-align: center; font-size: 13px; font-weight: 600; font-style: italic; }
     th.col-jogador, td.col-jogador { text-align: left; padding-left: 6px; min-width: 120px; }
-    td { padding: 6px 4px; border-bottom: 1px solid #c8e6c9; text-align: center; }
+    td { padding: 7px 4px; border-bottom: 1px solid #c8e6c9; text-align: center; }
     td.sub { color: #1565c0; font-weight: 700; background: rgba(33,150,243,0.06); }
     tr.stripe td { background-color: #f5f5f5; }
     tr.stripe td.sub { background: rgba(33,150,243,0.12); }
-    td.pts { font-weight: 800; font-size: 15px; color: #1565c0; }
-    .footer { margin-top: 10px; font-size: 11px; color: #2e7d32; text-align: right; }
-    .group-header { text-align: center; font-size: 11px; font-weight: 800; }
+    td.pts { font-weight: 800; font-size: 17px; color: #1565c0; }
+    .footer { margin-top: 10px; font-size: 13px; color: #2e7d32; text-align: right; }
+    .group-header { text-align: center; font-size: 13px; font-weight: 800; }
   </style>
 </head>
 <body>
