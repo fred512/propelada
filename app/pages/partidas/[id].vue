@@ -1437,7 +1437,9 @@ const onMatchCreated = (idPartida) => {
 .sumula-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 80px);
+  flex: 1;
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
   padding: 0;
   background-color: var(--bg-primary);
@@ -1457,7 +1459,6 @@ const onMatchCreated = (idPartida) => {
 }
 
 .sumula-header {
-  height: 18%;
   min-height: 0;
   flex-shrink: 0;
   padding: 8px 12px;
@@ -1653,7 +1654,6 @@ const onMatchCreated = (idPartida) => {
 }
 
 .scoreboard-section {
-  height: 15%;
   min-height: 0;
   flex-shrink: 0;
   padding: 12px 16px;
@@ -1861,10 +1861,9 @@ const onMatchCreated = (idPartida) => {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
-  height: 50%;
+  flex: 1;
   min-height: 0;
   padding: 8px 8px 0;
-  flex-shrink: 0;
 }
 
 .team-column {
@@ -2056,7 +2055,6 @@ const onMatchCreated = (idPartida) => {
 }
 
 .sumula-footer {
-  height: 9%;
   min-height: 0;
   flex-shrink: 0;
   padding: 8px 16px;

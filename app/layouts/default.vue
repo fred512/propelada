@@ -1,5 +1,5 @@
 <template>
-  <div class="layout-wrapper" :class="{ 'sidebar-open': isMounted && isSidebarOpen }">
+  <div class="layout-wrapper" :class="{ 'sidebar-open': isMounted && isSidebarOpen, 'viewport-locked': isViewportLocked }">
     <Sidebar :is-open="isSidebarOpen" @close="closeSidebar" />
     
     <div class="main-container">
@@ -68,8 +68,12 @@ const colorMode = (() => {
 })()
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
+const route = useRoute()
 const { peladaAtual, nomeFormatado, isVisitor, fetchPelada } = usePelada()
 const { public: { appVersion } } = useRuntimeConfig()
+
+// Tela de partida ocupa a viewport inteira (sem scroll na página; scroll só no grid de times)
+const isViewportLocked = computed(() => route.path.startsWith('/partidas/'))
 
 const logoUrl = computed(() =>
   colorMode.value === 'dark' ? '/images/propelada-dark.png' : '/images/Propelada8.png'
@@ -143,15 +147,13 @@ onMounted(async () => {
 .top-header {
   background: var(--bg-header);
   border-bottom: 1px solid var(--border-color);
-  padding: 12px 8px;
-  position: fixed;
+  padding: 10px 8px;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 100;
   box-sizing: border-box;
+  flex-shrink: 0;
   box-shadow: 0 1px 0 var(--border-color), 0 4px 24px rgba(0,0,0,0.3);
-  transition: left 0.3s ease;
 }
 
 .dark .top-header {
@@ -260,10 +262,29 @@ onMounted(async () => {
 .page-content {
   flex: 1;
   width: 100%;
-  padding-top: 80px;
-  min-height: calc(100vh - 80px);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow-x: hidden;
   box-sizing: border-box;
+}
+
+/* Tela de partida: viewport travada, sem scroll de página (scroll só no grid de times) */
+.layout-wrapper.viewport-locked {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.layout-wrapper.viewport-locked .main-container {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.layout-wrapper.viewport-locked .page-content {
+  overflow: hidden;
 }
 
 .sidebar-overlay {
@@ -314,8 +335,5 @@ onMounted(async () => {
     display: none !important;
   }
 
-  .layout-wrapper.sidebar-open .top-header {
-    left: 260px;
-  }
 }
 </style>
