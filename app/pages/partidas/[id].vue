@@ -3700,4 +3700,27 @@ const onMatchCreated = (idPartida) => {
 
 .toast-fade-enter-active, .toast-fade-leave-active { transition: opacity 0.3s; }
 .toast-fade-enter-from, .toast-fade-leave-to { opacity: 0; }
+
+/* Mobile: compacta cabecalho e placar para priorizar o grid de jogadores */
+@media (max-width: 768px) {
+  .sumula-title { display: none; }
+  .sumula-header { padding: 6px 8px; }
+  .header-main-actions { gap: 0; }
+  .action-icons { gap: 8px; }
+  .icon-btn, .icon-btn-ig { width: 42px; height: 34px; }
+
+  .scoreboard-section { padding: 2px 8px 4px; gap: 0; }
+  .game-meta { padding: 6px 4px 2px; }
+  .half-badge { padding: 4px 10px; font-size: 0.8rem; }
+  .game-date { font-size: 0.85rem; }
+  .score-display { padding-bottom: 2px; }
+  .central-score { gap: 8px; }
+  .score-num { font-size: 2.2rem; letter-spacing: -1px; }
+  .score-divider { font-size: 1.3rem; }
+  .team-icon { padding: 6px; }
+  .team-icon svg { width: 16px; height: 16px; }
+  .player-count-badge { width: 20px; height: 20px; font-size: 0.68rem; top: -4px; right: -4px; }
+
+  .teams-grid { padding: 6px 6px 0; gap: 6px; }
+}
 </style>
