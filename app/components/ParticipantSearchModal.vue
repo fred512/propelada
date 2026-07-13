@@ -19,7 +19,17 @@
             <X :size="16" />
           </button>
         </div>
+        <button
+          v-if="voiceSupported"
+          class="ps-mic-btn"
+          :class="{ listening: isListening }"
+          :title="isListening ? 'Ouvindo... toque para parar' : 'Buscar por voz'"
+          @click="toggleVoice"
+        >
+          <Mic :size="18" />
+        </button>
       </div>
+      <div v-if="isListening" class="ps-listening-hint">Fale o nome do jogador...</div>
 
       <div class="ps-list">
         <div v-if="isSearching" class="ps-loading">Buscando...</div>
@@ -31,7 +41,7 @@
           :key="p.IdParticipante"
           class="ps-item"
           :class="{ 'ps-item-selected': selected.has(p.IdParticipante) }"
-          @click="$emit('toggle', p)"
+          @click="onItemClick(p)"
         >
           <div class="ps-info">
             <span class="ps-name">{{ p.Apelido || p.apelido || p.Nome || p.nome }}</span>
@@ -62,8 +72,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { X, Check } from 'lucide-vue-next'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
+import { X, Check, Mic } from 'lucide-vue-next'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -81,6 +91,59 @@ function clearQuery() {
   query.value = ''
   emit('search', '')
 }
+
+function onItemClick(p) {
+  const willSelect = !props.selected.has(p.IdParticipante)
+  emit('toggle', p)
+  if (willSelect && query.value) clearQuery()
+}
+
+// Busca por voz (Web Speech API — nativa do navegador)
+const isListening = ref(false)
+let recognition = null
+
+const voiceSupported =
+  typeof window !== 'undefined' &&
+  !!(window.SpeechRecognition || window.webkitSpeechRecognition)
+
+function toggleVoice() {
+  if (isListening.value) {
+    stopVoice()
+    return
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+  recognition = new SR()
+  recognition.lang = 'pt-BR'
+  recognition.interimResults = false
+  recognition.maxAlternatives = 1
+  recognition.onresult = (e) => {
+    const transcript = (e.results?.[0]?.[0]?.transcript || '').trim()
+    if (transcript) {
+      query.value = transcript
+      emit('search', transcript)
+    }
+  }
+  recognition.onerror = () => { isListening.value = false }
+  recognition.onend = () => { isListening.value = false }
+  try {
+    recognition.start()
+    isListening.value = true
+  } catch {
+    isListening.value = false
+  }
+}
+
+function stopVoice() {
+  try { recognition?.stop() } catch { /* já parado */ }
+  isListening.value = false
+}
+
+watch(() => props.modelValue, (open) => {
+  if (open) query.value = ''
+  else stopVoice()
+})
+
+onBeforeUnmount(stopVoice)
 
 const sortedResults = computed(() =>
   [...props.results].sort((a, b) => {
@@ -156,12 +219,51 @@ const sortedResults = computed(() =>
 
 .ps-search-row {
   margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .ps-input-wrap {
   position: relative;
   display: flex;
   align-items: center;
+  flex: 1;
+}
+
+.ps-mic-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: #2196F3;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.ps-mic-btn.listening {
+  background: rgba(239, 83, 80, 0.15);
+  border-color: #ef5350;
+  color: #ef5350;
+  animation: micPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes micPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 83, 80, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(239, 83, 80, 0); }
+}
+
+.ps-listening-hint {
+  font-size: 0.78rem;
+  color: #ef5350;
+  font-weight: 600;
+  text-align: center;
+  margin: -6px 0 10px;
 }
 
 .ps-input {

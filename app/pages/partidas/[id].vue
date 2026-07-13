@@ -1344,23 +1344,33 @@ const onParticipantSearch = async (searchTerm) => {
   if (!peladaAtual.value.id) return
   isSearchingParticipants.value = true
 
-  let query = supabase
+  const { data } = await supabase
     .from('Participantes')
     .select('*')
     .eq('IdPelada', peladaAtual.value.id)
     .order('Apelido')
 
-  if (participantSearchQuery.value.trim()) {
-    const termo = participantSearchQuery.value.trim()
-    query = query.or(`Nome.ilike.%${termo}%,Apelido.ilike.%${termo}%`)
-  }
-
-  const { data } = await query
   // Filtra tipos válidos no cliente (Jogador, Goleiro, Convidado)
   const valid = ['Jogador', 'Convidado', 'jogador', 'convidado', 'Ex-Jogador']
-  participantSearchResults.value = (data || []).filter(p =>
+  let resultados = (data || []).filter(p =>
     !p.TipoParticipante || valid.includes(p.TipoParticipante)
   )
+
+  // Filtro no cliente, tolerante a acentos e espaços (necessário para a busca por voz)
+  const termo = participantSearchQuery.value.trim()
+  if (termo) {
+    const norm = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    const t = norm(termo)
+    const tSemEspaco = t.replace(/\s+/g, '')
+    resultados = resultados.filter(p =>
+      [p.Nome, p.nome, p.Apelido, p.apelido].some(campo => {
+        const n = norm(campo)
+        return n.includes(t) || n.replace(/\s+/g, '').includes(tSemEspaco)
+      })
+    )
+  }
+
+  participantSearchResults.value = resultados
   isSearchingParticipants.value = false
 }
 
